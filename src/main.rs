@@ -10,6 +10,6 @@ use repository::user_repo::UserRepo;
 #[launch]
 async fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![create_user])
+        .mount("/", routes![create_user, get_user_by_name])
         .manage(UserRepo::init().await)
 }

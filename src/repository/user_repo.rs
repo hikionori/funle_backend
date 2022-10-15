@@ -1,10 +1,11 @@
 #[warn(unused_imports)]
+
 use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 
 use crate::models::user_model::User;
-use mongodb::{bson::extjson::de::Error, results::InsertOneResult, Client, Collection};
+use mongodb::{bson::{extjson::de::Error, doc}, results::InsertOneResult, Client, Collection};
 
 pub struct UserRepo {
     pub collection: Collection<User>,
@@ -22,7 +23,7 @@ impl UserRepo {
         UserRepo { collection }
     }
 
-    pub async fn create(&self, user: User) -> Result<InsertOneResult, Error> {
+    pub async fn create_user(&self, user: User) -> Result<InsertOneResult, Error> {
         let new_user = User {
             id: None,
             name: user.name,
@@ -30,6 +31,11 @@ impl UserRepo {
             password: user.password,
         };
         let user = self.collection.insert_one(new_user, None).await.ok().expect("Error inserting user");
+        Ok(user)
+    }
+
+    pub async fn get_user_by_name(&self, name: String) -> Result<Option<User>, Error> {
+        let user = self.collection.find_one(doc! {"name": name}, None).await.ok().expect("Error finding user");
         Ok(user)
     }
 }
