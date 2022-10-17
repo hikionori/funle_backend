@@ -1,11 +1,14 @@
 #[warn(unused_imports)]
-
 use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 
 use crate::models::user_model::User;
-use mongodb::{bson::{extjson::de::Error, doc}, results::InsertOneResult, Client, Collection};
+use mongodb::{
+    bson::{doc, extjson::de::Error},
+    results::InsertOneResult,
+    Client, Collection,
+};
 
 pub struct UserRepo {
     pub collection: Collection<User>,
@@ -30,12 +33,32 @@ impl UserRepo {
             email: user.email,
             password: user.password,
         };
-        let user = self.collection.insert_one(new_user, None).await.ok().expect("Error inserting user");
+        let user = self
+            .collection
+            .insert_one(new_user, None)
+            .await
+            .ok()
+            .expect("Error inserting user");
         Ok(user)
     }
 
     pub async fn get_user_by_name(&self, name: String) -> Result<Option<User>, Error> {
-        let user = self.collection.find_one(doc! {"name": name}, None).await.ok().expect("Error finding user");
+        let user = self
+            .collection
+            .find_one(doc! {"name": name}, None)
+            .await
+            .ok()
+            .expect("Error finding user");
+        Ok(user)
+    }
+
+    pub async fn delete_user_by_id(&self, id: String) -> Result<Option<User>, Error> {
+        let user = self
+            .collection
+            .find_one_and_delete(doc! {"_id": id}, None)
+            .await
+            .ok()
+            .expect("Error deleting user");
         Ok(user)
     }
 }
