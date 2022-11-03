@@ -61,4 +61,14 @@ impl UserRepo {
             .expect("Error deleting user");
         Ok(user)
     }
+
+    pub async fn put_user_by_id(&self, id: String, user: User) -> Result<Option<User>, Error> {
+        let user = self
+            .collection
+            .find_one_and_replace(doc! {"_id": id}, user, None)
+            .await
+            .ok()
+            .expect("Error updating user");
+        Ok(user)
+    }
 }

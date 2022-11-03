@@ -10,3 +10,6 @@ dotenv = "0.15.0"
 mongodb = "2.3.0"
 rocket = {version="0.5.0-rc.2", features=["json"]}
 serde = {version = "1.0", features=["derive"]}
+jsonwebtoken = "8.1.1"
+chrono = "0.4.22"
+thiserror = "1.0.37"
