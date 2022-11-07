@@ -17,6 +17,8 @@ pub enum Error {
     NoAuthHeaderError,
     #[error("invalid auth header")]
     InvalidAuthHeaderError,
+    #[error("token decode error")]
+    JWTTokenDecodeError
 }
 
 #[derive(Debug, Serialize)]

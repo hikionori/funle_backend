@@ -7,6 +7,7 @@ pub struct UserRegister {
     pub name: String,
     pub email: String,
     pub password: String,
+    pub role: String,
 }
 
 #[derive(Deserialize)]
@@ -29,9 +30,10 @@ pub async fn register_user(
     let user = user.into_inner();
     let user = User {
         id: None,
-        name: user.name,
+        username: user.name,
         email: user.email,
-        password: user.password,
+        hashed_password: user.password,
+        role: user.role.parse().unwrap(),
     };
     let result = db.create_user(user).await;
     match result {

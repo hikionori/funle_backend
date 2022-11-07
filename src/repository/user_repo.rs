@@ -3,12 +3,15 @@ use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 
-use crate::models::user_model::User;
+use crate::models::user_model::{User, UserRole};
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
-    Client, Collection,
+    Client, Collection
 };
+use bcrypt;
+
+// TODO: Переписать репозиторий пользователя с учётом новой модели
 
 pub struct UserRepo {
     pub collection: Collection<User>,
@@ -18,7 +21,7 @@ impl UserRepo {
     pub async fn init() -> Self {
         dotenv().ok();
         // let mongo_url = env::var("MONGO_URL").expect("MONGO_URL must be set");
-        let mongo_url = "mongodb://root:root@localhost:27017/"; // test database TODO: change to env variable
+        let mongo_url = "mongodb://root:root@localhost:27017/"; //? test database TODO: change to env variable
         let client = Client::with_uri_str(mongo_url).await.unwrap();
         let db = client.database("mathdb");
 
@@ -29,9 +32,10 @@ impl UserRepo {
     pub async fn create_user(&self, user: User) -> Result<InsertOneResult, Error> {
         let new_user = User {
             id: None,
-            name: user.name,
+            username: user.username,
             email: user.email,
-            password: user.password,
+            hashed_password: Self::hash_password(&self, user.hashed_password),
+            role: UserRole::User,
         };
         let user = self
             .collection
@@ -70,5 +74,10 @@ impl UserRepo {
             .ok()
             .expect("Error updating user");
         Ok(user)
+    }
+
+    fn hash_password(&self, password: String) -> String {
+        let hashed_password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
+        hashed_password
     }
 }
