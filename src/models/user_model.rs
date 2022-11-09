@@ -15,7 +15,7 @@ pub struct User {
     pub role: UserRole
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum UserRole {
     User,
     Student,

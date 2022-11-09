@@ -6,7 +6,7 @@ mod utils;
 #[macro_use]
 extern crate rocket;
 use api::user_api::{
-    login_user, register_user,
+    login_user, register_user
 };
 
 use repository::user_repo::UserRepo;

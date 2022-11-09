@@ -13,20 +13,23 @@ pub struct UserRegister {
 #[derive(Deserialize)]
 pub struct UserLogin {
     pub email: String,
-    pub pwd_hash: String,
+    pub password: String,
 }
 
 #[derive(Serialize)]
 pub struct UserLoginResponse {
     pub token: String,
+    pub refresh_token: String,
+}
+
+#[derive(Deserialize)]
+pub struct Jwt {
+    pub token: String,
 }
 
 
 #[post("/register/users", data = "<user>")]
-pub async fn register_user(
-    db: &State<UserRepo>,
-    user: Json<UserRegister>,
-) -> Result<Json<InsertOneResult>, Status> {
+pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> Result<Json<InsertOneResult>, Status> {
     let user = user.into_inner();
     let user = User {
         id: None,
@@ -43,9 +46,6 @@ pub async fn register_user(
 }
 
 #[post("/login/users", data = "<user>")]
-pub async fn login_user(
-    db: &State<UserRepo>,
-    user: Json<UserLogin>
-) -> Result<Json<UserLoginResponse>, Status> {
+pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Status> {
     todo!()
 }

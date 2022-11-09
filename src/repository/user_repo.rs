@@ -37,6 +37,11 @@ impl UserRepo {
             hashed_password: Self::hash_password(&self, user.hashed_password),
             role: UserRole::User,
         };
+
+        if (self.get_user_by_email(&new_user.email).await.unwrap().is_some()) {
+            return Err(<Error as serde::de::Error>::custom("User with this email already exists"));
+        }
+
         let user = self
             .collection
             .insert_one(new_user, None)
@@ -46,7 +51,7 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn get_user_by_name(&self, name: String) -> Result<Option<User>, Error> {
+    pub async fn get_user_by_name(&self, name: &String) -> Result<Option<User>, Error> {
         let user = self
             .collection
             .find_one(doc! {"name": name}, None)
@@ -56,7 +61,17 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn delete_user_by_id(&self, id: String) -> Result<Option<User>, Error> {
+    pub async fn get_user_by_email(&self, email: &String) -> Result<Option<User>, Error> {
+        let user = self
+            .collection
+            .find_one(doc! {"email": email}, None)
+            .await
+            .ok()
+            .expect("Error finding user");
+        Ok(user)
+    }
+
+    pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<User>, Error> {
         let user = self
             .collection
             .find_one_and_delete(doc! {"_id": id}, None)
@@ -76,7 +91,8 @@ impl UserRepo {
         Ok(user)
     }
 
-    fn hash_password(&self, password: String) -> String {
+    // ! TODO: Переписать функцию хеширования пароля
+    pub fn hash_password(&self, password: String) -> String {
         let hashed_password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
         hashed_password
     }
