@@ -18,13 +18,6 @@ use crate::models::user_model::UserRole;
 
 type WebResult<T> = std::result::Result<T, rocket::http::Status>;
 
-// TODO: Rewrite JWT Claims
-/*
-- add now_timestamp iat
-- add exp_timestamp exp
-- add user_id sub
-- add user_role role
-*/
 #[derive(Debug, Deserialize, Serialize)]
 struct Claims {
     sub: String,
