@@ -9,7 +9,7 @@ use mongodb::{
     results::InsertOneResult,
     Client, Collection
 };
-use bcrypt;
+use sha256::digest;
 
 // TODO: Переписать репозиторий пользователя с учётом новой модели
 
@@ -93,7 +93,7 @@ impl UserRepo {
 
     // ! TODO: Переписать функцию хеширования пароля
     pub fn hash_password(&self, password: String) -> String {
-        let hashed_password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
+        let hashed_password = digest(password);
         hashed_password
     }
 }

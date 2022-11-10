@@ -2,6 +2,8 @@ use crate::{models::user_model::User, repository::user_repo::UserRepo};
 use mongodb::results::InsertOneResult;
 use rocket::{http::Status, serde::json::Json, State, serde::{Serialize, Deserialize}};
 
+use crate::utils::auth::{create_access_token, create_refresh_token};
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UserRegister {
     pub name: String,
@@ -47,5 +49,18 @@ pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> R
 
 #[post("/login/users", data = "<user>")]
 pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Status> {
-    todo!()
+    let login_data = user.into_inner();
+    let user = db.get_user_by_email(&login_data.email).await.unwrap().unwrap();
+    if (db.hash_password(login_data.password) == user.hashed_password) && (login_data.email == user.email){
+        let access_token = create_access_token(user.id.unwrap().to_string(), user.role.clone()).await.unwrap();
+        let refresh_token = create_refresh_token(user.id.unwrap().to_string(), user.role.clone()).await.unwrap();
+        let response = UserLoginResponse {
+            token: access_token,
+            refresh_token: refresh_token,
+        };
+        Ok(Json(response))
+    }
+    else {
+        Err(Status::Unauthorized)
+    }
 }
