@@ -24,11 +24,6 @@ pub struct UserLoginResponse {
     pub refresh_token: String,
 }
 
-#[derive(Deserialize)]
-pub struct Jwt {
-    pub token: String,
-}
-
 
 #[post("/register/users", data = "<user>")]
 pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> Result<Json<InsertOneResult>, Status> {

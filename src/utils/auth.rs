@@ -1,6 +1,6 @@
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation, Algorithm, errors::Result};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation, Algorithm};
 use chrono::{Duration, Utc};
-use time::{OffsetDateTime};
+// use time::{OffsetDateTime};
 
 use rocket::http::hyper::header::AUTHORIZATION;
 use serde::{Deserialize, Serialize};
@@ -22,7 +22,7 @@ struct Claims {
 
 const JWT_SECRET: &[u8] = b"secret";
 
-const ONE_WEEK: i64 = 60 * 60 * 24 * 7;
+// const ONE_WEEK: i64 = 60 * 60 * 24 * 7;
 
 
 pub async fn create_access_token(user_id: String, role: UserRole) -> JWTResult<String> {
@@ -30,7 +30,7 @@ pub async fn create_access_token(user_id: String, role: UserRole) -> JWTResult<S
     let claims = Claims {
         sub: user_id,
         iat: Utc::now().timestamp(),
-        exp: Utc::now().checked_add_signed(Duration::seconds(60)).expect("valid timestamp").timestamp(),
+        exp: expiration,
         role,
     };
     let header = Header::new(Algorithm::HS512);
@@ -42,7 +42,7 @@ pub async fn create_refresh_token(user_id: String, role: UserRole) -> JWTResult<
     let claims = Claims {
         sub: user_id,
         iat: Utc::now().timestamp(),
-        exp: Utc::now().checked_add_signed(Duration::seconds(60)).expect("valid timestamp").timestamp(),
+        exp: expiration,
         role,
     };
     let header = Header::new(Algorithm::HS512);
