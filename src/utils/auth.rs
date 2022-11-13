@@ -1,5 +1,5 @@
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation, Algorithm};
 use chrono::{Duration, Utc};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 // use time::{OffsetDateTime};
 
 use rocket::http::hyper::header::AUTHORIZATION;
@@ -18,15 +18,17 @@ struct Claims {
     role: UserRole,
 }
 
-// TODO: Переписать Генерацию токена
-
-const JWT_SECRET: &[u8] = b"secret";
-
-// const ONE_WEEK: i64 = 60 * 60 * 24 * 7;
+static JWT_SECRET: &[u8] = b"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDCYxcLzAo66NVlv8tCdzFEY5ap
+q9j4xLPHBsan2etNByDWjjCTP31l/XklO6d1FfINng7vOltFmJuzyW6CwOWMC3+6
+qp9O6sp3eOPYoxwHu+fayB1BbacR1+K4CkRNyChSOPfjCsbqMGxJ/U+HMB3MQ7fz
+xbruxNYCFBW8QkKh1QIDAQAB";
 
 
 pub async fn create_access_token(user_id: String, role: UserRole) -> JWTResult<String> {
-    let expiration = Utc::now().checked_add_signed(Duration::seconds(60)).expect("valid timestamp").timestamp();
+    let expiration = Utc::now()
+        .checked_add_signed(Duration::seconds(60))
+        .expect("valid timestamp")
+        .timestamp();
     let claims = Claims {
         sub: user_id,
         iat: Utc::now().timestamp(),
@@ -34,11 +36,19 @@ pub async fn create_access_token(user_id: String, role: UserRole) -> JWTResult<S
         role,
     };
     let header = Header::new(Algorithm::HS512);
-    encode(&header, &claims, &EncodingKey::from_secret(JWT_SECRET.as_ref())).map_err(|_| Error::JWTTokenCreationError)
+    encode(
+        &header,
+        &claims,
+        &EncodingKey::from_secret(JWT_SECRET.as_ref()),
+    )
+    .map_err(|_| Error::JWTTokenCreationError)
 }
 
 pub async fn create_refresh_token(user_id: String, role: UserRole) -> JWTResult<String> {
-    let expiration = Utc::now().checked_add_signed(Duration::days(30)).expect("valid timestamp").timestamp();
+    let expiration = Utc::now()
+        .checked_add_signed(Duration::days(30))
+        .expect("valid timestamp")
+        .timestamp();
     let claims = Claims {
         sub: user_id,
         iat: Utc::now().timestamp(),
@@ -46,7 +56,12 @@ pub async fn create_refresh_token(user_id: String, role: UserRole) -> JWTResult<
         role,
     };
     let header = Header::new(Algorithm::HS512);
-    encode(&header, &claims, &EncodingKey::from_secret(JWT_SECRET.as_ref())).map_err(|_| Error::JWTTokenCreationError)
+    encode(
+        &header,
+        &claims,
+        &EncodingKey::from_secret(JWT_SECRET.as_ref()),
+    )
+    .map_err(|_| Error::JWTTokenCreationError)
 }
 
 fn jwt_from_header(headers: &rocket::http::HeaderMap) -> JWTResult<String> {
@@ -66,7 +81,11 @@ fn jwt_from_header(headers: &rocket::http::HeaderMap) -> JWTResult<String> {
 
 fn decode_jwt(token: &str) -> JWTResult<Claims> {
     let validation = Validation::new(Algorithm::HS512);
-    let token_data = decode::<Claims>(token, &DecodingKey::from_secret(JWT_SECRET.as_ref()), &validation);
+    let token_data = decode::<Claims>(
+        token,
+        &DecodingKey::from_secret(JWT_SECRET.as_ref()),
+        &validation,
+    );
     match token_data {
         Ok(data) => Ok(data.claims),
         Err(_) => Err(Error::JWTTokenDecodeError),
@@ -80,7 +99,9 @@ pub async fn authorize(headers: &rocket::http::HeaderMap<'_>) -> WebResult<Strin
                 &jwt,
                 &DecodingKey::from_secret(JWT_SECRET.as_ref()),
                 &Validation::new(Algorithm::HS512),
-            ).map_err(|_| Error::JWTTokenNotValidError).unwrap();
+            )
+            .map_err(|_| Error::JWTTokenNotValidError)
+            .unwrap();
 
             Ok(decode.claims.sub)
         }
