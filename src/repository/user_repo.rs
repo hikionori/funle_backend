@@ -1,4 +1,7 @@
-#[warn(unused_imports)]
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_parens)]
+
 use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
@@ -10,8 +13,6 @@ use mongodb::{
     Client, Collection
 };
 use sha256::digest;
-
-// TODO: Переписать репозиторий пользователя с учётом новой модели
 
 pub struct UserRepo {
     pub collection: Collection<User>,
@@ -91,7 +92,6 @@ impl UserRepo {
         Ok(user)
     }
 
-    // ! TODO: Переписать функцию хеширования пароля
     pub fn hash_password(&self, password: String) -> String {
         let hashed_password = digest(password);
         hashed_password

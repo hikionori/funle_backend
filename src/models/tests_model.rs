@@ -1,3 +1,7 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_parens)]
+
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 

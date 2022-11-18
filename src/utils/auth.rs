@@ -1,3 +1,8 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_parens)]
+#![allow(unused_variables)]
+
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 // use time::{OffsetDateTime};
