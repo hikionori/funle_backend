@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::tests_model::TestModel;
 
-// TODO: Create a course model
+// TODO: Rewrite CourseModel
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CourseModel {
