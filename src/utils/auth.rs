@@ -7,20 +7,22 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 // use time::{OffsetDateTime};
 
+use rocket::State;
 use rocket::http::hyper::header::AUTHORIZATION;
 use serde::{Deserialize, Serialize};
 
 use super::errors::{Error, Result as JWTResult};
 use crate::models::user_model::UserRole;
+use crate::repository::user_repo::UserRepo;
 
 type WebResult<T> = std::result::Result<T, rocket::http::Status>;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Claims {
-    sub: String,
-    iat: i64,
-    exp: i64,
-    role: UserRole,
+    sub: String, // user id
+    iat: i64, // issued at
+    exp: i64, // expiration
+    role: UserRole, // role
 }
 
 static JWT_SECRET: &[u8] = b"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDCYxcLzAo66NVlv8tCdzFEY5ap
@@ -112,4 +114,20 @@ pub async fn authorize(headers: &rocket::http::HeaderMap<'_>) -> WebResult<Strin
         }
         Err(e) => Err(rocket::http::Status::Unauthorized),
     }
+}
+
+pub async fn authorize_token(token: String, db: &State<UserRepo>) -> bool {
+    let decode = decode::<Claims>(
+        &token,
+        &DecodingKey::from_secret(JWT_SECRET.as_ref()),
+        &Validation::new(Algorithm::HS512),
+    )
+    .map_err(|_| Error::JWTTokenNotValidError)
+    .unwrap();
+
+    let user = db.get_user_by_id(decode.claims.sub).await.unwrap();
+    if user.is_some() {
+        return true;
+    }
+    false
 }

@@ -62,6 +62,16 @@ impl UserRepo {
         Ok(user)
     }
 
+    pub async fn get_user_by_id(&self, id: String) -> Result<Option<User>, Error> {
+        let user = self
+            .collection
+            .find_one(doc! {"_id": id}, None)
+            .await
+            .ok()
+            .expect("Error finding user");
+        Ok(user)
+    }
+
     pub async fn get_user_by_email(&self, email: &String) -> Result<Option<User>, Error> {
         let user = self
             .collection

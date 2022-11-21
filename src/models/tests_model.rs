@@ -14,6 +14,7 @@ pub struct TestModel {
     pub text_of_question: String,
     pub answers: Vec<String>,
     pub correct_answer: String,
+    pub level: i32,
 }
 impl TestModel {
     pub(crate) fn clone(&self) -> TestModel {
@@ -22,6 +23,7 @@ impl TestModel {
             text_of_question: self.text_of_question.clone(),
             answers: self.answers.clone(),
             correct_answer: self.correct_answer.clone(),
+            level: self.level.clone(),
         }
     }
 }
