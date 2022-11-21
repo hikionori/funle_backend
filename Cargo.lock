@@ -960,6 +960,7 @@ dependencies = [
  "dotenv",
  "jsonwebtoken",
  "mongodb",
+ "rand",
  "rocket",
  "serde",
  "serde_json",

@@ -15,3 +15,13 @@ pub struct TestModel {
     pub answers: Vec<String>,
     pub correct_answer: String,
 }
+impl TestModel {
+    pub(crate) fn clone(&self) -> TestModel {
+        TestModel {
+            id: self.id.clone(),
+            text_of_question: self.text_of_question.clone(),
+            answers: self.answers.clone(),
+            correct_answer: self.correct_answer.clone(),
+        }
+    }
+}
