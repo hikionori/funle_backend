@@ -6,7 +6,7 @@ use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 
-use crate::models::user_model::{User, UserRole};
+use crate::models::user_model::{UserModel, UserRole};
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
@@ -15,7 +15,7 @@ use mongodb::{
 use sha256::digest;
 
 pub struct UserRepo {
-    pub collection: Collection<User>,
+    pub collection: Collection<UserModel>,
 }
 
 impl UserRepo {
@@ -26,12 +26,12 @@ impl UserRepo {
         let client = Client::with_uri_str(mongo_url).await.unwrap();
         let db = client.database("mathdb");
 
-        let collection: Collection<User> = db.collection("users");
+        let collection: Collection<UserModel> = db.collection("users");
         UserRepo { collection }
     }
 
-    pub async fn create_user(&self, user: User) -> Result<InsertOneResult, Error> {
-        let new_user = User {
+    pub async fn create_user(&self, user: UserModel) -> Result<InsertOneResult, Error> {
+        let new_user = UserModel {
             id: None,
             username: user.username,
             email: user.email,
@@ -52,7 +52,7 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn get_user_by_name(&self, name: &String) -> Result<Option<User>, Error> {
+    pub async fn get_user_by_name(&self, name: &String) -> Result<Option<UserModel>, Error> {
         let user = self
             .collection
             .find_one(doc! {"name": name}, None)
@@ -62,7 +62,7 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn get_user_by_id(&self, id: String) -> Result<Option<User>, Error> {
+    pub async fn get_user_by_id(&self, id: String) -> Result<Option<UserModel>, Error> {
         let user = self
             .collection
             .find_one(doc! {"_id": id}, None)
@@ -72,7 +72,7 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn get_user_by_email(&self, email: &String) -> Result<Option<User>, Error> {
+    pub async fn get_user_by_email(&self, email: &String) -> Result<Option<UserModel>, Error> {
         let user = self
             .collection
             .find_one(doc! {"email": email}, None)
@@ -82,7 +82,7 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<User>, Error> {
+    pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<UserModel>, Error> {
         let user = self
             .collection
             .find_one_and_delete(doc! {"_id": id}, None)
@@ -92,7 +92,7 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn put_user_by_id(&self, id: String, user: User) -> Result<Option<User>, Error> {
+    pub async fn put_user_by_id(&self, id: String, user: UserModel) -> Result<Option<UserModel>, Error> {
         let user = self
             .collection
             .find_one_and_replace(doc! {"_id": id}, user, None)

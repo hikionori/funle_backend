@@ -10,12 +10,14 @@ use mongodb::bson::oid::ObjectId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TestModel {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub text_of_question: String,
     pub answers: Vec<String>,
     pub correct_answer: String,
-    pub level: i32,
+    pub level: i32, // mean difficulty 1-5
 }
+
 impl TestModel {
     pub(crate) fn clone(&self) -> TestModel {
         TestModel {

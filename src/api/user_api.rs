@@ -1,4 +1,4 @@
-use crate::{models::user_model::User, repository::user_repo::UserRepo};
+use crate::{models::user_model::UserModel, repository::user_repo::UserRepo};
 use mongodb::results::InsertOneResult;
 use rocket::{http::Status, serde::json::Json, State, serde::{Serialize, Deserialize}};
 
@@ -28,7 +28,7 @@ pub struct UserLoginResponse {
 #[post("/register/users", data = "<user>")]
 pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> Result<Json<InsertOneResult>, Status> {
     let user = user.into_inner();
-    let user = User {
+    let user = UserModel {
         id: None,
         username: user.name,
         email: user.email,
