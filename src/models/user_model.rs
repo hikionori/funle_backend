@@ -12,7 +12,9 @@ pub struct UserModel {
     pub username: String,
     pub email: String,
     pub hashed_password: String,
-    pub role: UserRole
+    pub role: UserRole,
+    pub progress: UserProgress,
+    // pub friends: Vec<String>, // Means id of friends
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -33,4 +35,11 @@ impl FromStr for UserRole {
             _ => Err(()),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UserProgress {
+    pub courses: Vec<String>, // id of courses
+    pub tests: Vec<String>, // id of tests
+    pub infos: Vec<String>, // id of infos
 }

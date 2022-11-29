@@ -20,6 +20,12 @@ pub enum Error {
     JWTTokenDecodeError
 }
 
+#[derive(Debug, Error)]
+pub enum TestsError {
+    #[error("we are cant get tests")]
+    WeAreCanNotGetTests,
+}
+
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
     pub error: String,

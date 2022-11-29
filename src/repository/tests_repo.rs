@@ -5,9 +5,10 @@
 use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
-use rocket::http::ext::IntoCollection;
+use rocket::{http::ext::IntoCollection, State};
 
-use crate::models::tests_model::TestModel;
+use crate::{models::tests_model::TestModel, utils::errors::TestsError};
+use crate::repository::user_repo::UserRepo;
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
@@ -74,7 +75,28 @@ impl TestsRepo {
         Ok(())
     }
 
-    pub async fn get_random_tests(&self, n: i32, level: i32) -> Result<Vec<Test>, Error> {
+    pub async fn get_all_tests(&self) -> Result<Vec<Test>, Error> {
+        let tests: Vec<Test> = self
+            .collection
+            .find(None, None)
+            .await
+            .ok()
+            .expect("Error getting tasks")
+            .deserialize_current()
+            .into_iter()
+            .collect();
+        Ok(tests)
+    }
+
+    // ! FIXME: Переписать этот метод
+    // ! Скорее всего нужно будет переписывать эти функции так как нужно это делать с учетом того что пользователь уже сделал
+    pub async fn get_random_tests(
+        &self,
+        n: i32,
+        level: i32,
+        user_id: String,
+        user_db: &State<UserRepo>,
+    ) -> Result<Vec<Test>, TestsError> {
         let mut tests: Vec<Test> = self
             .collection
             .find(doc! {"level": level}, None)
@@ -84,9 +106,28 @@ impl TestsRepo {
             .into_iter()
             .collect();
 
-        let mut rng = rand::thread_rng();
-        tests.shuffle(&mut rng);
-        tests.truncate(n as usize);
-        Ok(tests)
+        // remove from tests all tests that user already done
+        let user = user_db.get_user_by_id(&user_id).await.unwrap();
+        match user {
+            Some(user) => {
+                for test_id in user.progress.tests.into_iter() {
+                    tests.retain(|t| t.id.unwrap() != self.string_to_id(test_id.clone()));
+                }
+                // shuffle tests
+                let mut rng = rand::thread_rng();
+                tests.shuffle(&mut rng);
+                // return n tests
+                tests.truncate(n as usize);
+                Ok(tests)
+            }
+            None => {
+                Err(TestsError::WeAreCanNotGetTests)
+            }
+        }
+
+    }
+
+    fn string_to_id(&self, id: String) -> mongodb::bson::oid::ObjectId {
+        mongodb::bson::oid::ObjectId::parse_str(id.as_str()).unwrap()
     }
 }

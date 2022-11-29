@@ -1,4 +1,4 @@
-use crate::{models::user_model::UserModel, repository::user_repo::UserRepo};
+use crate::{models::user_model::{UserModel, UserProgress}, repository::user_repo::UserRepo};
 use mongodb::results::InsertOneResult;
 use rocket::{http::Status, serde::json::Json, State, serde::{Serialize, Deserialize}};
 
@@ -24,7 +24,8 @@ pub struct UserLoginResponse {
     pub refresh_token: String,
 }
 
-
+// * User api routes
+// * Auth routes
 #[post("/register/users", data = "<user>")]
 pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> Result<Json<InsertOneResult>, Status> {
     let user = user.into_inner();
@@ -34,6 +35,11 @@ pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> R
         email: user.email,
         hashed_password: user.password,
         role: user.role.parse().unwrap(),
+        progress: UserProgress {
+            courses: vec![],
+            tests: vec![],
+            infos: vec![],
+        },
     };
     let result = db.create_user(user).await;
     match result {
@@ -57,5 +63,64 @@ pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<J
     }
     else {
         Err(Status::Unauthorized)
+    }
+}
+
+// * Course routes
+// Todo: add course routes
+
+// * Test routes
+// Todo: add test routes
+
+// * Info routes
+// Todo: add info routes
+
+// * Profile routes
+// Todo: add profile routes
+
+// * Settings routes
+// Todo: add settings routes
+
+// * Admin api routes
+
+#[post("/admins/del/user?<id>")]
+pub async fn delete_user(db: &State<UserRepo>, id: &str) -> Result<Json<Option<UserModel>>, Status> {
+    let result = db.delete_user_by_id(&id.to_string()).await.unwrap();
+    match result {
+        Some(user) => Ok(Json(Some(user))),
+        None => Err(Status::NotFound),
+    }
+}
+
+#[get("/admins/get/user?<id>")]
+pub async fn get_user(db: &State<UserRepo>, id: &str) -> Result<Json<Option<UserModel>>, Status> {
+    let result = db.get_user_by_id(&id.to_string()).await.unwrap();
+    match result {
+        Some(user) => Ok(Json(Some(user))),
+        None => Err(Status::NotFound),
+    }
+}
+
+#[get("/admins/get/users")]
+pub async fn get_users(db: &State<UserRepo>) -> Result<Json<Vec<UserModel>>, Status> {
+    let result = db.get_all_users().await.unwrap();
+    Ok(Json(result))
+}
+
+#[post("/admins/update/user?<id>", data = "<user>")]
+pub async fn update_user(db: &State<UserRepo>, id: &str, user: Json<UserModel>) -> Result<Json<Option<UserModel>>, Status> {
+    let result = db.put_user_by_id(&id.to_string(), user.into_inner()).await.unwrap();
+    match result {
+        Some(user) => Ok(Json(Some(user))),
+        None => Err(Status::NotFound),
+    }
+}
+
+#[post("/admins/update/user/progress?<id>", data = "<progress>")]
+pub async fn update_user_progress(db: &State<UserRepo>, id: &str, progress: Json<UserProgress>) -> Result<Status, Status> {
+    let result = db.update_all_progress(id.to_string(), progress.into_inner()).await.unwrap();
+    match result {
+        Some(_) => Ok(Status::Ok),
+        None => Err(Status::NotFound),
     }
 }
