@@ -125,7 +125,7 @@ pub async fn authorize_token(token: String, db: &State<UserRepo>) -> bool {
     .map_err(|_| Error::JWTTokenNotValidError)
     .unwrap();
 
-    let user = db.get_user_by_id(decode.claims.sub).await.unwrap();
+    let user = db.get_user_by_id(&decode.claims.sub).await.unwrap();
     if user.is_some() {
         return true;
     }
