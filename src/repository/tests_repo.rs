@@ -47,6 +47,15 @@ impl TestsRepo {
         Ok(task)
     }
 
+    pub async fn get_test_by_name(&self, name: String) -> Result<Option<Test>, Error> {
+        let test = self
+            .collection
+            .find_one(doc! {"name": name}, None)
+            .await
+            .unwrap();
+        Ok(test)
+    }
+
     pub async fn create_test(&self, test: Test) -> Result<InsertOneResult, Error> {
         let result = self
             .collection

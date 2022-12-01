@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::{models::user_model::{UserModel, UserProgress}, repository::user_repo::UserRepo};
 use mongodb::results::InsertOneResult;
 use rocket::{http::Status, serde::json::Json, State, serde::{Serialize, Deserialize}};
@@ -26,7 +28,7 @@ pub struct UserLoginResponse {
 
 // * User api routes
 // * Auth routes
-#[post("/register/users", data = "<user>")]
+#[post("/user/register/users", data = "<user>")]
 pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> Result<Json<InsertOneResult>, Status> {
     let user = user.into_inner();
     let user = UserModel {
@@ -48,7 +50,7 @@ pub async fn register_user(db: &State<UserRepo>, user: Json<UserRegister>,) -> R
     }
 }
 
-#[post("/login/users", data = "<user>")]
+#[post("/user/login/users", data = "<user>")]
 pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Status> {
     let login_data = user.into_inner();
     let user = db.get_user_by_email(&login_data.email).await.unwrap().unwrap();
@@ -65,21 +67,6 @@ pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<J
         Err(Status::Unauthorized)
     }
 }
-
-// * Course routes
-// Todo: add course routes
-
-// * Test routes
-// Todo: add test routes
-
-// * Info routes
-// Todo: add info routes
-
-// * Profile routes
-// Todo: add profile routes
-
-// * Settings routes
-// Todo: add settings routes
 
 // * Admin api routes
 
