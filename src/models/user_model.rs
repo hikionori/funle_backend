@@ -3,8 +3,6 @@ use std::str::FromStr;
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
-// TODO: Переписать модель пользователя
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]

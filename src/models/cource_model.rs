@@ -6,8 +6,6 @@ use serde::{Deserialize, Serialize};
 
 // use crate::models::{info_model::InfoModel, tests_model::TestModel};
 
-// TODO: Rewrite CourseModel
-
 /*
  * CourseModel
  * {
