@@ -33,7 +33,7 @@ impl TestsRepo {
         let collection: Collection<TestModel> = client.database("mathdb").collection("tests");
 
         TestsRepo {
-            collection: collection,
+            collection,
         }
     }
 
@@ -42,7 +42,6 @@ impl TestsRepo {
             .collection
             .find_one(doc! {"_id": id}, None)
             .await
-            .ok()
             .expect("Error getting task");
         Ok(task)
     }
@@ -61,7 +60,6 @@ impl TestsRepo {
             .collection
             .insert_one(test, None)
             .await
-            .ok()
             .expect("Error creating task");
         Ok(result)
     }
@@ -70,7 +68,6 @@ impl TestsRepo {
         self.collection
             .delete_one(doc! {"_id": id}, None)
             .await
-            .ok()
             .expect("Error deleting task");
         Ok(())
     }
@@ -79,7 +76,6 @@ impl TestsRepo {
         self.collection
             .find_one_and_replace(doc! {"_id": id}, new_test, None)
             .await
-            .ok()
             .expect("Error updating task");
         Ok(())
     }
@@ -89,7 +85,6 @@ impl TestsRepo {
             .collection
             .find(None, None)
             .await
-            .ok()
             .expect("Error getting tasks")
             .deserialize_current()
             .into_iter()

@@ -19,11 +19,11 @@ pub struct TestModel {
 impl TestModel {
     pub(crate) fn clone(&self) -> TestModel {
         TestModel {
-            id: self.id.clone(),
+            id: self.id,
             text_of_question: self.text_of_question.clone(),
             answers: self.answers.clone(),
             correct_answer: self.correct_answer.clone(),
-            level: self.level.clone(),
+            level: self.level,
         }
     }
 }

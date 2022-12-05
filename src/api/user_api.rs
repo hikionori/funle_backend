@@ -55,11 +55,11 @@ pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<J
     let login_data = user.into_inner();
     let user = db.get_user_by_email(&login_data.email).await.unwrap().unwrap();
     if (db.hash_password(login_data.password) == user.hashed_password) && (login_data.email == user.email){
-        let access_token = create_access_token(user.id.unwrap().to_string(), user.role.clone()).await.unwrap();
-        let refresh_token = create_refresh_token(user.id.unwrap().to_string(), user.role.clone()).await.unwrap();
+        let access_token = create_access_token(user.id.unwrap().to_string(), user.role).await.unwrap();
+        let refresh_token = create_refresh_token(user.id.unwrap().to_string(), user.role).await.unwrap();
         let response = UserLoginResponse {
             token: access_token,
-            refresh_token: refresh_token,
+            refresh_token,
         };
         Ok(Json(response))
     }

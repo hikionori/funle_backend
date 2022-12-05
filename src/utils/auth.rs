@@ -46,9 +46,9 @@ pub async fn create_access_token(user_id: String, role: UserRole) -> JWTResult<S
     encode(
         &header,
         &claims,
-        &EncodingKey::from_secret(JWT_SECRET.as_ref()),
+        &EncodingKey::from_secret(JWT_SECRET),
     )
-    .map_err(|_| Error::JWTTokenCreationError)
+    .map_err(|_| Error::JWTTokenCreation)
 }
 
 pub async fn create_refresh_token(user_id: String, role: UserRole) -> JWTResult<String> {
@@ -66,22 +66,22 @@ pub async fn create_refresh_token(user_id: String, role: UserRole) -> JWTResult<
     encode(
         &header,
         &claims,
-        &EncodingKey::from_secret(JWT_SECRET.as_ref()),
+        &EncodingKey::from_secret(JWT_SECRET),
     )
-    .map_err(|_| Error::JWTTokenCreationError)
+    .map_err(|_| Error::JWTTokenCreation)
 }
 
 fn jwt_from_header(headers: &rocket::http::HeaderMap) -> JWTResult<String> {
     let header = match headers.get_one(AUTHORIZATION.as_str()) {
         Some(header) => header,
-        None => return Err(Error::NoAuthHeaderError),
+        None => return Err(Error::NoAuthHeader),
     };
     let auth_header = match std::str::from_utf8(header.as_bytes()) {
         Ok(auth_header) => auth_header,
-        Err(_) => return Err(Error::InvalidAuthHeaderError),
+        Err(_) => return Err(Error::InvalidAuthHeader),
     };
     if !auth_header.starts_with("FunLe Security") {
-        return Err(Error::InvalidAuthHeaderError);
+        return Err(Error::InvalidAuthHeader);
     }
     Ok(auth_header.trim_start_matches("FunLe Security").to_string())
 }
@@ -90,12 +90,12 @@ fn decode_jwt(token: &str) -> JWTResult<Claims> {
     let validation = Validation::new(Algorithm::HS512);
     let token_data = decode::<Claims>(
         token,
-        &DecodingKey::from_secret(JWT_SECRET.as_ref()),
+        &DecodingKey::from_secret(JWT_SECRET),
         &validation,
     );
     match token_data {
         Ok(data) => Ok(data.claims),
-        Err(_) => Err(Error::JWTTokenDecodeError),
+        Err(_) => Err(Error::JWTTokenDecode),
     }
 }
 
@@ -104,10 +104,10 @@ pub async fn authorize(headers: &rocket::http::HeaderMap<'_>) -> WebResult<Strin
         Ok(jwt) => {
             let decode = decode::<Claims>(
                 &jwt,
-                &DecodingKey::from_secret(JWT_SECRET.as_ref()),
+                &DecodingKey::from_secret(JWT_SECRET),
                 &Validation::new(Algorithm::HS512),
             )
-            .map_err(|_| Error::JWTTokenNotValidError)
+            .map_err(|_| Error::JWTTokenNotValid)
             .unwrap();
 
             Ok(decode.claims.sub)
@@ -119,10 +119,10 @@ pub async fn authorize(headers: &rocket::http::HeaderMap<'_>) -> WebResult<Strin
 pub async fn authorize_token(token: String, db: &State<UserRepo>) -> bool {
     let decode = decode::<Claims>(
         &token,
-        &DecodingKey::from_secret(JWT_SECRET.as_ref()),
+        &DecodingKey::from_secret(JWT_SECRET),
         &Validation::new(Algorithm::HS512),
     )
-    .map_err(|_| Error::JWTTokenNotValidError)
+    .map_err(|_| Error::JWTTokenNotValid)
     .unwrap();
 
     let user = db.get_user_by_id(&decode.claims.sub).await.unwrap();

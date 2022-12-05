@@ -1,23 +1,23 @@
 // use jsonwebtoken::errors::ErrorKind
 use thiserror::Error;
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("wrong credentials")]
-    WrongCredentialsError,
     #[error("jwt token not valid")]
-    JWTTokenNotValidError,
+    JWTTokenNotValid,
+    #[error("wrong credentials")]
+    WrongCredentials,
     #[error("jwt token creation error")]
-    JWTTokenCreationError,
+    JWTTokenCreation,
     #[error("no auth header")]
-    NoAuthHeaderError,
+    NoAuthHeader,
     #[error("invalid auth header")]
-    InvalidAuthHeaderError,
+    InvalidAuthHeader,
     #[error("token decode error")]
-    JWTTokenDecodeError
+    JWTTokenDecode
 }
 
 #[derive(Debug, Error)]

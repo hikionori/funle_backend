@@ -38,7 +38,7 @@ impl UserRepo {
             id: None,
             username: user.username,
             email: user.email,
-            hashed_password: Self::hash_password(&self, user.hashed_password),
+            hashed_password: Self::hash_password(self, user.hashed_password),
             role: UserRole::User,
             progress: user.progress,
         };
@@ -51,7 +51,6 @@ impl UserRepo {
             .collection
             .insert_one(new_user, None)
             .await
-            .ok()
             .expect("Error inserting user");
         Ok(user)
     }
@@ -61,7 +60,6 @@ impl UserRepo {
             .collection
             .find_one(doc! {"name": name}, None)
             .await
-            .ok()
             .expect("Error finding user");
         Ok(user)
     }
@@ -71,7 +69,6 @@ impl UserRepo {
             .collection
             .find_one(doc! {"_id": id}, None)
             .await
-            .ok()
             .expect("Error finding user");
         Ok(user)
     }
@@ -81,7 +78,6 @@ impl UserRepo {
             .collection
             .find_one(doc! {"email": email}, None)
             .await
-            .ok()
             .expect("Error finding user");
         Ok(user)
     }
@@ -103,7 +99,6 @@ impl UserRepo {
             .collection
             .find_one_and_delete(doc! {"_id": id}, None)
             .await
-            .ok()
             .expect("Error deleting user");
         Ok(user)
     }
@@ -113,7 +108,6 @@ impl UserRepo {
             .collection
             .find_one_and_replace(doc! {"_id": id}, user, None)
             .await
-            .ok()
             .expect("Error updating user");
         Ok(user)
     }
@@ -165,11 +159,11 @@ impl UserRepo {
     // * Password methods
 
     pub fn hash_password(&self, password: String) -> String {
-        let hashed_password = digest(password);
-        hashed_password
+        digest(password)
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use mongodb::bson::doc;
@@ -177,16 +171,18 @@ mod tests {
     use mongodb::Client;
     use std::env;
 
-    async fn clean_db() {
+    async fn setup(clean_db: bool) -> UserRepo {
+        env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
         let client = UserRepo::init().await;
-        client.collection.drop(None).await.unwrap();
+        if clean_db {
+            client.collection.drop(None).await.unwrap();
+        }
+        client
     }
     
     #[tokio::test]
     async fn test_create_user() {
-        env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
-        clean_db().await;
-        let client = UserRepo::init().await;
+        let client = setup(true).await;
         let user = UserModel {
             id: None,
             username: "test".to_string(),
@@ -200,6 +196,11 @@ mod tests {
             }
         };
         let result = client.create_user(user).await;
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_get_user_by_email() {
+        todo!()
     }
 }
