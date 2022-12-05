@@ -14,6 +14,8 @@ use mongodb::{
 };
 use sha256::digest;
 
+use tokio;
+
 pub struct UserRepo {
     pub collection: Collection<UserModel>,
 }
@@ -21,8 +23,7 @@ pub struct UserRepo {
 impl UserRepo {
     pub async fn init() -> Self {
         dotenv().ok();
-        // let mongo_url = env::var("MONGO_URL").expect("MONGO_URL must be set");
-        let mongo_url = "mongodb://root:root@localhost:27017/"; //? test database TODO: change to env variable
+        let mongo_url = env::var("MONGO_URL").expect("MONGO_URL must be set");
         let client = Client::with_uri_str(mongo_url).await.unwrap();
         let db = client.database("mathdb");
 
@@ -166,5 +167,39 @@ impl UserRepo {
     pub fn hash_password(&self, password: String) -> String {
         let hashed_password = digest(password);
         hashed_password
+    }
+}
+
+mod tests {
+    use super::*;
+    use mongodb::bson::doc;
+    use mongodb::options::ClientOptions;
+    use mongodb::Client;
+    use std::env;
+
+    async fn clean_db() {
+        let client = UserRepo::init().await;
+        client.collection.drop(None).await.unwrap();
+    }
+    
+    #[tokio::test]
+    async fn test_create_user() {
+        env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
+        clean_db().await;
+        let client = UserRepo::init().await;
+        let user = UserModel {
+            id: None,
+            username: "test".to_string(),
+            email: "test".to_string(),
+            hashed_password: client.hash_password("test".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![]
+            }
+        };
+        let result = client.create_user(user).await;
+        assert_eq!(result.is_ok(), true);
     }
 }

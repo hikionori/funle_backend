@@ -26,8 +26,8 @@ type Test = TestModel;
 impl TestsRepo {
     pub async fn init() -> Self {
         dotenv().ok();
-        // let mongo_url = env::var("MONGODB_URL").expect("MONGODB_URL must be set");
-        let mongo_url = "mongodb://root:root@localhost:27017/";
+        let mongo_url = env::var("MONGODB_URL").expect("MONGODB_URL must be set");
+        // let mongo_url = "mongodb://root:root@localhost:27017/";
         let client = Client::with_uri_str(mongo_url).await.unwrap();
 
         let collection: Collection<TestModel> = client.database("mathdb").collection("tests");
