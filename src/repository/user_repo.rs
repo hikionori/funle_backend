@@ -6,11 +6,11 @@ use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 
-use crate::models::user_model::{UserModel, UserRole, UserProgress};
+use crate::models::user_model::{UserModel, UserProgress, UserRole};
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
-    Client, Collection
+    Client, Collection,
 };
 use sha256::digest;
 
@@ -43,8 +43,15 @@ impl UserRepo {
             progress: user.progress,
         };
 
-        if (self.get_user_by_email(&new_user.email).await.unwrap().is_some()) {
-            return Err(<Error as serde::de::Error>::custom("User with this email already exists"));
+        if (self
+            .get_user_by_email(&new_user.email)
+            .await
+            .unwrap()
+            .is_some())
+        {
+            return Err(<Error as serde::de::Error>::custom(
+                "User with this email already exists",
+            ));
         }
 
         let user = self
@@ -92,7 +99,7 @@ impl UserRepo {
             .into_iter()
             .collect();
         Ok(users)
-    } 
+    }
 
     pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<UserModel>, Error> {
         let user = self
@@ -103,7 +110,11 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn put_user_by_id(&self, id: &String, user: UserModel) -> Result<Option<UserModel>, Error> {
+    pub async fn put_user_by_id(
+        &self,
+        id: &String,
+        user: UserModel,
+    ) -> Result<Option<UserModel>, Error> {
         let user = self
             .collection
             .find_one_and_replace(doc! {"_id": id}, user, None)
@@ -113,7 +124,7 @@ impl UserRepo {
     }
 
     // * Progress methods
-    
+
     pub async fn add_cource_to_user(&self, user_id: String, cource_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.courses.push(cource_id);
@@ -150,7 +161,11 @@ impl UserRepo {
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
-    pub async fn update_all_progress(&self, user_id: String, progress: UserProgress) -> Result<Option<UserModel>, Error> {
+    pub async fn update_all_progress(
+        &self,
+        user_id: String,
+        progress: UserProgress,
+    ) -> Result<Option<UserModel>, Error> {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress = progress;
         Ok(self.put_user_by_id(&user_id, user).await.unwrap())
@@ -161,12 +176,18 @@ impl UserRepo {
     pub fn hash_password(&self, password: String) -> String {
         digest(password)
     }
+
+    pub fn hash_password_pub(password: String) -> String {
+        digest(password)
+    }
+
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mongodb::bson::doc;
+    use mongodb::bson::oid::ObjectId;
     use mongodb::options::ClientOptions;
     use mongodb::Client;
     use std::env;
@@ -179,7 +200,26 @@ mod tests {
         }
         client
     }
-    
+
+    async fn gen_n_users(n: i32) -> Vec<UserModel> {
+        let mut users: Vec<UserModel> = Vec::new();
+        for i in 0..n {
+            users.push(UserModel {
+                id: None,
+                username: format!("test{}", i),
+                email: format!("test{}", i),
+                hashed_password: UserRepo::hash_password_pub(format!("test{}", i)),
+                role: UserRole::User,
+                progress: UserProgress {
+                    courses: vec![],
+                    tests: vec![],
+                    infos: vec![],
+                },
+            })
+        }
+        users
+    }
+
     #[tokio::test]
     async fn test_create_user() {
         let client = setup(true).await;
@@ -192,8 +232,8 @@ mod tests {
             progress: UserProgress {
                 courses: vec![],
                 tests: vec![],
-                infos: vec![]
-            }
+                infos: vec![],
+            },
         };
         let result = client.create_user(user).await;
         assert!(result.is_ok());
@@ -201,6 +241,81 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_user_by_email() {
-        todo!()
+        let client = setup(false).await;
+        let result = client
+            .get_user_by_email(&"test".to_string())
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(result.username, "test".to_string());
     }
+
+    #[tokio::test]
+    async fn test_get_user_by_id() {
+        let client = setup(false).await;
+        let user_id = client
+            .get_user_by_email(&"test".to_string())
+            .await
+            .unwrap()
+            .unwrap()
+            .id
+            .unwrap()
+            .to_string();
+        let result = client.get_user_by_id(&user_id).await.unwrap().unwrap();
+        assert_eq!(result.username, "test".to_string());
+    }
+
+    #[tokio::test]
+    async fn test_get_user_by_name() {
+        let client = setup(false).await;
+        let username = client
+            .get_user_by_email(&"test".to_string())
+            .await
+            .unwrap()
+            .unwrap()
+            .username;
+        let result = client.get_user_by_name(&username).await.unwrap();
+        assert!(result.unwrap().id.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_get_all_users() {
+        let client = setup(true).await;
+        let users_for_add = gen_n_users(5).await;
+        for user in &users_for_add {
+            client.create_user(user.to_owned()).await.unwrap();
+        }
+        let users = client.get_all_users().await.unwrap();
+        assert_eq!(users, users_for_add);
+    }
+
+    #[tokio::test]
+    async fn test_delete_user_by_id() {
+        let client = setup(false).await;
+        let user = client.get_user_by_email(&"test1".to_string()).await.unwrap().unwrap();
+        let deleted_user = client.delete_user_by_id(&user.id.unwrap().to_string()).await.unwrap().unwrap();
+        assert_eq!(deleted_user.email, user.email);
+    }
+
+    #[tokio::test]
+    async fn test_put_user_by_id() {
+        let client = setup(false).await;
+        let new_user = UserModel {
+            id: None,
+            username: "test11".to_string(),
+            email: "test11".to_string(),
+            hashed_password: client.hash_password("test11".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![],
+            }
+        };
+        let user_for_update = client.get_user_by_email(&"test1".to_string()).await.unwrap().unwrap();
+        let updated_user = client.put_user_by_id(&user_for_update.id.unwrap().to_string(), new_user.clone()).await.unwrap().unwrap();
+        assert_eq!(updated_user.email, new_user.email);
+        assert_ne!(updated_user.id, user_for_update.id);
+    }
+
 }

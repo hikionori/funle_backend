@@ -3,7 +3,7 @@ use std::str::FromStr;
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct UserModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -15,7 +15,7 @@ pub struct UserModel {
     // pub friends: Vec<String>, // Means id of friends
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UserRole {
     User,
     Student,
@@ -35,7 +35,7 @@ impl FromStr for UserRole {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct UserProgress {
     pub courses: Vec<String>, // id of courses
     pub tests: Vec<String>, // id of tests
