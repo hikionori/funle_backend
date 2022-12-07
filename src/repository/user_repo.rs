@@ -183,13 +183,19 @@ impl UserRepo {
 }
 
 #[cfg(test)]
-mod tests {
+mod user_repo_tests {
     use super::*;
     use mongodb::bson::doc;
     use mongodb::bson::oid::ObjectId;
     use mongodb::options::ClientOptions;
     use mongodb::Client;
     use std::env;
+
+    use crate::models::{
+        cource_model::{CourseModel, Level},
+        info_model::{InfoModel, ContentLevel},
+        tests_model::{TestModel}
+    };
 
     async fn setup(clean_db: bool) -> UserRepo {
         env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
