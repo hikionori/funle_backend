@@ -100,7 +100,7 @@ impl UserRepo {
     }
 
     pub async fn delete_user_by_id(&self, id: &String) -> Option<UserModel> {
-        let oid = ObjectId::parse_str(id.as_str()).unwrap();
+        // let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let email = self.get_user_by_id(id).await.unwrap().unwrap().email;
         self.collection
             .delete_many(doc! {"email": email}, None)
@@ -189,7 +189,7 @@ mod user_repo_tests {
     use mongodb::bson::oid::ObjectId;
     use mongodb::options::ClientOptions;
     use mongodb::Client;
-    use std::env;
+    use std::{collections::HashMap, env};
 
     use crate::{
         api::user_api::get_user,
@@ -245,6 +245,7 @@ mod user_repo_tests {
         client.get_user_by_email(email).await.unwrap().unwrap()
     }
 
+    // *UserRepo CRUD tests
     #[tokio::test]
     async fn create_user() {
         let client = setup(true, None).await;
@@ -415,4 +416,6 @@ mod user_repo_tests {
         assert_eq!(result.username, "test78".to_string());
     }
 
+    // *UserRepo Progress methods tests
+    // todo: after finished CourceRepo, TestsRepo, InfoRepo write tests for progress methods in UserRepo
 }

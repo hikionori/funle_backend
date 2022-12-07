@@ -28,20 +28,7 @@ pub async fn get_all_tests(db: &State<TestsRepo>) -> Result<Json<Vec<TestModel>>
 
 #[get("/admin/get/test?<id>")]
 pub async fn get_test_by_id(db: &State<TestsRepo>, id: &str) -> Result<Json<TestModel>, Status> {
-    let test = db.get_test_by_id(id.to_string()).await.unwrap();
-    match test {
-        Some(test) => Ok(Json(test)),
-        None => Err(Status::NotFound),
-    }
-}
-
-/** Search tests by name */
-#[get("/admin/get/test?<name>")]
-pub async fn get_test_by_name(
-    db: &State<TestsRepo>,
-    name: &str,
-) -> Result<Json<TestModel>, Status> {
-    let test = db.get_test_by_name(name.to_string()).await.unwrap();
+    let test = db.get_test_by_id(&id.to_string()).await.unwrap();
     match test {
         Some(test) => Ok(Json(test)),
         None => Err(Status::NotFound),
@@ -68,7 +55,7 @@ pub async fn update_test(
     test: Json<TestModel>,
 ) -> Result<Status, Status> {
     let test = test.into_inner();
-    let result = db.update_test_by_id(id.to_string(), test).await;
+    let result = db.update_test_by_id(&id.to_string(), test).await;
     match result {
         Ok(_) => Ok(Status::Ok),
         Err(_) => Err(Status::InternalServerError),
@@ -77,7 +64,7 @@ pub async fn update_test(
 
 #[delete("/admin/delete/test?<id>")]
 pub async fn delete_test(db: &State<TestsRepo>, id: &str) -> Result<Status, Status> {
-    let result = db.delete_test(id.to_string()).await;
+    let result = db.delete_test(&id.to_string()).await;
     match result {
         Ok(_) => Ok(Status::Ok),
         Err(_) => Err(Status::InternalServerError),
@@ -94,15 +81,22 @@ pub async fn delete_test(db: &State<TestsRepo>, id: &str) -> Result<Status, Stat
 * }
 */
 
-#[get("/user/get/test?<id>")]
+#[get("/user/<token>/get/test?<id>")]
 pub async fn get_test_by_id_user(
     db: &State<TestsRepo>,
+    user_db: &State<UserRepo>,
     id: &str,
+    token: &str,
 ) -> Result<Json<TestModel>, Status> {
-    let test = db.get_test_by_id(id.to_string()).await.unwrap();
-    match test {
-        Some(test) => Ok(Json(test)),
-        None => Err(Status::NotFound),
+    let access = authorize_token(token.to_string(), user_db).await;
+    if access {
+        let test = db.get_test_by_id(&id.to_string()).await.unwrap();
+        match test {
+            Some(test) => Ok(Json(test)),
+            None => Err(Status::NotFound),
+        }
+    }
+    else {
+        Err(Status::Unauthorized)
     }
 }
-
