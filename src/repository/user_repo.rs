@@ -5,11 +5,12 @@
 use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
+use rocket::futures::TryStreamExt;
 
 use crate::models::user_model::{UserModel, UserProgress, UserRole};
 use mongodb::{
-    bson::{doc, extjson::de::Error},
-    results::InsertOneResult,
+    bson::{doc, extjson::de::Error, oid::ObjectId},
+    results::{InsertOneResult, DeleteResult},
     Client, Collection,
 };
 use sha256::digest;
@@ -72,9 +73,10 @@ impl UserRepo {
     }
 
     pub async fn get_user_by_id(&self, id: &String) -> Result<Option<UserModel>, Error> {
+        let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self
             .collection
-            .find_one(doc! {"_id": id}, None)
+            .find_one(doc! {"_id": oid}, None)
             .await
             .expect("Error finding user");
         Ok(user)
@@ -90,24 +92,16 @@ impl UserRepo {
     }
 
     pub async fn get_all_users(&self) -> Result<Vec<UserModel>, Error> {
-        let users = self
-            .collection
-            .find(None, None)
-            .await
-            .unwrap()
-            .deserialize_current()
-            .into_iter()
-            .collect();
+        let cursor = self.collection.find(None, None).await.unwrap();
+
+        let users = cursor.try_collect().await.unwrap();
+
         Ok(users)
     }
 
-    pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<UserModel>, Error> {
-        let user = self
-            .collection
-            .find_one_and_delete(doc! {"_id": id}, None)
-            .await
-            .expect("Error deleting user");
-        Ok(user)
+    pub async fn delete_user_by_id(&self, id: &String) -> Option<UserModel>{
+        let oid = ObjectId::parse_str(id.as_str()).unwrap();
+        self.collection.find_one_and_delete(doc! {"_id": oid}, None).await.unwrap()
     }
 
     pub async fn put_user_by_id(
@@ -191,10 +185,13 @@ mod user_repo_tests {
     use mongodb::Client;
     use std::env;
 
-    use crate::models::{
-        cource_model::{CourseModel, Level},
-        info_model::{InfoModel, ContentLevel},
-        tests_model::{TestModel}
+    use crate::{
+        api::user_api::get_user,
+        models::{
+            cource_model::{CourseModel, Level},
+            info_model::{ContentLevel, InfoModel},
+            tests_model::TestModel,
+        },
     };
 
     async fn setup(clean_db: bool) -> UserRepo {
@@ -225,14 +222,14 @@ mod user_repo_tests {
         users
     }
 
-    async fn get_user_by_email(email: &String) -> UserModel {
+    async fn _get_user_by_email(email: &String) -> UserModel {
         let client = setup(false).await;
         client.get_user_by_email(email).await.unwrap().unwrap()
     }
 
     #[tokio::test]
-    async fn test_create_user() {
-        let client = setup(true).await;
+    async fn create_user() {
+        let client = setup(false).await;
         let user = UserModel {
             id: None,
             username: "test".to_string(),
@@ -246,85 +243,59 @@ mod user_repo_tests {
             },
         };
         let result = client.create_user(user).await;
+        println!("{:?}", result);
         assert!(result.is_ok());
     }
 
     #[tokio::test]
-    async fn test_get_user_by_email() {
+    async fn get_user_by_email() {
         let client = setup(false).await;
         let result = client
-            .get_user_by_email(&"test".to_string())
+            .get_user_by_email(&"test6".to_string())
             .await
             .unwrap()
             .unwrap();
-        assert_eq!(result.username, "test".to_string());
+        assert_eq!(result.username, "test6".to_string());
     }
 
     #[tokio::test]
-    async fn test_get_user_by_id() {
+    async fn get_user_by_id() {
         let client = setup(false).await;
-        let user_id = get_user_by_email(&"test".to_string())
+        let user_for_search = _get_user_by_email(&"test9".to_string()).await;
+        let result = client
+            .get_user_by_id(&user_for_search.id.unwrap().to_string())
             .await
-            .id
-            .unwrap()
-            .to_string();
-        let result = client.get_user_by_id(&user_id).await.unwrap().unwrap();
-        assert_eq!(result.username, "test".to_string());
+            .unwrap();
+        assert_eq!(result.unwrap().username, user_for_search.username);
     }
 
     #[tokio::test]
-    async fn test_get_user_by_name() {
+    async fn get_user_by_name() {
         let client = setup(false).await;
-        let username = get_user_by_email(&"test".to_string()).await.username;
-        let result = client.get_user_by_name(&username).await.unwrap();
-        assert!(result.unwrap().id.is_some());
+        let user_for_search = _get_user_by_email(&"test4".to_string()).await;
+        let result = client.get_user_by_name(&user_for_search.username).await;
+        assert!(result.is_ok());
     }
 
     #[tokio::test]
-    async fn test_get_all_users() {
+    async fn get_all_users() {
         let client = setup(true).await;
-        let users_for_add = gen_n_users(5).await;
-        for user in &users_for_add {
+        let users = gen_n_users(10).await;
+        for user in &users {
             client.create_user(user.to_owned()).await.unwrap();
         }
-        let users = client.get_all_users().await.unwrap();
-        assert_eq!(users, users_for_add);
+        let result = client.get_all_users().await.unwrap();
+        assert!(!result.is_empty());
     }
 
     #[tokio::test]
-    async fn test_delete_user_by_id() {
+    async fn delete_user_by_id() {
         let client = setup(false).await;
-        let user = get_user_by_email(&"test1".to_string()).await;
-        let deleted_user = client
-            .delete_user_by_id(&user.id.unwrap().to_string())
-            .await
-            .unwrap()
-            .unwrap();
-        assert_eq!(deleted_user.email, user.email);
-    }
-
-    #[tokio::test]
-    async fn test_put_user_by_id() {
-        let client = setup(false).await;
-        let new_user = UserModel {
-            id: None,
-            username: "test11".to_string(),
-            email: "test11".to_string(),
-            hashed_password: client.hash_password("test11".to_string()),
-            role: UserRole::User,
-            progress: UserProgress {
-                courses: vec![],
-                tests: vec![],
-                infos: vec![],
-            },
-        };
-        let user_for_update = get_user_by_email(&"test1".to_string()).await;
-        let updated_user = client
-            .put_user_by_id(&user_for_update.id.unwrap().to_string(), new_user.clone())
-            .await
-            .unwrap()
-            .unwrap();
-        assert_eq!(updated_user.email, new_user.email);
-        assert_ne!(updated_user.id, user_for_update.id);
+        let user_for_search = _get_user_by_email(&"test5".to_string()).await;
+        println!("{:#?}", user_for_search);
+        let result = client
+            .delete_user_by_id(&user_for_search.id.unwrap().to_string())
+            .await;
+        assert_eq!(result.unwrap(), user_for_search)
     }
 }

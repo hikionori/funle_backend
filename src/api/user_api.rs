@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::{models::user_model::{UserModel, UserProgress}, repository::user_repo::UserRepo};
-use mongodb::results::InsertOneResult;
+use mongodb::results::{InsertOneResult, DeleteResult};
 use rocket::{http::Status, serde::json::Json, State, serde::{Serialize, Deserialize}};
 
 use crate::utils::auth::{create_access_token, create_refresh_token};
@@ -73,10 +73,7 @@ pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<J
 #[post("/admins/del/user?<id>")]
 pub async fn delete_user(db: &State<UserRepo>, id: &str) -> Result<Json<Option<UserModel>>, Status> {
     let result = db.delete_user_by_id(&id.to_string()).await.unwrap();
-    match result {
-        Some(user) => Ok(Json(Some(user))),
-        None => Err(Status::NotFound),
-    }
+    Ok(Json(Some(result)))
 }
 
 #[get("/admins/get/user?<id>")]
