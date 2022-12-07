@@ -180,7 +180,6 @@ impl UserRepo {
     pub fn hash_password_pub(password: String) -> String {
         digest(password)
     }
-
 }
 
 #[cfg(test)]
@@ -220,6 +219,11 @@ mod tests {
         users
     }
 
+    async fn get_user_by_email(email: &String) -> UserModel {
+        let client = setup(false).await;
+        client.get_user_by_email(email).await.unwrap().unwrap()
+    }
+
     #[tokio::test]
     async fn test_create_user() {
         let client = setup(true).await;
@@ -253,11 +257,8 @@ mod tests {
     #[tokio::test]
     async fn test_get_user_by_id() {
         let client = setup(false).await;
-        let user_id = client
-            .get_user_by_email(&"test".to_string())
+        let user_id = get_user_by_email(&"test".to_string())
             .await
-            .unwrap()
-            .unwrap()
             .id
             .unwrap()
             .to_string();
@@ -268,12 +269,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_user_by_name() {
         let client = setup(false).await;
-        let username = client
-            .get_user_by_email(&"test".to_string())
-            .await
-            .unwrap()
-            .unwrap()
-            .username;
+        let username = get_user_by_email(&"test".to_string()).await.username;
         let result = client.get_user_by_name(&username).await.unwrap();
         assert!(result.unwrap().id.is_some());
     }
@@ -292,8 +288,12 @@ mod tests {
     #[tokio::test]
     async fn test_delete_user_by_id() {
         let client = setup(false).await;
-        let user = client.get_user_by_email(&"test1".to_string()).await.unwrap().unwrap();
-        let deleted_user = client.delete_user_by_id(&user.id.unwrap().to_string()).await.unwrap().unwrap();
+        let user = get_user_by_email(&"test1".to_string()).await;
+        let deleted_user = client
+            .delete_user_by_id(&user.id.unwrap().to_string())
+            .await
+            .unwrap()
+            .unwrap();
         assert_eq!(deleted_user.email, user.email);
     }
 
@@ -310,12 +310,15 @@ mod tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
-            }
+            },
         };
-        let user_for_update = client.get_user_by_email(&"test1".to_string()).await.unwrap().unwrap();
-        let updated_user = client.put_user_by_id(&user_for_update.id.unwrap().to_string(), new_user.clone()).await.unwrap().unwrap();
+        let user_for_update = get_user_by_email(&"test1".to_string()).await;
+        let updated_user = client
+            .put_user_by_id(&user_for_update.id.unwrap().to_string(), new_user.clone())
+            .await
+            .unwrap()
+            .unwrap();
         assert_eq!(updated_user.email, new_user.email);
         assert_ne!(updated_user.id, user_for_update.id);
     }
-
 }
