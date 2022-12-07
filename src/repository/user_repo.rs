@@ -10,7 +10,7 @@ use rocket::futures::TryStreamExt;
 use crate::models::user_model::{UserModel, UserProgress, UserRole};
 use mongodb::{
     bson::{doc, extjson::de::Error, oid::ObjectId},
-    results::{InsertOneResult, DeleteResult},
+    results::{DeleteResult, InsertOneResult},
     Client, Collection,
 };
 use sha256::digest;
@@ -99,9 +99,14 @@ impl UserRepo {
         Ok(users)
     }
 
-    pub async fn delete_user_by_id(&self, id: &String) -> Option<UserModel>{
+    pub async fn delete_user_by_id(&self, id: &String) -> Option<UserModel> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
-        self.collection.find_one_and_delete(doc! {"_id": oid}, None).await.unwrap()
+        let email = self.get_user_by_id(id).await.unwrap().unwrap().email;
+        self.collection
+            .delete_many(doc! {"email": email}, None)
+            .await
+            .unwrap();
+        None
     }
 
     pub async fn put_user_by_id(
@@ -109,9 +114,10 @@ impl UserRepo {
         id: &String,
         user: UserModel,
     ) -> Result<Option<UserModel>, Error> {
+        let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self
             .collection
-            .find_one_and_replace(doc! {"_id": id}, user, None)
+            .find_one_and_replace(doc! {"_id": oid}, user, None)
             .await
             .expect("Error updating user");
         Ok(user)
@@ -194,11 +200,23 @@ mod user_repo_tests {
         },
     };
 
-    async fn setup(clean_db: bool) -> UserRepo {
+    async fn drop_collection() {
+        env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
+        let client = UserRepo::init().await;
+        client.collection.drop(None).await.unwrap();
+    }
+
+    async fn setup(clean_db: bool, gen_user: Option<i32>) -> UserRepo {
         env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
         let client = UserRepo::init().await;
         if clean_db {
-            client.collection.drop(None).await.unwrap();
+            drop_collection().await;
+        }
+        if let Some(n) = gen_user {
+            let users = gen_n_users(n).await;
+            for user in users {
+                client.create_user(user).await.unwrap();
+            }
         }
         client
     }
@@ -223,13 +241,13 @@ mod user_repo_tests {
     }
 
     async fn _get_user_by_email(email: &String) -> UserModel {
-        let client = setup(false).await;
+        let client = setup(false, None).await;
         client.get_user_by_email(email).await.unwrap().unwrap()
     }
 
     #[tokio::test]
     async fn create_user() {
-        let client = setup(false).await;
+        let client = setup(true, None).await;
         let user = UserModel {
             id: None,
             username: "test".to_string(),
@@ -249,7 +267,23 @@ mod user_repo_tests {
 
     #[tokio::test]
     async fn get_user_by_email() {
-        let client = setup(false).await;
+        let client = setup(true, None).await;
+
+        let user = UserModel {
+            id: None,
+            username: "test6".to_string(),
+            email: "test6".to_string(),
+            hashed_password: client.hash_password("test6".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![],
+            },
+        };
+
+        client.create_user(user).await.unwrap();
+
         let result = client
             .get_user_by_email(&"test6".to_string())
             .await
@@ -260,7 +294,22 @@ mod user_repo_tests {
 
     #[tokio::test]
     async fn get_user_by_id() {
-        let client = setup(false).await;
+        let client = setup(true, None).await;
+
+        let user = UserModel {
+            id: None,
+            username: "test9".to_string(),
+            email: "test9".to_string(),
+            hashed_password: client.hash_password("test9".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![],
+            },
+        };
+        client.create_user(user).await.unwrap();
+
         let user_for_search = _get_user_by_email(&"test9".to_string()).await;
         let result = client
             .get_user_by_id(&user_for_search.id.unwrap().to_string())
@@ -271,7 +320,22 @@ mod user_repo_tests {
 
     #[tokio::test]
     async fn get_user_by_name() {
-        let client = setup(false).await;
+        let client = setup(true, None).await;
+
+        let user = UserModel {
+            id: None,
+            username: "test4".to_string(),
+            email: "test4".to_string(),
+            hashed_password: client.hash_password("test4".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![],
+            },
+        };
+        client.create_user(user).await.unwrap();
+
         let user_for_search = _get_user_by_email(&"test4".to_string()).await;
         let result = client.get_user_by_name(&user_for_search.username).await;
         assert!(result.is_ok());
@@ -279,23 +343,76 @@ mod user_repo_tests {
 
     #[tokio::test]
     async fn get_all_users() {
-        let client = setup(true).await;
-        let users = gen_n_users(10).await;
-        for user in &users {
-            client.create_user(user.to_owned()).await.unwrap();
-        }
+        // drop_collection().await;
+        let client = setup(true, Some(3)).await;
         let result = client.get_all_users().await.unwrap();
+        // println!("{:#?}", result);
         assert!(!result.is_empty());
     }
 
     #[tokio::test]
     async fn delete_user_by_id() {
-        let client = setup(false).await;
+        let client = setup(true, None).await;
+
+        let user = UserModel {
+            id: None,
+            username: "test5".to_string(),
+            email: "test5".to_string(),
+            hashed_password: client.hash_password("test5".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![],
+            },
+        };
+        client.create_user(user).await.unwrap();
+
         let user_for_search = _get_user_by_email(&"test5".to_string()).await;
-        println!("{:#?}", user_for_search);
         let result = client
             .delete_user_by_id(&user_for_search.id.unwrap().to_string())
             .await;
-        assert_eq!(result.unwrap(), user_for_search)
+        assert!(result.is_none());
     }
+
+    #[tokio::test]
+    async fn put_user_by_id() {
+        let client = setup(true, None).await;
+
+        let user = UserModel {
+            id: None,
+            username: "test7".to_string(),
+            email: "test7".to_string(),
+            hashed_password: client.hash_password("test7".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![],
+            },
+        };
+        client.create_user(user).await.unwrap();
+
+        let user_for_search = _get_user_by_email(&"test7".to_string()).await;
+        let user_for_update = UserModel {
+            id: user_for_search.id,
+            username: "test78".to_string(),
+            email: "test7".to_string(),
+            hashed_password: client.hash_password("test7".to_string()),
+            role: UserRole::User,
+            progress: UserProgress {
+                courses: vec![],
+                tests: vec![],
+                infos: vec![],
+            },
+        };
+        client
+            .put_user_by_id(&user_for_search.id.unwrap().to_string(), user_for_update)
+            .await
+            .unwrap()
+            .unwrap();
+        let result = _get_user_by_email(&"test7".to_string()).await;
+        assert_eq!(result.username, "test78".to_string());
+    }
+
 }
