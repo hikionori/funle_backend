@@ -110,9 +110,16 @@ mod info_repo_tests {
         info.id.unwrap().to_string()
     }
 
+    // !! Test 
+    // !! Need to be refactored
     #[tokio::test]
     async fn create_info() {
-        todo!()
+        let client = setup(true).await;
+        let info = gen_info().await;
+        let result = client.create_info(info).await.unwrap();
+        let id = result.inserted_id.as_object_id().unwrap().to_string();
+        let info = client.get_info(&id).await.unwrap().unwrap();
+        assert_eq!(info.title, "test");
     }
 
     #[tokio::test]
