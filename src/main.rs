@@ -10,7 +10,10 @@ use api::user_api::{
 };
 use std::env;
 
-use repository::user_repo::UserRepo;
+use repository::{
+    user_repo::UserRepo,
+    tests_repo::TestsRepo
+};
 
 #[launch]
 async fn rocket() -> _ {
@@ -20,4 +23,5 @@ async fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![register_user, login_user])
         .manage(UserRepo::init().await)
+        
 }
