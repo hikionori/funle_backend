@@ -24,7 +24,28 @@ pub enum Error {
 pub enum TestsError {
     #[error("we are cant get tests")]
     WeAreCanNotGetTests,
+    #[error("we are cant create test")]
+    WeAreCanNotCreateTest,
+    #[error("we are cant update test")]
+    WeAreCanNotUpdateTest,
+    #[error("we are cant delete test")]
+    WeAreCanNotDeleteTest,
+    #[error("we are cant get test")]
+    WeAreCanNotGetTest
 }
+
+#[derive(Debug, Error)]
+pub enum UserError {
+    #[error("We are cant create user")]
+    WeAreCanNotCreateUser,
+    #[error("We are cant get user")]
+    WeAreCanNotGetUser,
+    #[error("We are cant update user")]
+    WeAreCanNotUpdateUser,
+    #[error("We are cant delete user")]
+    WeAreCanNotDeleteUser,
+}
+
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
