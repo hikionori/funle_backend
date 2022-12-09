@@ -3,7 +3,8 @@
 use std::collections::HashMap;
 
 use mongodb::bson::oid::ObjectId;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::{SerializeStruct, SerializeMap}};
+use serde_with::{serde_as};
 
 // #[derive(Serialize, Deserialize, Debug)]
 // pub struct InfoModel {
@@ -13,15 +14,19 @@ use serde::{Deserialize, Serialize};
 //     pub content: Vec<String>
 // }
 
+
 // ? Maybe it's better to use this models:
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct InfoModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub title: String,
+    #[serde_as(as = "Vec<(_, _)>")]
     pub content_levels: HashMap<i32, Vec<ContentLevel>>,
 }
 
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct ContentLevel {
     pub content_type: String,

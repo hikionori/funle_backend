@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 use mongodb::{bson::oid::ObjectId, options::UpdateModifications};
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TestModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
