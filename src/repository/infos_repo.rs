@@ -5,7 +5,7 @@ use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
 
 use crate::models::info_model::{ContentLevel, InfoModel};
-use crate::utils::errors::TestsError;
+use crate::utils::errors::InfosError;
 
 use mongodb::{
     bson::{doc, extjson::de::Error, oid::ObjectId},
@@ -18,7 +18,7 @@ use tokio;
 pub struct InfosRepo {
     collection: Collection<InfoModel>,
 }
-
+// TODO: Переписать обработчик ошибок
 impl InfosRepo {
     pub async fn init() -> Self {
         dotenv().ok();
@@ -30,15 +30,15 @@ impl InfosRepo {
         InfosRepo { collection }
     }
 
-    pub async fn create_info(&self, info: InfoModel) -> Result<InsertOneResult, TestsError> {
+    pub async fn create_info(&self, info: InfoModel) -> Result<InsertOneResult, InfosError> {
         let result = self.collection.insert_one(info, None).await;
         match result {
             Ok(insert_result) => Ok(insert_result),
-            Err(_) => Err(TestsError::WeAreCanNotCreateTest),
+            Err(_) => Err(InfosError::WeAreCanNotCreateInfo),
         }
     }
 
-    pub async fn get_info(&self, id: &String) -> Result<Option<InfoModel>, TestsError> {
+    pub async fn get_info(&self, id: &String) -> Result<Option<InfoModel>, InfosError> {
         let result = self
             .collection
             .find_one(
@@ -48,24 +48,24 @@ impl InfosRepo {
             .await;
         match result {
             Ok(res) => Ok(res),
-            Err(_) => Err(TestsError::WeAreCanNotGetTest),
+            Err(_) => Err(InfosError::WeAreCanNotGetInfo),
         }
     }
 
-    pub async fn get_info_by_title(&self, title: &String) -> Result<Option<InfoModel>, TestsError> {
+    pub async fn get_info_by_title(&self, title: &String) -> Result<Option<InfoModel>, InfosError> {
         let test = self.collection.find_one(doc! {"title": title}, None).await;
         match test {
             Ok(test) => Ok(test),
-            Err(_) => Err(TestsError::WeAreCanNotGetTest),
+            Err(_) => Err(InfosError::WeAreCanNotGetInfo),
         }
     }
 
-    pub async fn get_all_infos(&self) -> Result<Vec<InfoModel>, TestsError> {
+    pub async fn get_all_infos(&self) -> Result<Vec<InfoModel>, InfosError> {
         let mut cursor: Cursor<InfoModel> = self.collection.find(None, None).await.unwrap();
         let infos = cursor.try_collect().await;
         match infos {
             Ok(infos) => Ok(infos),
-            Err(_) => Err(TestsError::WeAreCanNotGetTests),
+            Err(_) => Err(InfosError::WeAreCanNotGetInfos),
         }
     }
 
@@ -73,7 +73,7 @@ impl InfosRepo {
         &self,
         id: &String,
         info: InfoModel,
-    ) -> Result<UpdateResult, TestsError> {
+    ) -> Result<UpdateResult, InfosError> {
         let update_doc = UpdateModifications::Document(
             doc! {"$set": mongodb::bson::to_document(&info).unwrap()},
         );
@@ -87,11 +87,11 @@ impl InfosRepo {
             .await;
         match result {
             Ok(update_result) => Ok(update_result),
-            Err(_) => Err(TestsError::WeAreCanNotUpdateTest),
+            Err(_) => Err(InfosError::WeAreCanNotUpdateInfo),
         }
     }
 
-    pub async fn delete_info(&self, id: &String) -> Result<DeleteResult, TestsError> {
+    pub async fn delete_info(&self, id: &String) -> Result<DeleteResult, InfosError> {
         let result = self
             .collection
             .delete_one(
@@ -101,7 +101,7 @@ impl InfosRepo {
             .await;
         match result {
             Ok(delete_result) => Ok(delete_result),
-            Err(_) => Err(TestsError::WeAreCanNotDeleteTest),
+            Err(_) => Err(InfosError::WeAreCanNotDeleteInfo),
         }
     }
 

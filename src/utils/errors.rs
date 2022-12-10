@@ -46,6 +46,20 @@ pub enum UserError {
     WeAreCanNotDeleteUser,
 }
 
+#[derive(Debug, Error)]
+pub enum InfosError {
+    #[error("We are cant create info")]
+    WeAreCanNotCreateInfo,
+    #[error("We are cant get info")]
+    WeAreCanNotGetInfo,
+    #[error("We are cant update info")]
+    WeAreCanNotUpdateInfo,
+    #[error("We are cant delete info")]
+    WeAreCanNotDeleteInfo,
+    #[error("we are cant get infos")]
+    WeAreCanNotGetInfos
+
+}
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {

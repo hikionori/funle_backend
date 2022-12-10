@@ -8,6 +8,8 @@ use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
 
 use crate::models::user_model::{UserModel, UserProgress, UserRole};
+use crate::utils::errors::UserError;
+
 use mongodb::{
     bson::{doc, extjson::de::Error, oid::ObjectId},
     results::{DeleteResult, InsertOneResult},
@@ -34,7 +36,7 @@ impl UserRepo {
 
     // * User methods
 
-    pub async fn create_user(&self, user: UserModel) -> Result<InsertOneResult, Error> {
+    pub async fn create_user(&self, user: UserModel) -> Result<InsertOneResult, UserError> {
         let new_user = UserModel {
             id: None,
             username: user.username,
@@ -50,9 +52,7 @@ impl UserRepo {
             .unwrap()
             .is_some())
         {
-            return Err(<Error as serde::de::Error>::custom(
-                "User with this email already exists",
-            ));
+            return Err(UserError::WeAreCanNotCreateUser);
         }
 
         let user = self
@@ -63,13 +63,16 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn get_user_by_name(&self, name: &String) -> Result<Option<UserModel>, Error> {
-        let user = self
+    pub async fn get_user_by_name(&self, name: &String) -> Result<Option<UserModel>, UserError> {
+        let user_result = self
             .collection
             .find_one(doc! {"name": name}, None)
             .await
             .expect("Error finding user");
-        Ok(user)
+        match user_result {
+            Some(user) => Ok(Some(user)),
+            None => Err(UserError::WeAreCanNotGetUser)
+        }
     }
 
     pub async fn get_user_by_id(&self, id: &String) -> Result<Option<UserModel>, Error> {

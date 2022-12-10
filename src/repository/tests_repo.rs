@@ -5,13 +5,13 @@
 use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
-use mongodb::bson::Document;
 use mongodb::bson::oid::ObjectId;
+use mongodb::bson::Document;
 use mongodb::options::UpdateModifications;
 use rocket::{http::ext::IntoCollection, State};
 
-use crate::{models::tests_model::TestModel, utils::errors::TestsError};
 use crate::repository::user_repo::UserRepo;
+use crate::{models::tests_model::TestModel, utils::errors::TestsError};
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
@@ -35,22 +35,18 @@ impl TestsRepo {
 
         let collection: Collection<TestModel> = client.database("mathdb").collection("tests");
 
-        TestsRepo {
-            collection,
+        TestsRepo { collection }
+    }
+
+    pub async fn create_test(&self, test: Test) -> Result<InsertOneResult, TestsError> {
+        let result = self.collection.insert_one(test, None).await;
+        match result {
+            Ok(result) => Ok(result),
+            Err(_) => Err(TestsError::WeAreCanNotCreateTest),
         }
     }
 
-    
-    pub async fn create_test(&self, test: Test) -> Result<InsertOneResult, Error> {
-        let result = self
-        .collection
-        .insert_one(test, None)
-        .await
-        .expect("Error creating task");
-        Ok(result)
-    }
-    
-    pub async fn get_test_by_id(&self, id: &String) -> Result<Option<Test>, Error> {
+    pub async fn get_test_by_id(&self, id: &String) -> Result<Option<Test>, TestsError> {
         let oid = ObjectId::parse_str(id.as_str());
         let oid = match oid {
             Ok(oid) => oid,
@@ -61,26 +57,41 @@ impl TestsRepo {
             .find_one(doc! {"_id": oid}, None)
             .await
             .expect("Error getting task");
-        Ok(task)
+        match task {
+            Some(task) => Ok(Some(task)),
+            None => Err(TestsError::WeAreCanNotGetTest),
+        }
     }
 
-    pub async fn delete_test(&self, id: &String) -> Result<(), Error> {
+    pub async fn delete_test(&self, id: &String) -> Result<(), TestsError> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
-        self.collection
-            .delete_one(doc! {"_id": oid}, None)
-            .await
-            .expect("Error deleting task");
-        Ok(())
+        let result = self.collection.delete_one(doc! {"_id": oid}, None).await;
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(TestsError::WeAreCanNotDeleteTest),
+        }
     }
 
-    pub async fn update_test_by_id(&self, id: &String, new_test: Test) -> Result<Option<TestModel>, Error> {
+    pub async fn update_test_by_id(
+        &self,
+        id: &String,
+        new_test: Test,
+    ) -> Result<Option<TestModel>, TestsError> {
         let oid = ObjectId::parse_str(id.as_str()).expect("Error parsing id");
-        let update = UpdateModifications::Document(doc! {"$set": mongodb::bson::to_document(&new_test).unwrap()});
-        let updated = self.collection.find_one_and_update(doc!{"_id": oid}, update, None).await;
-        Ok(updated.unwrap())
+        let update = UpdateModifications::Document(
+            doc! {"$set": mongodb::bson::to_document(&new_test).unwrap()},
+        );
+        let updated = self
+            .collection
+            .find_one_and_update(doc! {"_id": oid}, update, None)
+            .await;
+        match updated {
+            Ok(test) => Ok(test),
+            Err(_) => Err(TestsError::WeAreCanNotUpdateTest)
+        }
     }
 
-    pub async fn get_all_tests(&self) -> Result<Vec<Test>, Error> {
+    pub async fn get_all_tests(&self) -> Result<Vec<Test>, TestsError> {
         let tests: Vec<Test> = self
             .collection
             .find(None, None)
@@ -124,11 +135,8 @@ impl TestsRepo {
                 tests.truncate(n as usize);
                 Ok(tests)
             }
-            None => {
-                Err(TestsError::WeAreCanNotGetTests)
-            }
+            None => Err(TestsError::WeAreCanNotGetTests),
         }
-
     }
 
     fn string_to_id(&self, id: String) -> mongodb::bson::oid::ObjectId {
@@ -149,9 +157,12 @@ mod test_repo_tests {
         TestModel {
             id: None,
             text_of_question: "1 + 1".to_string(),
-            answers: vec!["2", "3", "4"].into_iter().map(|x| x.to_string()).collect(),
+            answers: vec!["2", "3", "4"]
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect(),
             correct_answer: "2".to_string(),
-            level: 1
+            level: 1,
         }
     }
 
@@ -176,7 +187,12 @@ mod test_repo_tests {
 
     async fn get_test_id(question_text: &String) -> ObjectId {
         let client = setup(false).await;
-        let id = client.collection.find_one(doc! {"text_of_question": question_text.to_owned()}, None).await.unwrap().unwrap();
+        let id = client
+            .collection
+            .find_one(doc! {"text_of_question": question_text.to_owned()}, None)
+            .await
+            .unwrap()
+            .unwrap();
         id.id.unwrap()
     }
 
@@ -216,9 +232,12 @@ mod test_repo_tests {
         let test = TestModel {
             id: None,
             text_of_question: "1 + 1".to_string(),
-            answers: vec!["2", "3", "4"].into_iter().map(|x| x.to_string()).collect(),
+            answers: vec!["2", "3", "4"]
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect(),
             correct_answer: "2".to_string(),
-            level: 1
+            level: 1,
         };
         client.create_test(test).await.unwrap();
         let test_id = get_test_id(&"1 + 1".to_string()).await;
@@ -226,12 +245,25 @@ mod test_repo_tests {
         let new_test = TestModel {
             id: Some(test_id),
             text_of_question: "2 + 2".to_string(),
-            answers: vec!["2", "3", "4"].into_iter().map(|x| x.to_string()).collect(),
+            answers: vec!["2", "3", "4"]
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect(),
             correct_answer: "4".to_string(),
-            level: 1
+            level: 1,
         };
-        let updated_id = client.update_test_by_id(&test_id.to_string(), new_test).await.unwrap().unwrap().id.unwrap();
-        let result = client.get_test_by_id(&test_id.to_string()).await.unwrap().unwrap();
+        let updated_id = client
+            .update_test_by_id(&test_id.to_string(), new_test)
+            .await
+            .unwrap()
+            .unwrap()
+            .id
+            .unwrap();
+        let result = client
+            .get_test_by_id(&test_id.to_string())
+            .await
+            .unwrap()
+            .unwrap();
         assert!(result.id.unwrap() == updated_id)
     }
 
@@ -241,9 +273,12 @@ mod test_repo_tests {
         let test = TestModel {
             id: None,
             text_of_question: "1 + 1".to_string(),
-            answers: vec!["2", "3", "4"].into_iter().map(|x| x.to_string()).collect(),
+            answers: vec!["2", "3", "4"]
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect(),
             correct_answer: "2".to_string(),
-            level: 1
+            level: 1,
         };
         client.create_test(test).await.unwrap();
 
@@ -258,5 +293,4 @@ mod test_repo_tests {
     async fn get_random_tests() {
         unimplemented!()
     }
-
 }
