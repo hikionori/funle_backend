@@ -75,55 +75,70 @@ impl UserRepo {
         }
     }
 
-    pub async fn get_user_by_id(&self, id: &String) -> Result<Option<UserModel>, Error> {
+    pub async fn get_user_by_id(&self, id: &String) -> Result<Option<UserModel>, UserError> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self
             .collection
             .find_one(doc! {"_id": oid}, None)
             .await
             .expect("Error finding user");
-        Ok(user)
+        match user {
+            Some(user) => Ok(Some(user)),
+            None => Err(UserError::GetUser)
+        }
     }
 
-    pub async fn get_user_by_email(&self, email: &String) -> Result<Option<UserModel>, Error> {
+    pub async fn get_user_by_email(&self, email: &String) -> Result<Option<UserModel>, UserError> {
         let user = self
             .collection
             .find_one(doc! {"email": email}, None)
             .await
             .expect("Error finding user");
-        Ok(user)
+        match user {
+            Some(user) => Ok(Some(user)),
+            None => Err(UserError::GetUser)
+        }
     }
 
-    pub async fn get_all_users(&self) -> Result<Vec<UserModel>, Error> {
+    pub async fn get_all_users(&self) -> Result<Vec<UserModel>, UserError> {
         let cursor = self.collection.find(None, None).await.unwrap();
 
-        let users = cursor.try_collect().await.unwrap();
+        let users = Some(cursor.try_collect().await.unwrap());
 
-        Ok(users)
+        match users {
+            Some(users) => Ok(users),
+            None => Err(UserError::GetUser)
+        }
     }
 
-    pub async fn delete_user_by_id(&self, id: &String) -> Option<UserModel> {
+    pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<UserModel>, UserError>{
         // let oid = ObjectId::parse_str(id.as_str()).unwrap();
-        let email = self.get_user_by_id(id).await.unwrap().unwrap().email;
-        self.collection
+        let user = self.get_user_by_id(id).await.unwrap().unwrap();
+        let email = &user.email;
+        let result = self.collection
             .delete_many(doc! {"email": email}, None)
-            .await
-            .unwrap();
-        None
+            .await;
+        match result {
+            Ok(_) => Ok(Some(user)),
+            Err(_) => Err(UserError::DeleteUser)
+        }
     }
 
     pub async fn put_user_by_id(
         &self,
         id: &String,
         user: UserModel,
-    ) -> Result<Option<UserModel>, Error> {
+    ) -> Result<Option<UserModel>, UserError> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self
             .collection
             .find_one_and_replace(doc! {"_id": oid}, user, None)
             .await
             .expect("Error updating user");
-        Ok(user)
+        match user {
+            Some(user) => Ok(Some(user)),
+            None => Err(UserError::UpdateUser)
+        }
     }
 
     // * Progress methods
@@ -375,7 +390,7 @@ mod user_repo_tests {
         let user_for_search = _get_user_by_email(&"test5".to_string()).await;
         let result = client
             .delete_user_by_id(&user_for_search.id.unwrap().to_string())
-            .await;
+            .await.unwrap();
         assert!(result.is_none());
     }
 

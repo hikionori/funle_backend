@@ -73,7 +73,7 @@ pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<J
 #[post("/admins/del/user?<id>")]
 pub async fn delete_user(db: &State<UserRepo>, id: &str) -> Result<Json<Option<UserModel>>, Status> {
     let result = db.delete_user_by_id(&id.to_string()).await.unwrap();
-    Ok(Json(Some(result)))
+    Ok(Json(result))
 }
 
 #[get("/admins/get/user?<id>")]
