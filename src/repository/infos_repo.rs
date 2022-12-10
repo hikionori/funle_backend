@@ -34,7 +34,7 @@ impl InfosRepo {
         let result = self.collection.insert_one(info, None).await;
         match result {
             Ok(insert_result) => Ok(insert_result),
-            Err(_) => Err(InfosError::WeAreCanNotCreateInfo),
+            Err(_) => Err(InfosError::CreateInfo),
         }
     }
 
@@ -48,7 +48,7 @@ impl InfosRepo {
             .await;
         match result {
             Ok(res) => Ok(res),
-            Err(_) => Err(InfosError::WeAreCanNotGetInfo),
+            Err(_) => Err(InfosError::GetInfo),
         }
     }
 
@@ -56,7 +56,7 @@ impl InfosRepo {
         let test = self.collection.find_one(doc! {"title": title}, None).await;
         match test {
             Ok(test) => Ok(test),
-            Err(_) => Err(InfosError::WeAreCanNotGetInfo),
+            Err(_) => Err(InfosError::GetInfo),
         }
     }
 
@@ -65,7 +65,7 @@ impl InfosRepo {
         let infos = cursor.try_collect().await;
         match infos {
             Ok(infos) => Ok(infos),
-            Err(_) => Err(InfosError::WeAreCanNotGetInfos),
+            Err(_) => Err(InfosError::GetInfos),
         }
     }
 
@@ -87,7 +87,7 @@ impl InfosRepo {
             .await;
         match result {
             Ok(update_result) => Ok(update_result),
-            Err(_) => Err(InfosError::WeAreCanNotUpdateInfo),
+            Err(_) => Err(InfosError::UpdateInfo),
         }
     }
 
@@ -101,7 +101,7 @@ impl InfosRepo {
             .await;
         match result {
             Ok(delete_result) => Ok(delete_result),
-            Err(_) => Err(InfosError::WeAreCanNotDeleteInfo),
+            Err(_) => Err(InfosError::DeleteInfo),
         }
     }
 

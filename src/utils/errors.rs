@@ -23,41 +23,41 @@ pub enum Error {
 #[derive(Debug, Error)]
 pub enum TestsError {
     #[error("we are cant get tests")]
-    WeAreCanNotGetTests,
+    GetTests,
     #[error("we are cant create test")]
-    WeAreCanNotCreateTest,
+    CreateTest,
     #[error("we are cant update test")]
-    WeAreCanNotUpdateTest,
+    UpdateTest,
     #[error("we are cant delete test")]
-    WeAreCanNotDeleteTest,
+    DeleteTest,
     #[error("we are cant get test")]
-    WeAreCanNotGetTest
+    GetTest
 }
 
 #[derive(Debug, Error)]
 pub enum UserError {
     #[error("We are cant create user")]
-    WeAreCanNotCreateUser,
+    CreateUser,
     #[error("We are cant get user")]
-    WeAreCanNotGetUser,
+    GetUser,
     #[error("We are cant update user")]
-    WeAreCanNotUpdateUser,
+    UpdateUser,
     #[error("We are cant delete user")]
-    WeAreCanNotDeleteUser,
+    DeleteUser,
 }
 
 #[derive(Debug, Error)]
 pub enum InfosError {
     #[error("We are cant create info")]
-    WeAreCanNotCreateInfo,
+    CreateInfo,
     #[error("We are cant get info")]
-    WeAreCanNotGetInfo,
+    GetInfo,
     #[error("We are cant update info")]
-    WeAreCanNotUpdateInfo,
+    UpdateInfo,
     #[error("We are cant delete info")]
-    WeAreCanNotDeleteInfo,
+    DeleteInfo,
     #[error("we are cant get infos")]
-    WeAreCanNotGetInfos
+    GetInfos
 
 }
 

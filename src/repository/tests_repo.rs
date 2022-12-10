@@ -42,7 +42,7 @@ impl TestsRepo {
         let result = self.collection.insert_one(test, None).await;
         match result {
             Ok(result) => Ok(result),
-            Err(_) => Err(TestsError::WeAreCanNotCreateTest),
+            Err(_) => Err(TestsError::CreateTest),
         }
     }
 
@@ -59,7 +59,7 @@ impl TestsRepo {
             .expect("Error getting task");
         match task {
             Some(task) => Ok(Some(task)),
-            None => Err(TestsError::WeAreCanNotGetTest),
+            None => Err(TestsError::GetTest),
         }
     }
 
@@ -68,7 +68,7 @@ impl TestsRepo {
         let result = self.collection.delete_one(doc! {"_id": oid}, None).await;
         match result {
             Ok(_) => Ok(()),
-            Err(_) => Err(TestsError::WeAreCanNotDeleteTest),
+            Err(_) => Err(TestsError::DeleteTest),
         }
     }
 
@@ -87,7 +87,7 @@ impl TestsRepo {
             .await;
         match updated {
             Ok(test) => Ok(test),
-            Err(_) => Err(TestsError::WeAreCanNotUpdateTest)
+            Err(_) => Err(TestsError::UpdateTest)
         }
     }
 
@@ -135,7 +135,7 @@ impl TestsRepo {
                 tests.truncate(n as usize);
                 Ok(tests)
             }
-            None => Err(TestsError::WeAreCanNotGetTests),
+            None => Err(TestsError::GetTests),
         }
     }
 

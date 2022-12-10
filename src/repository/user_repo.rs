@@ -52,7 +52,7 @@ impl UserRepo {
             .unwrap()
             .is_some())
         {
-            return Err(UserError::WeAreCanNotCreateUser);
+            return Err(UserError::CreateUser);
         }
 
         let user = self
@@ -71,7 +71,7 @@ impl UserRepo {
             .expect("Error finding user");
         match user_result {
             Some(user) => Ok(Some(user)),
-            None => Err(UserError::WeAreCanNotGetUser)
+            None => Err(UserError::GetUser)
         }
     }
 
