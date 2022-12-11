@@ -142,6 +142,10 @@ impl TestsRepo {
     fn string_to_id(&self, id: String) -> mongodb::bson::oid::ObjectId {
         mongodb::bson::oid::ObjectId::parse_str(id.as_str()).unwrap()
     }
+
+    pub async fn drop_collection(&self) {
+        self.collection.drop(None).await.unwrap();
+    }
 }
 
 #[cfg(test)]
@@ -223,7 +227,7 @@ mod test_repo_tests {
         }
         let result = client.get_all_tests().await.unwrap();
         assert!(!result.is_empty());
-        assert!(result.len() > 0);
+        assert!(!result.is_empty());
     }
 
     #[tokio::test]

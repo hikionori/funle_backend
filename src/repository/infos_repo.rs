@@ -4,16 +4,16 @@ extern crate dotenv;
 use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
 
-use crate::models::info_model::{ContentLevel, InfoModel};
+use crate::models::info_model::{InfoModel};
 use crate::utils::errors::InfosError;
 
 use mongodb::{
-    bson::{doc, extjson::de::Error, oid::ObjectId},
+    bson::{doc, oid::ObjectId},
     options::UpdateModifications,
     results::{DeleteResult, InsertOneResult, UpdateResult},
     Client, Collection, Cursor,
 };
-use tokio;
+
 
 pub struct InfosRepo {
     collection: Collection<InfoModel>,
@@ -61,7 +61,7 @@ impl InfosRepo {
     }
 
     pub async fn get_all_infos(&self) -> Result<Vec<InfoModel>, InfosError> {
-        let mut cursor: Cursor<InfoModel> = self.collection.find(None, None).await.unwrap();
+        let cursor: Cursor<InfoModel> = self.collection.find(None, None).await.unwrap();
         let infos = cursor.try_collect().await;
         match infos {
             Ok(infos) => Ok(infos),
@@ -105,7 +105,7 @@ impl InfosRepo {
         }
     }
 
-    async fn drop_collection(&self, you_are_sure: bool) {
+    pub async fn drop_collection(&self, you_are_sure: bool) {
         if !(you_are_sure) {
             return;
         }
@@ -117,11 +117,11 @@ impl InfosRepo {
 mod info_repo_tests {
     use std::collections::HashMap;
 
+    use crate::models::info_model::ContentLevel;
+
     use super::*;
     use mongodb::{
-        bson::{doc, oid::ObjectId},
-        options::ClientOptions,
-        Client,
+        bson::{oid::ObjectId},
     };
 
     async fn setup(clean_db: bool) -> InfosRepo {

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::{models::user_model::{UserModel, UserProgress}, repository::user_repo::UserRepo};
-use mongodb::results::{InsertOneResult, DeleteResult};
+use mongodb::results::{InsertOneResult};
 use rocket::{http::Status, serde::json::Json, State, serde::{Serialize, Deserialize}};
 
 use crate::utils::auth::{create_access_token, create_refresh_token};

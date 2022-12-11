@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
+use serde_with::{serde_as};
 
 // use crate::models::{info_model::InfoModel, tests_model::TestModel};
 
@@ -17,12 +18,14 @@ use serde::{Deserialize, Serialize};
  * }
  */
 
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CourseModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub title: String,
     pub description: String,
+    #[serde_as(as = "Vec<(_, _)>")]
     pub levels: HashMap<i32, Vec<Level>>,
 }
 
