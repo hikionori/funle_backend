@@ -29,7 +29,7 @@ type Test = TestModel;
 impl TestsRepo {
     pub async fn init() -> Self {
         dotenv().ok();
-        let mongo_url = env::var("MONGODB_URL").expect("MONGODB_URL must be set");
+        let mongo_url = env::var("MONGO_URL").expect("MONGO_URL must be set");
         // let mongo_url = "mongodb://root:root@localhost:27017/";
         let client = Client::with_uri_str(mongo_url).await.unwrap();
 
@@ -181,7 +181,7 @@ mod test_repo_tests {
     }
 
     async fn setup(clean_db: bool) -> TestsRepo {
-        env::set_var("MONGODB_URL", "mongodb://root:root@localhost:27017/");
+        env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
         let client = TestsRepo::init().await;
         if clean_db {
             client.collection.drop(None).await.unwrap();

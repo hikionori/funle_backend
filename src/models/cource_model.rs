@@ -19,7 +19,7 @@ use serde_with::{serde_as};
  */
 
 #[serde_as]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct CourseModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -41,7 +41,7 @@ pub struct CourseModel {
  * }
 */
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Level {
     pub id: String,          // id of info or test
     pub title: String,       // title of info or test
@@ -54,6 +54,14 @@ impl Level {
             id,
             title,
             mini_image,
+        }
+    }
+
+    pub fn copy(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            title: self.title.clone(),
+            mini_image: self.mini_image.clone(),
         }
     }
 }
