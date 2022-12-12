@@ -94,23 +94,21 @@ impl CourceRepo {
     // CRUD for levels in cource
     pub async fn add_level(&self, cource_id: &str, level: Level, level_number: i32) {
         let cource_id = ObjectId::parse_str(cource_id).unwrap();
-        let cource = self
-            .collection
-            .find_one(doc! {"_id": cource_id}, None)
-            .await
-            .unwrap();
+        let cource = self.get(cource_id.to_hex().as_str()).await;
         match cource {
-            Some(cource) => {
-                let mut levels = cource.levels;
-                // insert level in levels with level number as key and level as value
-                // if level number already exists, then push level to vector
-                match levels.get_mut(&level_number) {
-                    Some(vec) => vec.push(level),
+            Some(mut cource) => {
+                match cource.levels.get_mut(&level_number) {
+                    Some(vec) => {
+                        vec.push(level);
+                    }
                     None => {
-                        levels.insert(level_number, vec![level]);
+                        let mut vec = Vec::new();
+                        vec.push(level);
+                        cource.levels.insert(level_number, vec);
                     }
                 }
-            }
+                self.update(cource_id.to_hex().as_str(), cource).await;
+            },
             None => {
                 println!("Cource with id {} not found", cource_id);
             }
@@ -125,27 +123,24 @@ impl CourceRepo {
             .await
             .unwrap();
         match cource {
-            Some(cource) => {
-                let mut levels = cource.levels;
-                // delete level from levels with level number as key and level as value
-                // if level number already exists, then push level to vector
-                match levels.get_mut(&level_number) {
+            Some(mut cource) => {
+                match cource.levels.get_mut(&level_number) {
                     Some(vec) => {
-                        let level_id = ObjectId::parse_str(level_id).unwrap();
-                        let level = vec.iter().position(|x| x.id == level_id.to_hex());
-                        match level {
-                            Some(level) => {
-                                vec.remove(level);
+                        let mut index = 0;
+                        for level in vec.iter_mut() {
+                            if level.id == level_id {
+                                break;
                             }
-                            None => {
-                                println!("Level with id {} not found", level_id);
-                            }
+                            index += 1;
                         }
+                        vec.remove(index);
                     }
                     None => {
                         println!("Level with number {} not found", level_number);
                     }
                 }
+                let cource_id = cource.id.unwrap().to_hex();
+                self.update(&cource_id, cource).await;
             }
             None => {
                 println!("Cource with id {} not found", cource_id);
@@ -168,22 +163,23 @@ impl CourceRepo {
             .unwrap();
         match cource {
             Some(cource) => {
-                let mut levels = cource.levels;
-                // update level in levels with level number as key and level as value
+                let levels = cource.levels.clone();
+                // get level from levels with level number as key and level as value
                 // if level number already exists, then push level to vector
-                match levels.get_mut(&level_number) {
+                match levels.get(&level_number) {
                     Some(vec) => {
-                        let level_id = ObjectId::parse_str(level_id).unwrap();
-                        let level = vec.iter().position(|x| x.id == level_id.to_hex());
-                        match level {
-                            Some(level) => {
-                                vec.remove(level);
-                                vec.push(new_level);
+                        let mut index = 0;
+                        for level in vec.iter() {
+                            if level.id == level_id {
+                                break;
                             }
-                            None => {
-                                println!("Level with id {} not found", level_id);
-                            }
+                            index += 1;
                         }
+                        let mut new_levels = levels.clone();
+                        new_levels.get_mut(&level_number).unwrap()[index] = new_level;
+                        let mut new_cource = cource.clone();
+                        new_cource.levels = new_levels;
+                        self.update(cource_id.to_hex().as_str(), new_cource).await;
                     }
                     None => {
                         println!("Level with number {} not found", level_number);
@@ -251,7 +247,6 @@ mod cource_repo_tests {
     use crate::repository::infos_repo::*;
     use crate::repository::tests_repo::*;
 
-
     async fn setup_cource_db(clean: bool) -> CourceRepo {
         env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
         let cource_repo = CourceRepo::init().await;
@@ -293,6 +288,19 @@ mod cource_repo_tests {
 
     async fn str2oid(id: &str) -> ObjectId {
         ObjectId::parse_str(id).unwrap()
+    }
+
+    async fn gen_n_cource(n: i32) -> Vec<CourseModel> {
+        let mut cource_vec = Vec::new();
+        for i in 0..n {
+            let cource = CourseModel {
+                id: None,
+                title: format!("Cource title {}", i),
+                description: format!("Cource description {}", i),
+                levels: HashMap::new(),
+            };
+        }
+        cource_vec
     }
 
     #[tokio::test]
@@ -407,13 +415,15 @@ mod cource_repo_tests {
             levels: HashMap::new(),
         };
 
-        cource_repo.update(cource_id.clone().unwrap().as_str(), new_cource.clone()).await;
+        cource_repo
+            .update(cource_id.clone().unwrap().as_str(), new_cource.clone())
+            .await;
         let cource = cource_repo.get(cource_id.unwrap().as_str()).await;
         match cource {
             Some(cource) => {
                 assert_eq!(cource.title, new_cource.title);
                 assert_eq!(cource.id, new_cource.id);
-            },
+            }
             None => {
                 panic!("Cource not updated")
             }
@@ -422,31 +432,236 @@ mod cource_repo_tests {
 
     #[tokio::test]
     async fn delete_test() {
-        unimplemented!()
+        let cource_repo = setup_cource_db(true).await;
+        let cource = CourseModel {
+            id: None,
+            title: "Cource title".to_string(),
+            description: "Cource description".to_string(),
+            levels: HashMap::new(),
+        };
+
+        cource_repo.create(cource.clone()).await;
+
+        let cource_id = cource_repo.get_cource_id(&cource.title).await;
+        cource_repo
+            .delete(cource_id.clone().unwrap().as_str())
+            .await;
+        let cource = cource_repo.get(cource_id.unwrap().as_str()).await;
+        if let Some(_) = cource {
+            panic!("Cource not deleted");
+        }
     }
 
     #[tokio::test]
     async fn get_all_ids_test() {
-        unimplemented!()
+        let cource_repo = setup_cource_db(true).await;
+        let cources = gen_n_cource(5).await;
+        for cource in cources {
+            cource_repo.create(cource.clone()).await;
+        }
+        let ids = cource_repo.get_all_ids().await;
+        match ids {
+            Some(ids) => {
+                assert!(!ids.is_empty());
+            }
+            None => {
+                panic!("Cources not found");
+            }
+        }
     }
 
     #[tokio::test]
     async fn get_all_test() {
-        unimplemented!()
+        let cource_repo = setup_cource_db(true).await;
+        let cources = gen_n_cource(5).await;
+        for cource in cources {
+            cource_repo.create(cource.clone()).await;
+        }
+        let cources = cource_repo.get_all().await;
+        match cources {
+            Some(cources) => {
+                assert!(!cources.is_empty());
+            }
+            None => {
+                panic!("Cources not found");
+            }
+        }
     }
 
     #[tokio::test]
     async fn add_level_test() {
-        unimplemented!()
+        let cource_repo = setup_cource_db(true).await;
+        let cource = CourseModel {
+            id: None,
+            title: "Cource title".to_string(),
+            description: "Cource description".to_string(),
+            levels: HashMap::new(),
+        };
+        cource_repo.create(cource.clone()).await;
+
+        let cource_id = cource_repo.get_cource_id(cource.title.as_str()).await;
+
+        let info = InfoModel {
+            id: None,
+            title: "Info title".to_string(),
+            content_levels: HashMap::new(),
+        };
+        let info_id = create_info_in_db(info).await;
+        let test = TestModel {
+            id: None,
+            text_of_question: "1 + 1".to_string(),
+            correct_answer: "2".to_string(),
+            answers: vec!["3".to_string(), "4".to_string()],
+            level: 1,
+        };
+        let test_id = create_test_in_db(test).await;
+
+        let test_cell = Level {
+            id: test_id.clone(),
+            title: "Level title".to_string(),
+            mini_image: "Bytes".to_string().as_bytes().to_vec(),
+        };
+        let info_cell = Level {
+            id: info_id.clone(),
+            title: "Level title".to_string(),
+            mini_image: "Bytes".to_string().as_bytes().to_vec(),
+        };
+
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 1)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 2)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
+            .await;
+
+        let cource = cource_repo.get(cource_id.unwrap().as_str()).await.unwrap();
+        let levels = cource.levels;
+        assert_eq!(levels.get(&1).unwrap().len(), 2);
     }
 
     #[tokio::test]
     async fn delete_level_test() {
-        unimplemented!()
+        let cource_repo = setup_cource_db(true).await;
+        let cource = CourseModel {
+            id: None,
+            title: "Cource title".to_string(),
+            description: "Cource description".to_string(),
+            levels: HashMap::new(),
+        };
+        cource_repo.create(cource.clone()).await;
+
+        let cource_id = cource_repo.get_cource_id(&cource.title).await;
+
+        let info = InfoModel {
+            id: None,
+            title: "Info title".to_string(),
+            content_levels: HashMap::new(),
+        };
+        let info_id = create_info_in_db(info).await;
+        let test = TestModel {
+            id: None,
+            text_of_question: "1 + 1".to_string(),
+            correct_answer: "2".to_string(),
+            answers: vec!["3".to_string(), "4".to_string()],
+            level: 1,
+        };
+        let test_id = create_test_in_db(test).await;
+
+        let test_cell = Level {
+            id: test_id.clone(),
+            title: "Level title".to_string(),
+            mini_image: "Bytes".to_string().as_bytes().to_vec(),
+        };
+        let info_cell = Level {
+            id: info_id.clone(),
+            title: "Level title".to_string(),
+            mini_image: "Bytes".to_string().as_bytes().to_vec(),
+        };
+
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 1)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 2)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
+            .await;
+
+        cource_repo.delete_level(cource_id.clone().unwrap().as_str(), 1, test_cell.id.as_str()).await;
+        assert_eq!(cource_repo.get(cource_id.unwrap().as_str()).await.unwrap().levels.len(), 3);
     }
 
     #[tokio::test]
     async fn update_level_test() {
-        unimplemented!()
+        let cource_repo = setup_cource_db(true).await;
+        let cource = CourseModel {
+            id: None,
+            title: "Cource title".to_string(),
+            description: "Cource description".to_string(),
+            levels: HashMap::new(),
+        };
+        cource_repo.create(cource.clone()).await;
+
+        let cource_id = cource_repo.get_cource_id(&cource.title).await;
+
+        let info = InfoModel {
+            id: None,
+            title: "Info title".to_string(),
+            content_levels: HashMap::new(),
+        };
+        let info_id = create_info_in_db(info).await;
+        let test = TestModel {
+            id: None,
+            text_of_question: "1 + 1".to_string(),
+            correct_answer: "2".to_string(),
+            answers: vec!["3".to_string(), "4".to_string()],
+            level: 1,
+        };
+        let test_id = create_test_in_db(test).await;
+
+        let test_cell = Level {
+            id: test_id.clone(),
+            title: "Level title".to_string(),
+            mini_image: "Bytes".to_string().as_bytes().to_vec(),
+        };
+        let info_cell = Level {
+            id: info_id.clone(),
+            title: "Level title".to_string(),
+            mini_image: "Bytes".to_string().as_bytes().to_vec(),
+        };
+
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 1)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 2)
+            .await;
+        cource_repo
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
+            .await;
+
+        let new_test_cell = Level {
+            id: test_id.clone(),
+            title: "New Level title".to_string(),
+            mini_image: "Bytes".to_string().as_bytes().to_vec(),
+        };
+        cource_repo
+            .update_level(cource_id.clone().unwrap().as_str(), 1, test_cell.id.as_str(), new_test_cell.copy())
+            .await;
+        
+        assert_eq!(cource_repo.get(cource_id.unwrap().as_str()).await.unwrap().levels.get(&1).unwrap().get(0).unwrap().title, "New Level title");
     }
 }
