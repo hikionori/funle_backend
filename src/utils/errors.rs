@@ -4,6 +4,7 @@ use serde::{Serialize};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// A custom error type for JWT.
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("jwt token not valid")]
@@ -20,6 +21,7 @@ pub enum Error {
     JWTTokenDecode
 }
 
+/// Creating a custom error type for the tests.
 #[derive(Debug, Error)]
 pub enum TestsError {
     #[error("we are cant get tests")]
@@ -34,6 +36,7 @@ pub enum TestsError {
     GetTest
 }
 
+/// Creating a custom error type for the user.
 #[derive(Debug, Error)]
 pub enum UserError {
     #[error("We are cant create user")]
@@ -46,6 +49,7 @@ pub enum UserError {
     DeleteUser,
 }
 
+/// Creating a custom error type for the infos.
 #[derive(Debug, Error)]
 pub enum InfosError {
     #[error("We are cant create info")]
@@ -61,6 +65,19 @@ pub enum InfosError {
 
 }
 
+/// `ErrorResponse` is a struct that contains two fields, `error` and `status`, both of which are
+/// `String`s.
+/// 
+/// The `#[derive(Debug, Serialize)]` line is a Rust annotation. It tells the Rust compiler to
+/// automatically generate a `Debug` implementation for the `ErrorResponse` type. The `Debug`
+/// implementation is used for printing the type to the console. The `Serialize` annotation tells the
+/// Rust compiler to automatically generate a `Serialize` implementation for the `ErrorResponse` type.
+/// The `Serialize` implementation is used
+/// 
+/// Properties:
+/// 
+/// * `error`: The error message that will be displayed to the user.
+/// * `status`: The HTTP status code that should be returned to the client.
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
     pub error: String,

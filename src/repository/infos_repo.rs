@@ -18,8 +18,12 @@ use mongodb::{
 pub struct InfosRepo {
     collection: Collection<InfoModel>,
 }
-// TODO: Переписать обработчик ошибок
 impl InfosRepo {
+    /// It creates a new MongoDB client, connects to the database, and creates a new collection
+    /// 
+    /// Returns:
+    /// 
+    /// A new instance of the InfosRepo struct.
     pub async fn init() -> Self {
         dotenv().ok();
         let mongo_url = env::var("MONGO_URL").expect("MONGO_URL must be set");
@@ -30,6 +34,15 @@ impl InfosRepo {
         InfosRepo { collection }
     }
 
+    /// It creates a new info.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `info`: InfoModel - The info to be inserted into the database.
+    /// 
+    /// Returns:
+    /// 
+    /// The result of the insert_one function.
     pub async fn create_info(&self, info: InfoModel) -> Result<InsertOneResult, InfosError> {
         let result = self.collection.insert_one(info, None).await;
         match result {
@@ -38,6 +51,15 @@ impl InfosRepo {
         }
     }
 
+    /// It gets the info from the database.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &String
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<Option<InfoModel>, InfosError>
     pub async fn get_info(&self, id: &String) -> Result<Option<InfoModel>, InfosError> {
         let result = self
             .collection
@@ -52,6 +74,15 @@ impl InfosRepo {
         }
     }
 
+    /// It gets the information from the database by title.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `title`: &String
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<Option<InfoModel>, InfosError>
     pub async fn get_info_by_title(&self, title: &String) -> Result<Option<InfoModel>, InfosError> {
         let test = self.collection.find_one(doc! {"title": title}, None).await;
         match test {
@@ -60,6 +91,11 @@ impl InfosRepo {
         }
     }
 
+    /// It gets all the infos from the database.
+    /// 
+    /// Returns:
+    /// 
+    /// A vector of InfoModel
     pub async fn get_all_infos(&self) -> Result<Vec<InfoModel>, InfosError> {
         let cursor: Cursor<InfoModel> = self.collection.find(None, None).await.unwrap();
         let infos = cursor.try_collect().await;
@@ -69,6 +105,17 @@ impl InfosRepo {
         }
     }
 
+    /// It takes an id and an InfoModel, and updates the document with the given id with the given
+    /// InfoModel
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: The id of the info to update
+    /// * `info`: InfoModel - The InfoModel struct that we created earlier.
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<UpdateResult, InfosError>
     pub async fn update_info(
         &self,
         id: &String,
@@ -91,6 +138,15 @@ impl InfosRepo {
         }
     }
 
+    /// It deletes a document from the database
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &String - The id of the info to delete
+    /// 
+    /// Returns:
+    /// 
+    /// A DeleteResult
     pub async fn delete_info(&self, id: &String) -> Result<DeleteResult, InfosError> {
         let result = self
             .collection
@@ -105,6 +161,15 @@ impl InfosRepo {
         }
     }
 
+    /// "If you are sure, drop the collection."
+    /// 
+    /// The function takes a boolean parameter, `you_are_sure`. If the parameter is `true`, the function
+    /// drops the collection. If the parameter is `false`, the function does nothing
+    /// 
+    /// Arguments:
+    /// 
+    /// * `you_are_sure`: This is a boolean value that is used to make sure that the user is sure that
+    /// they want to drop the collection.
     pub async fn drop_collection(&self, you_are_sure: bool) {
         if !(you_are_sure) {
             return;

@@ -20,6 +20,11 @@ pub struct CourceRepo {
 }
 
 impl CourceRepo {
+    /// It connects to the database and returns a collection.
+    /// 
+    /// Returns:
+    /// 
+    /// A new instance of the struct `MongoDB`
     pub async fn init() -> Self {
         dotenv().ok();
         let mongodb_url = env::var("MONGO_URL").expect("MONGO_URL must be set");
@@ -31,10 +36,29 @@ impl CourceRepo {
         Self { collection }
     }
 
+    /// It creates a new course.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `cource`: CourseModel
+    /// 
+    /// Returns:
+    /// 
+    /// InsertOneResult
     pub async fn create(&self, cource: CourseModel) -> InsertOneResult {
         self.collection.insert_one(cource, None).await.unwrap()
     }
 
+    /// > This function takes an id as a string, converts it to an ObjectId, creates a filter, and then
+    /// uses the filter to find a document in the database
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &str - The id of the course we want to get
+    /// 
+    /// Returns:
+    /// 
+    /// Option<CourseModel>
     pub async fn get(&self, id: &str) -> Option<CourseModel> {
         let id = ObjectId::parse_str(id).unwrap();
         let filter = doc! {"_id": id};
@@ -42,6 +66,16 @@ impl CourceRepo {
         self.collection.find_one(filter, None).await.unwrap()
     }
 
+    /// It updates a course in the database.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &str,
+    /// * `cource`: The new data to be inserted into the database.
+    /// 
+    /// Returns:
+    /// 
+    /// Option<CourseModel>
     pub async fn update(&self, id: &str, cource: CourseModel) -> Option<CourseModel> {
         let id = ObjectId::parse_str(id).unwrap();
         let filter = doc! {"_id": id};
@@ -52,6 +86,15 @@ impl CourceRepo {
             .unwrap()
     }
 
+    /// It deletes a document from the database
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &str - The id of the document to delete.
+    /// 
+    /// Returns:
+    /// 
+    /// DeleteResult
     pub async fn delete(&self, id: &str) -> DeleteResult {
         let id = ObjectId::parse_str(id).unwrap();
         let filter = doc! {"_id": id};
@@ -59,6 +102,11 @@ impl CourceRepo {
         self.collection.delete_one(filter, None).await.unwrap()
     }
 
+    /// > This function returns a vector of all the ids of the documents in the collection
+    /// 
+    /// Returns:
+    /// 
+    /// A vector of strings.
     pub async fn get_all_ids(&self) -> Option<Vec<String>> {
         let mut cursor = self.collection.find(None, None).await.unwrap();
         let mut ids = Vec::new();
@@ -69,6 +117,11 @@ impl CourceRepo {
         Some(ids)
     }
 
+    /// > This function returns a vector of all the courses in the database
+    /// 
+    /// Returns:
+    /// 
+    /// A vector of CourseModel
     pub async fn get_all(&self) -> Option<Vec<CourseModel>> {
         let mut cursor = self.collection.find(None, None).await.unwrap();
         let mut courses = Vec::new();
@@ -78,6 +131,15 @@ impl CourceRepo {
         Some(courses)
     }
 
+    /// It takes a string as an argument, and returns an option of a string
+    /// 
+    /// Arguments:
+    /// 
+    /// * `cource_title`: The title of the course you want to get the ID of.
+    /// 
+    /// Returns:
+    /// 
+    /// Option<String>
     pub async fn get_cource_id(&self, cource_title: &str) -> Option<String> {
         let filter = doc! {"title": cource_title};
         let cource = self.collection.find_one(filter, None).await.unwrap();
@@ -87,11 +149,19 @@ impl CourceRepo {
         }
     }
 
+    /// It drops the collection
     pub async fn drop_collection(&self) {
         self.collection.drop(None).await.unwrap();
     }
 
     // CRUD for levels in cource
+    /// It adds a level to a course.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `cource_id`: The id of the cource to which the level is to be added.
+    /// * `level`: Level
+    /// * `level_number`: i32
     pub async fn add_level(&self, cource_id: &str, level: Level, level_number: i32) {
         let cource_id = ObjectId::parse_str(cource_id).unwrap();
         let cource = self.get(cource_id.to_hex().as_str()).await;
@@ -115,6 +185,13 @@ impl CourceRepo {
         }
     }
 
+    /// It deletes a level from a cource.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `cource_id`: The id of the course to which the level belongs.
+    /// * `level_number`: The number of the level you want to delete.
+    /// * `level_id`: The id of the level to be deleted
     pub async fn delete_level(&self, cource_id: &str, level_number: i32, level_id: &str) {
         let cource_id = ObjectId::parse_str(cource_id).unwrap();
         let cource = self
@@ -148,6 +225,16 @@ impl CourceRepo {
         }
     }
 
+    /// It takes a cource id, a level number, a level id and a new level as arguments, finds the cource
+    /// with the given cource id, finds the level with the given level number and level id, and replaces
+    /// the level with the new level
+    /// 
+    /// Arguments:
+    /// 
+    /// * `cource_id`: The id of the cource to update
+    /// * `level_number`: i32,
+    /// * `level_id`: The id of the level to be updated
+    /// * `new_level`: Level - new level to be updated
     pub async fn update_level(
         &self,
         cource_id: &str,
@@ -192,6 +279,17 @@ impl CourceRepo {
         }
     }
 
+    /// > Get level from cource with cource id and level number and level id
+    /// 
+    /// Arguments:
+    /// 
+    /// * `cource_id`: The id of the cource
+    /// * `level_number`: The number of the level you want to get.
+    /// * `level_id`: The id of the level you want to get
+    /// 
+    /// Returns:
+    /// 
+    /// Option<Level>
     pub async fn get_level(
         &self,
         cource_id: &str,

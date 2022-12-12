@@ -31,6 +31,16 @@ qp9O6sp3eOPYoxwHu+fayB1BbacR1+K4CkRNyChSOPfjCsbqMGxJ/U+HMB3MQ7fz
 xbruxNYCFBW8QkKh1QIDAQAB";
 
 
+/// It creates a JWT token with a user id and role, and returns it as a string
+/// 
+/// Arguments:
+/// 
+/// * `user_id`: The user's ID.
+/// * `role`: UserRole - This is the role of the user.
+/// 
+/// Returns:
+/// 
+/// A JWTResult<String>
 pub async fn create_access_token(user_id: String, role: UserRole) -> JWTResult<String> {
     let expiration = Utc::now()
         .checked_add_signed(Duration::seconds(60))
@@ -51,6 +61,16 @@ pub async fn create_access_token(user_id: String, role: UserRole) -> JWTResult<S
     .map_err(|_| Error::JWTTokenCreation)
 }
 
+/// It creates a refresh token that expires in 30 days
+/// 
+/// Arguments:
+/// 
+/// * `user_id`: The user's ID.
+/// * `role`: UserRole - This is the role of the user.
+/// 
+/// Returns:
+/// 
+/// A JWTResult<String>
 pub async fn create_refresh_token(user_id: String, role: UserRole) -> JWTResult<String> {
     let expiration = Utc::now()
         .checked_add_signed(Duration::days(30))
@@ -99,6 +119,15 @@ fn decode_jwt(token: &str) -> JWTResult<Claims> {
     }
 }
 
+/// It takes a header map, and returns a WebResult<String> (which is a Result<String, Error>)
+/// 
+/// Arguments:
+/// 
+/// * `headers`: The headers of the request.
+/// 
+/// Returns:
+/// 
+/// A string
 pub async fn authorize(headers: &rocket::http::HeaderMap<'_>) -> WebResult<String> {
     match jwt_from_header(headers) {
         Ok(jwt) => {
@@ -116,6 +145,17 @@ pub async fn authorize(headers: &rocket::http::HeaderMap<'_>) -> WebResult<Strin
     }
 }
 
+/// It takes a token and a database connection, decodes the token, and then checks if the user exists in
+/// the database
+/// 
+/// Arguments:
+/// 
+/// * `token`: The token to be decoded
+/// * `db`: &State<UserRepo> - This is the database connection that we created in the main.rs file.
+/// 
+/// Returns:
+/// 
+/// A boolean value
 pub async fn authorize_token(token: String, db: &State<UserRepo>) -> bool {
     let decode = decode::<Claims>(
         &token,

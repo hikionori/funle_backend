@@ -18,6 +18,21 @@ use serde_with::{serde_as};
  * }
  */
 
+/// `CourseModel` is a struct with an optional `id` field of type `ObjectId`, a `title` field of type
+/// `String`, a `description` field of type `String`, and a `levels` field of type `HashMap<i32,
+/// Vec<Level>>`.
+/// 
+/// The `#[serde_as]` attribute is a custom attribute that tells `serde` to use the `serde_as` crate to
+/// serialize and deserialize the type.
+/// 
+/// The `#[serde(rename = "_id", skip_
+/// 
+/// Properties:
+/// 
+/// * `id`: The id of the course.
+/// * `title`: The title of the course.
+/// * `description`: A description of the course.
+/// * `levels`: HashMap<i32, Vec<Level>>,
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct CourseModel {
@@ -41,6 +56,13 @@ pub struct CourseModel {
  * }
 */
 
+/// `Level` is a struct that contains an id, a title, and a mini image.
+/// 
+/// Properties:
+/// 
+/// * `id`: The id of the level.
+/// * `title`: The title of the level.
+/// * `mini_image`: The image that will be displayed in the level selection screen.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Level {
     pub id: String,          // id of info or test

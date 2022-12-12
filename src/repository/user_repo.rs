@@ -24,6 +24,11 @@ pub struct UserRepo {
 }
 
 impl UserRepo {
+    /// It creates a new instance of the UserRepo struct.
+    /// 
+    /// Returns:
+    /// 
+    /// A UserRepo struct
     pub async fn init() -> Self {
         dotenv().ok();
         let mongo_url = env::var("MONGO_URL").expect("MONGO_URL must be set");
@@ -36,6 +41,15 @@ impl UserRepo {
 
     // * User methods
 
+    /// This function creates a new user in the database
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user`: UserModel - This is the user object that we want to insert into the database.
+    /// 
+    /// Returns:
+    /// 
+    /// The result of the insert_one function.
     pub async fn create_user(&self, user: UserModel) -> Result<InsertOneResult, UserError> {
         let new_user = UserModel {
             id: None,
@@ -63,6 +77,16 @@ impl UserRepo {
         Ok(user)
     }
 
+    /// > This function takes a name as a parameter and returns a user model if it exists in the
+    /// database
+    /// 
+    /// Arguments:
+    /// 
+    /// * `name`: &String - The name of the user we want to find
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<Option<UserModel>, UserError>
     pub async fn get_user_by_name(&self, name: &String) -> Result<Option<UserModel>, UserError> {
         let user_result = self
             .collection
@@ -75,6 +99,15 @@ impl UserRepo {
         }
     }
 
+    /// > This function takes a user id as a string and returns a user model if it exists
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &String - The id of the user we want to get
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<Option<UserModel>, UserError>
     pub async fn get_user_by_id(&self, id: &String) -> Result<Option<UserModel>, UserError> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self
@@ -88,6 +121,16 @@ impl UserRepo {
         }
     }
 
+    /// > This function takes an email address as a parameter and returns a user model if the user
+    /// exists in the database
+    /// 
+    /// Arguments:
+    /// 
+    /// * `email`: &String
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<Option<UserModel>, UserError>
     pub async fn get_user_by_email(&self, email: &String) -> Result<Option<UserModel>, UserError> {
         let user = self
             .collection
@@ -100,6 +143,12 @@ impl UserRepo {
         }
     }
 
+    /// We're using the `find` method on the `collection` object to get all the documents in the
+    /// collection
+    /// 
+    /// Returns:
+    /// 
+    /// A vector of UserModel
     pub async fn get_all_users(&self) -> Result<Vec<UserModel>, UserError> {
         let cursor = self.collection.find(None, None).await.unwrap();
 
@@ -111,6 +160,15 @@ impl UserRepo {
         }
     }
 
+    /// It deletes a user from the database.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &String - The id of the user to delete
+    /// 
+    /// Returns:
+    /// 
+    /// The result of the delete_many operation.
     pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<UserModel>, UserError>{
         // let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self.get_user_by_id(id).await.unwrap().unwrap();
@@ -124,6 +182,17 @@ impl UserRepo {
         }
     }
 
+    /// > This function takes an id and a user model and updates the user in the database with the given
+    /// id
+    /// 
+    /// Arguments:
+    /// 
+    /// * `id`: &String - The id of the user to update
+    /// * `user`: UserModel - The user model that will be updated
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<Option<UserModel>, UserError>
     pub async fn put_user_by_id(
         &self,
         id: &String,
@@ -143,42 +212,88 @@ impl UserRepo {
 
     // * Progress methods
 
+    /// This function adds a course to a user's progress
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The id of the user you want to add the course to.
+    /// * `cource_id`: The id of the course you want to add to the user.
     pub async fn add_cource_to_user(&self, user_id: String, cource_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.courses.push(cource_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
+    /// > Adds a test to a user's progress
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The id of the user to add the test to
+    /// * `test_id`: The id of the test to add to the user
     pub async fn add_test_to_user(&self, user_id: String, test_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.tests.push(test_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
+    /// This function adds an info to a user's progress
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The id of the user to add the info to
+    /// * `info_id`: The id of the info to add to the user's progress
     pub async fn add_info_to_user(&self, user_id: String, info_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.infos.push(info_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
+    /// It removes a course from a user's progress.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The id of the user you want to remove the course from.
+    /// * `cource_id`: The id of the course to be removed from the user's progress.
     pub async fn remove_cource_from_user(&self, user_id: String, cource_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.courses.retain(|x| x != &cource_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
+    /// It removes a test from a user's progress
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The id of the user to remove the test from
+    /// * `test_id`: The id of the test to be removed
     pub async fn remove_test_from_user(&self, user_id: String, test_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.tests.retain(|x| x != &test_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
+    /// It removes an info from a user's progress
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The id of the user to remove the info from
+    /// * `info_id`: The id of the info to be removed
     pub async fn remove_info_from_user(&self, user_id: String, info_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.infos.retain(|x| x != &info_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
+    /// `update_all_progress` updates the progress of a user
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The user's id
+    /// * `progress`: UserProgress
+    /// 
+    /// Returns:
+    /// 
+    /// A Result<Option<UserModel>, Error>
     pub async fn update_all_progress(
         &self,
         user_id: String,
@@ -191,6 +306,15 @@ impl UserRepo {
 
     // * Password methods
 
+    /// It hashes the password.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `password`: The password to hash
+    /// 
+    /// Returns:
+    /// 
+    /// A string
     pub fn hash_password(&self, password: String) -> String {
         digest(password)
     }
