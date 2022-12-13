@@ -151,55 +151,6 @@ impl TestsRepo {
         Ok(tests)
     }
 
-    /// It gets random tests from the database, removes tests that the user has already done, shuffles
-    /// the tests, and returns the first n tests
-    /// 
-    /// Arguments:
-    /// 
-    /// * `n`: number of tests to return
-    /// * `level`: i32,
-    /// * `user_id`: String - user id
-    /// * `user_db`: &State<UserRepo> - this is a reference to the user database.
-    /// 
-    /// Returns:
-    /// 
-    /// A vector of tests
-    /// ! FIXME: Переписать этот метод
-    /// ! Скорее всего нужно будет переписывать эти функции так как нужно это делать с учетом того что пользователь уже сделал
-    pub async fn get_random_tests(
-        &self,
-        n: i32,
-        level: i32,
-        user_id: String,
-        user_db: &State<UserRepo>,
-    ) -> Result<Vec<Test>, TestsError> {
-        let mut tests: Vec<Test> = self
-            .collection
-            .find(doc! {"level": level}, None)
-            .await
-            .unwrap()
-            .deserialize_current()
-            .into_iter()
-            .collect();
-
-        // remove from tests all tests that user already done
-        let user = user_db.get_user_by_id(&user_id).await.unwrap();
-        match user {
-            Some(user) => {
-                for test_id in user.progress.tests.into_iter() {
-                    tests.retain(|t| t.id.unwrap() != self.string_to_id(test_id.clone()));
-                }
-                // shuffle tests
-                let mut rng = rand::thread_rng();
-                tests.shuffle(&mut rng);
-                // return n tests
-                tests.truncate(n as usize);
-                Ok(tests)
-            }
-            None => Err(TestsError::GetTests),
-        }
-    }
-
     /// It takes a string and returns a mongodb::bson::oid::ObjectId
     /// 
     /// Arguments:
@@ -358,10 +309,5 @@ mod test_repo_tests {
 
         let result = client.get_test_by_id(&test_id.to_string()).await.unwrap();
         assert!(result.is_none())
-    }
-
-    #[tokio::test]
-    async fn get_random_tests() {
-        unimplemented!()
     }
 }
