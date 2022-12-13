@@ -11,7 +11,7 @@ use mongodb::options::UpdateModifications;
 use rocket::{http::ext::IntoCollection, State};
 
 use crate::repository::user_repo::UserRepo;
-use crate::{models::tests_model::TestModel, utils::errors::TestsError};
+use crate::{models::tests_model::TestModel};
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
@@ -52,12 +52,9 @@ impl TestsRepo {
     /// Returns:
     /// 
     /// The result of the insert_one function.
-    pub async fn create_test(&self, test: Test) -> Result<InsertOneResult, TestsError> {
-        let result = self.collection.insert_one(test, None).await;
-        match result {
-            Ok(result) => Ok(result),
-            Err(_) => Err(TestsError::CreateTest),
-        }
+    pub async fn create_test(&self, test: Test) -> Result<InsertOneResult, Error> {
+        let result = self.collection.insert_one(test, None).await.unwrap();
+        Ok(result)
     }
 
     /// > This function takes a string id, parses it into an ObjectId, and then uses that ObjectId to
@@ -70,7 +67,7 @@ impl TestsRepo {
     /// Returns:
     /// 
     /// A Result<Option<Test>, TestsError>
-    pub async fn get_test_by_id(&self, id: &String) -> Result<Option<Test>, TestsError> {
+    pub async fn get_test_by_id(&self, id: &String) -> Result<Option<Test>, Error> {
         let oid = ObjectId::parse_str(id.as_str());
         let oid = match oid {
             Ok(oid) => oid,
@@ -81,10 +78,7 @@ impl TestsRepo {
             .find_one(doc! {"_id": oid}, None)
             .await
             .expect("Error getting task");
-        match task {
-            Some(task) => Ok(Some(task)),
-            None => Err(TestsError::GetTest),
-        }
+        Ok(task)
     }
 
     /// It deletes a test from the database.
@@ -96,13 +90,10 @@ impl TestsRepo {
     /// Returns:
     /// 
     /// A Result<(), TestsError>
-    pub async fn delete_test(&self, id: &String) -> Result<(), TestsError> {
+    pub async fn delete_test(&self, id: &String) -> Result<(), Error> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let result = self.collection.delete_one(doc! {"_id": oid}, None).await;
-        match result {
-            Ok(_) => Ok(()),
-            Err(_) => Err(TestsError::DeleteTest),
-        }
+        Ok(())
     }
 
     /// It updates a test by id.
@@ -119,7 +110,7 @@ impl TestsRepo {
         &self,
         id: &String,
         new_test: Test,
-    ) -> Result<Option<TestModel>, TestsError> {
+    ) -> Result<Option<TestModel>, Error> {
         let oid = ObjectId::parse_str(id.as_str()).expect("Error parsing id");
         let update = UpdateModifications::Document(
             doc! {"$set": mongodb::bson::to_document(&new_test).unwrap()},
@@ -128,10 +119,7 @@ impl TestsRepo {
             .collection
             .find_one_and_update(doc! {"_id": oid}, update, None)
             .await;
-        match updated {
-            Ok(test) => Ok(test),
-            Err(_) => Err(TestsError::UpdateTest)
-        }
+        Ok(updated.unwrap())
     }
 
     /// It gets all the tests from the database.
@@ -139,7 +127,7 @@ impl TestsRepo {
     /// Returns:
     /// 
     /// A vector of tests
-    pub async fn get_all_tests(&self) -> Result<Vec<Test>, TestsError> {
+    pub async fn get_all_tests(&self) -> Result<Vec<Test>, Error> {
         let tests: Vec<Test> = self
             .collection
             .find(None, None)

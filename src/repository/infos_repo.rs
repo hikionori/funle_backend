@@ -5,13 +5,12 @@ use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
 
 use crate::models::info_model::{InfoModel};
-use crate::utils::errors::InfosError;
 
 use mongodb::{
-    bson::{doc, oid::ObjectId},
+    bson::{doc, oid::ObjectId, extjson::de::Error},
     options::UpdateModifications,
     results::{DeleteResult, InsertOneResult, UpdateResult},
-    Client, Collection, Cursor,
+    Client, Collection, Cursor
 };
 
 
@@ -43,12 +42,9 @@ impl InfosRepo {
     /// Returns:
     /// 
     /// The result of the insert_one function.
-    pub async fn create_info(&self, info: InfoModel) -> Result<InsertOneResult, InfosError> {
+    pub async fn create_info(&self, info: InfoModel) -> Result<InsertOneResult, Error> {
         let result = self.collection.insert_one(info, None).await;
-        match result {
-            Ok(insert_result) => Ok(insert_result),
-            Err(_) => Err(InfosError::CreateInfo),
-        }
+        Ok(result.unwrap())
     }
 
     /// It gets the info from the database.
@@ -60,7 +56,7 @@ impl InfosRepo {
     /// Returns:
     /// 
     /// A Result<Option<InfoModel>, InfosError>
-    pub async fn get_info(&self, id: &String) -> Result<Option<InfoModel>, InfosError> {
+    pub async fn get_info(&self, id: &String) -> Result<Option<InfoModel>, Error> {
         let result = self
             .collection
             .find_one(
@@ -68,10 +64,7 @@ impl InfosRepo {
                 None,
             )
             .await;
-        match result {
-            Ok(res) => Ok(res),
-            Err(_) => Err(InfosError::GetInfo),
-        }
+        Ok(result.unwrap())
     }
 
     /// It gets the information from the database by title.
@@ -83,12 +76,9 @@ impl InfosRepo {
     /// Returns:
     /// 
     /// A Result<Option<InfoModel>, InfosError>
-    pub async fn get_info_by_title(&self, title: &String) -> Result<Option<InfoModel>, InfosError> {
+    pub async fn get_info_by_title(&self, title: &String) -> Result<Option<InfoModel>, Error> {
         let test = self.collection.find_one(doc! {"title": title}, None).await;
-        match test {
-            Ok(test) => Ok(test),
-            Err(_) => Err(InfosError::GetInfo),
-        }
+        Ok(test.unwrap())
     }
 
     /// It gets all the infos from the database.
@@ -96,13 +86,10 @@ impl InfosRepo {
     /// Returns:
     /// 
     /// A vector of InfoModel
-    pub async fn get_all_infos(&self) -> Result<Vec<InfoModel>, InfosError> {
+    pub async fn get_all_infos(&self) -> Result<Vec<InfoModel>, Error> {
         let cursor: Cursor<InfoModel> = self.collection.find(None, None).await.unwrap();
         let infos = cursor.try_collect().await;
-        match infos {
-            Ok(infos) => Ok(infos),
-            Err(_) => Err(InfosError::GetInfos),
-        }
+        Ok(infos.unwrap())
     }
 
     /// It takes an id and an InfoModel, and updates the document with the given id with the given
@@ -120,7 +107,7 @@ impl InfosRepo {
         &self,
         id: &String,
         info: InfoModel,
-    ) -> Result<UpdateResult, InfosError> {
+    ) -> Result<UpdateResult, Error> {
         let update_doc = UpdateModifications::Document(
             doc! {"$set": mongodb::bson::to_document(&info).unwrap()},
         );
@@ -132,10 +119,7 @@ impl InfosRepo {
                 None,
             )
             .await;
-        match result {
-            Ok(update_result) => Ok(update_result),
-            Err(_) => Err(InfosError::UpdateInfo),
-        }
+        Ok(result.unwrap())
     }
 
     /// It deletes a document from the database
@@ -147,7 +131,7 @@ impl InfosRepo {
     /// Returns:
     /// 
     /// A DeleteResult
-    pub async fn delete_info(&self, id: &String) -> Result<DeleteResult, InfosError> {
+    pub async fn delete_info(&self, id: &String) -> Result<DeleteResult, Error> {
         let result = self
             .collection
             .delete_one(
@@ -155,10 +139,7 @@ impl InfosRepo {
                 None,
             )
             .await;
-        match result {
-            Ok(delete_result) => Ok(delete_result),
-            Err(_) => Err(InfosError::DeleteInfo),
-        }
+        Ok(result.unwrap())
     }
 
     /// "If you are sure, drop the collection."
