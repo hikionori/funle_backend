@@ -7,9 +7,9 @@ extern crate dotenv;
 use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
 
-use crate::models::cource_model::*;
+use crate::models::cource_model::{self, *};
 use mongodb::{
-    bson::{doc, extjson::de::Error, oid::ObjectId},
+    bson::{bson, doc, extjson::de::Error, oid::ObjectId},
     results::{DeleteResult, InsertOneResult},
     Client, Collection,
 };
@@ -21,9 +21,9 @@ pub struct CourceRepo {
 
 impl CourceRepo {
     /// It connects to the database and returns a collection.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// A new instance of the struct `MongoDB`
     pub async fn init() -> Self {
         dotenv().ok();
@@ -37,13 +37,13 @@ impl CourceRepo {
     }
 
     /// It creates a new course.
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `cource`: CourseModel
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// InsertOneResult
     pub async fn create(&self, cource: CourseModel) -> InsertOneResult {
         self.collection.insert_one(cource, None).await.unwrap()
@@ -51,13 +51,13 @@ impl CourceRepo {
 
     /// > This function takes an id as a string, converts it to an ObjectId, creates a filter, and then
     /// uses the filter to find a document in the database
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `id`: &str - The id of the course we want to get
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// Option<CourseModel>
     pub async fn get(&self, id: &str) -> Option<CourseModel> {
         let id = ObjectId::parse_str(id).unwrap();
@@ -67,14 +67,14 @@ impl CourceRepo {
     }
 
     /// It updates a course in the database.
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `id`: &str,
     /// * `cource`: The new data to be inserted into the database.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// Option<CourseModel>
     pub async fn update(&self, id: &str, cource: CourseModel) -> Option<CourseModel> {
         let id = ObjectId::parse_str(id).unwrap();
@@ -87,13 +87,13 @@ impl CourceRepo {
     }
 
     /// It deletes a document from the database
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `id`: &str - The id of the document to delete.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// DeleteResult
     pub async fn delete(&self, id: &str) -> DeleteResult {
         let id = ObjectId::parse_str(id).unwrap();
@@ -102,43 +102,25 @@ impl CourceRepo {
         self.collection.delete_one(filter, None).await.unwrap()
     }
 
-    /// > This function returns a vector of all the ids of the documents in the collection
-    /// 
-    /// Returns:
-    /// 
-    /// A vector of strings.
-    pub async fn get_all_ids(&self) -> Option<Vec<String>> {
-        let mut cursor = self.collection.find(None, None).await.unwrap();
-        let mut ids = Vec::new();
-        while let Some(result) = cursor.try_next().await.unwrap() {
-            let id = result.id.unwrap().to_hex();
-            ids.push(id);
-        }
-        Some(ids)
-    }
-
     /// > This function returns a vector of all the courses in the database
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// A vector of CourseModel
     pub async fn get_all(&self) -> Option<Vec<CourseModel>> {
-        let mut cursor = self.collection.find(None, None).await.unwrap();
-        let mut courses = Vec::new();
-        while let Some(result) = cursor.try_next().await.unwrap() {
-            courses.push(result);
-        }
-        Some(courses)
+        let cursor = self.collection.find(None, None).await.unwrap();
+        let cources = cursor.try_collect::<Vec<CourseModel>>().await.unwrap();
+        Some(cources)
     }
 
     /// It takes a string as an argument, and returns an option of a string
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `cource_title`: The title of the course you want to get the ID of.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// Option<String>
     pub async fn get_cource_id(&self, cource_title: &str) -> Option<String> {
         let filter = doc! {"title": cource_title};
@@ -156,81 +138,71 @@ impl CourceRepo {
 
     // CRUD for levels in cource
     /// It adds a level to a course.
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `cource_id`: The id of the cource to which the level is to be added.
     /// * `level`: Level
-    /// * `level_number`: i32
-    pub async fn add_level(&self, cource_id: &str, level: Level, level_number: i32) {
-        let cource_id = ObjectId::parse_str(cource_id).unwrap();
-        let cource = self.get(cource_id.to_hex().as_str()).await;
+    /// * `level_number` or `level`: i32
+    pub async fn add_level(&self, cource_id: &str, level: Level, layer_number: i32) {
+        // algorithm
+        // get cource -> get levels -> add level to levels -> update cources with new levels
+        // if layer is not empty add level to vec
+        // else create new laeyr
+        let cource = self.get(cource_id).await;
         match cource {
             Some(mut cource) => {
-                match cource.levels.get_mut(&level_number) {
-                    Some(vec) => {
-                        vec.push(level);
-                    }
-                    None => {
-                        let mut vec = Vec::new();
-                        vec.push(level);
-                        cource.levels.insert(level_number, vec);
-                    }
+                let mut levels = cource.levels;
+                if levels.contains_key(&layer_number) {
+                    let layer = levels.get_mut(&layer_number).unwrap();
+                    layer.push(level);
+                } else {
+                    let mut layer = Vec::new();
+                    layer.push(level);
+                    levels.insert(layer_number, layer);
                 }
-                self.update(cource_id.to_hex().as_str(), cource).await;
-            },
-            None => {
-                println!("Cource with id {} not found", cource_id);
+                cource.levels = levels;
+                self.update(cource_id, cource).await;
             }
+            None => {}
         }
     }
 
     /// It deletes a level from a cource.
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `cource_id`: The id of the course to which the level belongs.
     /// * `level_number`: The number of the level you want to delete.
     /// * `level_id`: The id of the level to be deleted
     pub async fn delete_level(&self, cource_id: &str, level_number: i32, level_id: &str) {
-        let cource_id = ObjectId::parse_str(cource_id).unwrap();
-        let cource = self
-            .collection
-            .find_one(doc! {"_id": cource_id}, None)
-            .await
-            .unwrap();
+        // algorithm
+        // get cource -> get levels -> delete level from levels -> update cources with new levels
+        let cource = self.get(cource_id).await;
         match cource {
             Some(mut cource) => {
-                match cource.levels.get_mut(&level_number) {
-                    Some(vec) => {
-                        let mut index = 0;
-                        for level in vec.iter_mut() {
-                            if level.id == level_id {
-                                break;
-                            }
-                            index += 1;
-                        }
-                        vec.remove(index);
+                let mut levels = cource.levels;
+                let layer = levels.get_mut(&level_number).unwrap();
+                let level = layer.iter().position(|level| level.id == level_id);
+                match level {
+                    Some(level) => {
+                        layer.remove(level);
                     }
-                    None => {
-                        println!("Level with number {} not found", level_number);
-                    }
+                    None => {}
                 }
-                let cource_id = cource.id.unwrap().to_hex();
-                self.update(&cource_id, cource).await;
+                cource.levels = levels;
+                self.update(cource_id, cource).await;
             }
-            None => {
-                println!("Cource with id {} not found", cource_id);
-            }
+            None => {}
         }
     }
 
     /// It takes a cource id, a level number, a level id and a new level as arguments, finds the cource
     /// with the given cource id, finds the level with the given level number and level id, and replaces
     /// the level with the new level
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `cource_id`: The id of the cource to update
     /// * `level_number`: i32,
     /// * `level_id`: The id of the level to be updated
@@ -242,53 +214,38 @@ impl CourceRepo {
         level_id: &str,
         new_level: Level,
     ) {
-        let cource_id = ObjectId::parse_str(cource_id).unwrap();
-        let cource = self
-            .collection
-            .find_one(doc! {"_id": cource_id}, None)
-            .await
-            .unwrap();
+        // algorithm
+        // get cource -> get levels -> update level in levels -> update cources with new levels
+        let cource = self.get(cource_id).await;
         match cource {
-            Some(cource) => {
-                let levels = cource.levels.clone();
-                // get level from levels with level number as key and level as value
-                // if level number already exists, then push level to vector
-                match levels.get(&level_number) {
-                    Some(vec) => {
-                        let mut index = 0;
-                        for level in vec.iter() {
-                            if level.id == level_id {
-                                break;
-                            }
-                            index += 1;
-                        }
-                        let mut new_levels = levels.clone();
-                        new_levels.get_mut(&level_number).unwrap()[index] = new_level;
-                        let mut new_cource = cource.clone();
-                        new_cource.levels = new_levels;
-                        self.update(cource_id.to_hex().as_str(), new_cource).await;
+            Some(mut cource) => {
+                let mut levels = cource.levels;
+                let layer = levels.get_mut(&level_number).unwrap();
+                let level = layer.iter().position(|level| level.id == level_id);
+                match level {
+                    Some(level) => {
+                        layer.remove(level);
+                        layer.insert(level, new_level);
                     }
-                    None => {
-                        println!("Level with number {} not found", level_number);
-                    }
+                    None => {}
                 }
+                cource.levels = levels;
+                self.update(cource_id, cource).await;
             }
-            None => {
-                println!("Cource with id {} not found", cource_id);
-            }
+            None => {}
         }
     }
 
     /// > Get level from cource with cource id and level number and level id
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `cource_id`: The id of the cource
     /// * `level_number`: The number of the level you want to get.
     /// * `level_id`: The id of the level you want to get
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// Option<Level>
     pub async fn get_level(
         &self,
@@ -296,39 +253,18 @@ impl CourceRepo {
         level_number: i32,
         level_id: &str,
     ) -> Option<Level> {
-        let cource_id = ObjectId::parse_str(cource_id).unwrap();
-        let cource = self
-            .collection
-            .find_one(doc! {"_id": cource_id}, None)
-            .await
-            .unwrap();
+        let cource = self.get(cource_id).await;
         match cource {
             Some(cource) => {
                 let levels = cource.levels;
-                // get level from levels with level number as key and level as value
-                // if level number already exists, then push level to vector
-                match levels.get(&level_number) {
-                    Some(vec) => {
-                        let level_id = ObjectId::parse_str(level_id).unwrap();
-                        let level = vec.iter().position(|x| x.id == level_id.to_hex());
-                        match level {
-                            Some(level) => Some(vec[level].clone()),
-                            None => {
-                                println!("Level with id {} not found", level_id);
-                                None
-                            }
-                        }
-                    }
-                    None => {
-                        println!("Level with number {} not found", level_number);
-                        None
-                    }
+                let layer = levels.get(&level_number).unwrap();
+                let level = layer.iter().find(|level| level.id == level_id);
+                match level {
+                    Some(level) => Some(level.clone()),
+                    None => None,
                 }
             }
-            None => {
-                println!("Cource with id {} not found", cource_id);
-                None
-            }
+            None => None,
         }
     }
 }
@@ -397,6 +333,7 @@ mod cource_repo_tests {
                 description: format!("Cource description {}", i),
                 levels: HashMap::new(),
             };
+            cource_vec.push(cource);
         }
         cource_vec
     }
@@ -404,7 +341,7 @@ mod cource_repo_tests {
     #[tokio::test]
     async fn create_test() {
         let cource_repo = setup_cource_db(true).await;
-        
+
         let cource = CourseModel {
             id: None,
             title: "Cource title".to_string(),
@@ -430,7 +367,7 @@ mod cource_repo_tests {
     #[tokio::test]
     async fn get_test() {
         let cource_repo = setup_cource_db(true).await;
-        
+
         let cource = CourseModel {
             id: None,
             title: "Cource title".to_string(),
@@ -511,37 +448,20 @@ mod cource_repo_tests {
     }
 
     #[tokio::test]
-    async fn get_all_ids_test() {
-        let cource_repo = setup_cource_db(true).await;
-        let cources = gen_n_cource(5).await;
-        for cource in cources {
-            cource_repo.create(cource.clone()).await;
-        }
-        let ids = cource_repo.get_all_ids().await;
-        match ids {
-            Some(ids) => {
-                assert!(!ids.is_empty());
-            }
-            None => {
-                panic!("Cources not found");
-            }
-        }
-    }
-
-    #[tokio::test]
     async fn get_all_test() {
         let cource_repo = setup_cource_db(true).await;
-        let cources = gen_n_cource(5).await;
-        for cource in cources {
+        let cource_vec = gen_n_cource(10).await;
+        for cource in cource_vec {
             cource_repo.create(cource.clone()).await;
         }
-        let cources = cource_repo.get_all().await;
-        match cources {
-            Some(cources) => {
-                assert!(!cources.is_empty());
+
+        let cource_vec = cource_repo.get_all().await;
+        match cource_vec {
+            Some(cource_vec) => {
+                assert_eq!(cource_vec.len(), 10);
             }
             None => {
-                panic!("Cources not found");
+                panic!("Cource not found");
             }
         }
     }
@@ -598,9 +518,16 @@ mod cource_repo_tests {
             .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
             .await;
 
-        let cource = cource_repo.get(cource_id.unwrap().as_str()).await.unwrap();
-        let levels = cource.levels;
-        assert_eq!(levels.get(&1).unwrap().len(), 2);
+        let cource = cource_repo.get(cource_id.unwrap().as_str()).await;
+        match cource {
+            Some(cource) => {
+                let levels = cource.levels;
+                assert_eq!(levels.get(&1).unwrap().len(), 2);
+            }
+            None => {
+                panic!("Cource not found");
+            }
+        }
     }
 
     #[tokio::test]
@@ -655,8 +582,22 @@ mod cource_repo_tests {
             .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
             .await;
 
-        cource_repo.delete_level(cource_id.clone().unwrap().as_str(), 1, test_cell.id.as_str()).await;
-        assert_eq!(cource_repo.get(cource_id.unwrap().as_str()).await.unwrap().levels.len(), 3);
+        cource_repo
+            .delete_level(
+                cource_id.clone().unwrap().as_str(),
+                1,
+                test_cell.id.as_str(),
+            )
+            .await;
+        assert_eq!(
+            cource_repo
+                .get(cource_id.unwrap().as_str())
+                .await
+                .unwrap()
+                .levels
+                .len(),
+            3
+        );
     }
 
     #[tokio::test]
@@ -717,9 +658,26 @@ mod cource_repo_tests {
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
         };
         cource_repo
-            .update_level(cource_id.clone().unwrap().as_str(), 1, test_cell.id.as_str(), new_test_cell.copy())
+            .update_level(
+                cource_id.clone().unwrap().as_str(),
+                1,
+                test_cell.id.as_str(),
+                new_test_cell.copy(),
+            )
             .await;
-        
-        assert_eq!(cource_repo.get(cource_id.unwrap().as_str()).await.unwrap().levels.get(&1).unwrap().get(0).unwrap().title, "New Level title");
+
+        assert_eq!(
+            cource_repo
+                .get(cource_id.unwrap().as_str())
+                .await
+                .unwrap()
+                .levels
+                .get(&1)
+                .unwrap()
+                .get(0)
+                .unwrap()
+                .title,
+            "New Level title"
+        );
     }
 }

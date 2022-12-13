@@ -35,7 +35,7 @@ impl TestsRepo {
         let client = Client::with_uri_str(&env::var("MONGO_URL").unwrap())
             .await
             .unwrap();
-        let db = client.database("tests");
+        let db = client.database("mathdb");
         let collection = db.collection("tests_with_actions");
         Self { collection }
     }
