@@ -8,7 +8,6 @@ use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
 
 use crate::models::user_model::{UserModel, UserProgress, UserRole};
-use crate::utils::errors::UserError;
 
 use mongodb::{
     bson::{doc, extjson::de::Error, oid::ObjectId},
@@ -25,9 +24,9 @@ pub struct UserRepo {
 
 impl UserRepo {
     /// It creates a new instance of the UserRepo struct.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// A UserRepo struct
     pub async fn init() -> Self {
         dotenv().ok();
@@ -42,15 +41,15 @@ impl UserRepo {
     // * User methods
 
     /// This function creates a new user in the database
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `user`: UserModel - This is the user object that we want to insert into the database.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// The result of the insert_one function.
-    pub async fn create_user(&self, user: UserModel) -> Result<InsertOneResult, UserError> {
+    pub async fn create_user(&self, user: UserModel) -> Result<InsertOneResult, Error> {
         let new_user = UserModel {
             id: None,
             username: user.username,
@@ -66,7 +65,9 @@ impl UserRepo {
             .unwrap()
             .is_some())
         {
-            return Err(UserError::CreateUser);
+            return Err(<Error as serde::de::Error>::custom(
+                "User with this email already exists",
+            ));
         }
 
         let user = self
@@ -77,48 +78,42 @@ impl UserRepo {
         Ok(user)
     }
 
-    /// > This function takes a name as a parameter and returns a user model if it exists in the
-    /// database
+    /// > This function takes a name as a parameter and returns a user model if the user exists
     /// 
     /// Arguments:
     /// 
-    /// * `name`: &String - The name of the user we want to find
+    /// * `name`: &String
     /// 
     /// Returns:
     /// 
-    /// A Result<Option<UserModel>, UserError>
-    pub async fn get_user_by_name(&self, name: &String) -> Result<Option<UserModel>, UserError> {
-        let user_result = self
+    /// A Result<Option<UserModel>, Error>
+    pub async fn get_user_by_name(&self, name: &String) -> Result<Option<UserModel>, Error> {
+        let user = self
             .collection
             .find_one(doc! {"name": name}, None)
             .await
             .expect("Error finding user");
-        match user_result {
-            Some(user) => Ok(Some(user)),
-            None => Err(UserError::GetUser)
-        }
+        Ok(user)
     }
 
-    /// > This function takes a user id as a string and returns a user model if it exists
+    /// > This function takes a user id as a string, converts it to an ObjectId, and then finds the user
+    /// in the database
     /// 
     /// Arguments:
     /// 
-    /// * `id`: &String - The id of the user we want to get
+    /// * `id`: &String - The id of the user we want to find
     /// 
     /// Returns:
     /// 
-    /// A Result<Option<UserModel>, UserError>
-    pub async fn get_user_by_id(&self, id: &String) -> Result<Option<UserModel>, UserError> {
+    /// A user model
+    pub async fn get_user_by_id(&self, id: &String) -> Result<Option<UserModel>, Error> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self
             .collection
             .find_one(doc! {"_id": oid}, None)
             .await
             .expect("Error finding user");
-        match user {
-            Some(user) => Ok(Some(user)),
-            None => Err(UserError::GetUser)
-        }
+        Ok(user)
     }
 
     /// > This function takes an email address as a parameter and returns a user model if the user
@@ -130,37 +125,30 @@ impl UserRepo {
     /// 
     /// Returns:
     /// 
-    /// A Result<Option<UserModel>, UserError>
-    pub async fn get_user_by_email(&self, email: &String) -> Result<Option<UserModel>, UserError> {
+    /// A user model
+    pub async fn get_user_by_email(&self, email: &String) -> Result<Option<UserModel>, Error> {
         let user = self
             .collection
             .find_one(doc! {"email": email}, None)
             .await
             .expect("Error finding user");
-        match user {
-            Some(user) => Ok(Some(user)),
-            None => Err(UserError::GetUser)
-        }
+        Ok(user)
     }
 
-    /// We're using the `find` method on the `collection` object to get all the documents in the
-    /// collection
+    /// > This function returns a vector of all the users in the database
     /// 
     /// Returns:
     /// 
     /// A vector of UserModel
-    pub async fn get_all_users(&self) -> Result<Vec<UserModel>, UserError> {
+    pub async fn get_all_users(&self) -> Result<Vec<UserModel>, Error> {
         let cursor = self.collection.find(None, None).await.unwrap();
 
-        let users = Some(cursor.try_collect().await.unwrap());
+        let users = cursor.try_collect().await.unwrap();
 
-        match users {
-            Some(users) => Ok(users),
-            None => Err(UserError::GetUser)
-        }
+        Ok(users)
     }
 
-    /// It deletes a user from the database.
+    /// It deletes a user by id.
     /// 
     /// Arguments:
     /// 
@@ -168,51 +156,44 @@ impl UserRepo {
     /// 
     /// Returns:
     /// 
-    /// The result of the delete_many operation.
-    pub async fn delete_user_by_id(&self, id: &String) -> Result<Option<UserModel>, UserError>{
-        // let oid = ObjectId::parse_str(id.as_str()).unwrap();
-        let user = self.get_user_by_id(id).await.unwrap().unwrap();
-        let email = &user.email;
-        let result = self.collection
+    /// None
+    pub async fn delete_user_by_id(&self, id: &String) -> Option<UserModel> {
+        let oid = ObjectId::parse_str(id.as_str()).unwrap();
+        let email = self.get_user_by_id(id).await.unwrap().unwrap().email;
+        self.collection
             .delete_many(doc! {"email": email}, None)
-            .await;
-        match result {
-            Ok(_) => Ok(Some(user)),
-            Err(_) => Err(UserError::DeleteUser)
-        }
+            .await
+            .unwrap();
+        None
     }
 
-    /// > This function takes an id and a user model and updates the user in the database with the given
-    /// id
+    /// It takes an id and a user, finds the user with the given id, and replaces it with the given user
     /// 
     /// Arguments:
     /// 
     /// * `id`: &String - The id of the user to update
-    /// * `user`: UserModel - The user model that will be updated
+    /// * `user`: UserModel - This is the user object that we want to update.
     /// 
     /// Returns:
     /// 
-    /// A Result<Option<UserModel>, UserError>
+    /// A Result<Option<UserModel>, Error>
     pub async fn put_user_by_id(
         &self,
         id: &String,
         user: UserModel,
-    ) -> Result<Option<UserModel>, UserError> {
+    ) -> Result<Option<UserModel>, Error> {
         let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let user = self
             .collection
             .find_one_and_replace(doc! {"_id": oid}, user, None)
             .await
             .expect("Error updating user");
-        match user {
-            Some(user) => Ok(Some(user)),
-            None => Err(UserError::UpdateUser)
-        }
+        Ok(user)
     }
 
     // * Progress methods
 
-    /// This function adds a course to a user's progress
+    /// It adds a course to a user's progress.
     /// 
     /// Arguments:
     /// 
@@ -272,7 +253,7 @@ impl UserRepo {
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
-    /// It removes an info from a user's progress
+    /// This function removes an info from a user's progress
     /// 
     /// Arguments:
     /// 
@@ -514,7 +495,7 @@ mod user_repo_tests {
         let user_for_search = _get_user_by_email(&"test5".to_string()).await;
         let result = client
             .delete_user_by_id(&user_for_search.id.unwrap().to_string())
-            .await.unwrap();
+            .await;
         assert!(result.is_none());
     }
 

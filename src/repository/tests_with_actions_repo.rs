@@ -12,7 +12,7 @@ use rocket::{http::ext::IntoCollection, State};
 
 use crate::models::response;
 use crate::repository::user_repo::UserRepo;
-use crate::{models::tests_model::TestModelWithActions, utils::errors::TestsError};
+use crate::{models::tests_model::TestModelWithActions};
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
@@ -40,24 +40,18 @@ impl TestsRepo {
         Self { collection }
     }
 
-    pub async fn create_test(&self, test: Test) -> Result<InsertOneResult, TestsError> {
+    pub async fn create_test(&self, test: Test) -> Result<InsertOneResult, Error> {
         let result = self.collection.insert_one(test, None).await;
-        match result {
-            Ok(result) => Ok(result),
-            Err(_) => Err(TestsError::CreateTest),
-        }
+        Ok(result.unwrap())
     }
 
-    pub async fn get_test_by_id(&self, id: &str) -> Result<Option<Test>, TestsError> {
+    pub async fn get_test_by_id(&self, id: &str) -> Result<Option<Test>, Error> {
         let oid = ObjectId::parse_str(id).unwrap();
         let test = self.collection.find_one(doc! {"_id": oid}, None).await;
-        match test {
-            Ok(ok) => Ok(ok),
-            Err(_) => Err(TestsError::GetTest),
-        }
+        Ok(test.unwrap())
     }
 
-    pub async fn get_test_by_ex(&self, ex: String) -> Result<Option<Test>, TestsError> {
+    pub async fn get_test_by_ex(&self, ex: String) -> Result<Option<Test>, Error> {
         let result = self
             .collection
             .find_one(
@@ -67,31 +61,22 @@ impl TestsRepo {
                 None,
             )
             .await;
-        match result {
-            Ok(ok) => Ok(ok),
-            Err(_) => Err(TestsError::GetTest),
-        }
+        Ok(result.unwrap())
     }
 
-    pub async fn delete_test(&self, id: &str) -> Result<(), TestsError> {
+    pub async fn delete_test(&self, id: &str) -> Result<(), Error> {
         let oid = ObjectId::parse_str(id).unwrap();
         let result = self.collection.find_one_and_delete(doc!{"_id": oid}, None).await;
-        match result {
-            Ok(_) => Ok(()),
-            Err(_) => Err(TestsError::DeleteTest)
-        }
+        Ok(())
     }
 
-    pub async fn update_test(&self, id: &str, new_test: Test) -> Result<Option<Test>, TestsError> {
+    pub async fn update_test(&self, id: &str, new_test: Test) -> Result<Option<Test>, Error> {
         let oid = ObjectId::parse_str(id).unwrap();
         let new_test = UpdateModifications::Document(
             doc! {"$set": mongodb::bson::to_document(&new_test).unwrap()}
         );
         let result = self.collection.find_one_and_update(doc!{"_id": oid}, new_test, None).await;
-        match result {
-            Ok(result) => Ok(result),
-            Err(_) => Err(TestsError::UpdateTest)
-        }
+        Ok(result.unwrap())
     }
 
 }

@@ -21,49 +21,6 @@ pub enum Error {
     JWTTokenDecode
 }
 
-/// Creating a custom error type for the tests.
-#[derive(Debug, Error)]
-pub enum TestsError {
-    #[error("we are cant get tests")]
-    GetTests,
-    #[error("we are cant create test")]
-    CreateTest,
-    #[error("we are cant update test")]
-    UpdateTest,
-    #[error("we are cant delete test")]
-    DeleteTest,
-    #[error("we are cant get test")]
-    GetTest
-}
-
-/// Creating a custom error type for the user.
-#[derive(Debug, Error)]
-pub enum UserError {
-    #[error("We are cant create user")]
-    CreateUser,
-    #[error("We are cant get user")]
-    GetUser,
-    #[error("We are cant update user")]
-    UpdateUser,
-    #[error("We are cant delete user")]
-    DeleteUser,
-}
-
-/// Creating a custom error type for the infos.
-#[derive(Debug, Error)]
-pub enum InfosError {
-    #[error("We are cant create info")]
-    CreateInfo,
-    #[error("We are cant get info")]
-    GetInfo,
-    #[error("We are cant update info")]
-    UpdateInfo,
-    #[error("We are cant delete info")]
-    DeleteInfo,
-    #[error("we are cant get infos")]
-    GetInfos
-
-}
 
 /// `ErrorResponse` is a struct that contains two fields, `error` and `status`, both of which are
 /// `String`s.
