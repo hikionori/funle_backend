@@ -404,20 +404,7 @@ mod cource_repo_tests {
     #[tokio::test]
     async fn create_test() {
         let cource_repo = setup_cource_db(true).await;
-        // let info = InfoModel {
-        //     id: None,
-        //     title: "Info title".to_string(),
-        //     content_levels: HashMap::new(),
-        // };
-        // create_info_in_db(info).await;
-        // let test = TestModel {
-        //     id: None,
-        //     text_of_question: "1 + 1".to_string(),
-        //     correct_answer: "2".to_string(),
-        //     answers: vec!["3".to_string(), "4".to_string()],
-        //     level: 1,
-        // };
-        // create_test_in_db(test).await;
+        
         let cource = CourseModel {
             id: None,
             title: "Cource title".to_string(),
@@ -443,20 +430,7 @@ mod cource_repo_tests {
     #[tokio::test]
     async fn get_test() {
         let cource_repo = setup_cource_db(true).await;
-        // let info = InfoModel {
-        //     id: None,
-        //     title: "Info title".to_string(),
-        //     content_levels: HashMap::new(),
-        // };
-        // create_info_in_db(info).await;
-        // let test = TestModel {
-        //     id: None,
-        //     text_of_question: "1 + 1".to_string(),
-        //     correct_answer: "2".to_string(),
-        //     answers: vec!["3".to_string(), "4".to_string()],
-        //     level: 1,
-        // };
-        // create_test_in_db(test).await;
+        
         let cource = CourseModel {
             id: None,
             title: "Cource title".to_string(),
@@ -482,20 +456,6 @@ mod cource_repo_tests {
     #[tokio::test]
     async fn update_test() {
         let cource_repo = setup_cource_db(true).await;
-        // let info = InfoModel {
-        //     id: None,
-        //     title: "Info title".to_string(),
-        //     content_levels: HashMap::new(),
-        // };
-        // create_info_in_db(info).await;
-        // let test = TestModel {
-        //     id: None,
-        //     text_of_question: "1 + 1".to_string(),
-        //     correct_answer: "2".to_string(),
-        //     answers: vec!["3".to_string(), "4".to_string()],
-        //     level: 1,
-        // };
-        // create_test_in_db(test).await;
         let cource = CourseModel {
             id: None,
             title: "Cource title".to_string(),
