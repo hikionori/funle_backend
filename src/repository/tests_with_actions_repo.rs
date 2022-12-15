@@ -11,8 +11,8 @@ use mongodb::options::UpdateModifications;
 use rocket::{http::ext::IntoCollection, State};
 
 use crate::models::response;
+use crate::models::tests_model::TestModelWithActions;
 use crate::repository::user_repo::UserRepo;
-use crate::{models::tests_model::TestModelWithActions};
 use mongodb::{
     bson::{doc, extjson::de::Error},
     results::InsertOneResult,
@@ -64,21 +64,38 @@ impl TestsRepo {
         Ok(result.unwrap())
     }
 
+    pub async fn get_all_tests(&self) -> Result<Vec<Test>, Error> {
+        let tests = self
+            .collection
+            .find(None, None)
+            .await
+            .expect("Error getting tests")
+            .deserialize_current()
+            .into_iter()
+            .collect();
+        Ok(tests)
+    }
+
     pub async fn delete_test(&self, id: &str) -> Result<(), Error> {
         let oid = ObjectId::parse_str(id).unwrap();
-        let result = self.collection.find_one_and_delete(doc!{"_id": oid}, None).await;
+        let result = self
+            .collection
+            .find_one_and_delete(doc! {"_id": oid}, None)
+            .await;
         Ok(())
     }
 
     pub async fn update_test(&self, id: &str, new_test: Test) -> Result<Option<Test>, Error> {
         let oid = ObjectId::parse_str(id).unwrap();
         let new_test = UpdateModifications::Document(
-            doc! {"$set": mongodb::bson::to_document(&new_test).unwrap()}
+            doc! {"$set": mongodb::bson::to_document(&new_test).unwrap()},
         );
-        let result = self.collection.find_one_and_update(doc!{"_id": oid}, new_test, None).await;
+        let result = self
+            .collection
+            .find_one_and_update(doc! {"_id": oid}, new_test, None)
+            .await;
         Ok(result.unwrap())
     }
-
 }
 
 #[cfg(test)]
@@ -200,10 +217,16 @@ mod tests_with_actions_tests {
         match result {
             Ok(_) => {
                 let test_id = get_test_id(&"2 + 2 * 2".to_string()).await;
-                client.delete_test(test_id.clone().to_string().as_str()).await.unwrap();
-                let test_after_delete = client.get_test_by_id(test_id.clone().to_string().as_str()).await.unwrap();
+                client
+                    .delete_test(test_id.clone().to_string().as_str())
+                    .await
+                    .unwrap();
+                let test_after_delete = client
+                    .get_test_by_id(test_id.clone().to_string().as_str())
+                    .await
+                    .unwrap();
                 assert!(test_after_delete.is_none());
-            },
+            }
             Err(_) => {
                 panic!("Test dont created")
             }
@@ -218,24 +241,34 @@ mod tests_with_actions_tests {
         match result {
             Ok(_) => {
                 let test_id = get_test_id(&"2 + 2 * 2".to_string()).await;
-                let test = client.get_test_by_id(test_id.clone().to_string().as_str()).await.unwrap().unwrap();
+                let test = client
+                    .get_test_by_id(test_id.clone().to_string().as_str())
+                    .await
+                    .unwrap()
+                    .unwrap();
                 let new_test = Test {
                     id: Some(test.id.unwrap()),
                     example: "2 + 2 / 2".to_string(),
                     actions: vec!["2 / 2".to_string(), "2 + 1".to_string()],
                     answer: "3".to_string(),
-                    level: 1
+                    level: 1,
                 };
-                let result = client.update_test(test_id.to_string().as_str(), new_test).await;
+                let result = client
+                    .update_test(test_id.to_string().as_str(), new_test)
+                    .await;
                 match result {
                     Ok(_) => {
-                        let res = client.get_test_by_id(test_id.clone().to_string().as_str()).await.unwrap().unwrap();
+                        let res = client
+                            .get_test_by_id(test_id.clone().to_string().as_str())
+                            .await
+                            .unwrap()
+                            .unwrap();
                         assert_eq!(res.id, test.id);
                         assert_eq!(res.example, "2 + 2 / 2".to_string());
-                    },
-                    Err(_) => panic!("Test dont updated")
+                    }
+                    Err(_) => panic!("Test dont updated"),
                 }
-            },
+            }
             Err(_) => {
                 panic!("Test dont created")
             }

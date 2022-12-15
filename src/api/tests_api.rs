@@ -7,31 +7,47 @@ use rocket::{
     // serde::{Deserialize, Serialize},
     State,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::utils::auth::authorize_token;
 use crate::{
-    models::tests_model::TestModel,
-    repository::{tests_repo::TestsRepo, user_repo::UserRepo},
+    models::tests_model::{TestModel, TestModelWithActions},
+    repository::{tests_repo::TestsRepo, user_repo::UserRepo, tests_with_actions_repo::TestsRepo as TActionRepo},
 };
 
 // * Admin API routes
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AllTests {
+    pub tests: Vec<TestModel>,
+    pub tests_with_actions: Vec<TestModelWithActions>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TestRes<T, A> {
+    Test(T),
+    TestWithActions(A),
+}
+
 #[get("/admin/get/all")]
-pub async fn get_all_tests(db: &State<TestsRepo>) -> Result<Json<Vec<TestModel>>, Status> {
-    let result = db.get_all_tests().await.unwrap();
-    if result.is_empty() {
-        Err(Status::NoContent)
-    } else {
-        Ok(Json(result))
-    }
+pub async fn get_all_tests(test_db: &State<TestsRepo>, ta_db: &State<TActionRepo>) -> Result<Json<AllTests>, Status> {
+    let tests = test_db.get_all_tests().await.unwrap();
+    let tests_with_actions = ta_db.get_all_tests().await.unwrap();
+    let all_tests = AllTests {
+        tests,
+        tests_with_actions,
+    };
+    Ok(Json(all_tests))
 }
 
 #[get("/admin/get/test?<id>")]
-pub async fn get_test_by_id(db: &State<TestsRepo>, id: &str) -> Result<Json<TestModel>, Status> {
+pub async fn get_test_by_id(db: &State<TestsRepo>, ta_db: &State<TActionRepo>, id: &str) -> Result<Json<TestRes<TestModel, TestModelWithActions>>, Status> {
     let test = db.get_test_by_id(&id.to_string()).await.unwrap();
-    match test {
-        Some(test) => Ok(Json(test)),
-        None => Err(Status::NotFound),
+    let test_with_actions = ta_db.get_test_by_id(&id).await.unwrap();
+    match (test, test_with_actions) {
+        (Some(test), None) => Ok(Json(TestRes::Test(test))),
+        (None, Some(test_with_actions)) => Ok(Json(TestRes::TestWithActions(test_with_actions))),
+        _ => Err(Status::InternalServerError),
     }
 }
 
