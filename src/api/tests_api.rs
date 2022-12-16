@@ -25,8 +25,8 @@ pub struct AllTests {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TestRes<T, A> {
-    Test(T),
-    TestWithActions(A),
+    ChoiceTest(T),
+    ActionTest(A)
 }
 
 #[get("/admin/get/all")]
@@ -43,10 +43,11 @@ pub async fn get_all_tests(test_db: &State<TestsRepo>, ta_db: &State<TActionRepo
 #[get("/admin/get/test?<id>")]
 pub async fn get_test_by_id(db: &State<TestsRepo>, ta_db: &State<TActionRepo>, id: &str) -> Result<Json<TestRes<TestModel, TestModelWithActions>>, Status> {
     let test = db.get_test_by_id(&id.to_string()).await.unwrap();
-    let test_with_actions = ta_db.get_test_by_id(&id).await.unwrap();
+    let test_with_actions = ta_db.get_test_by_id(id).await.unwrap();
     match (test, test_with_actions) {
-        (Some(test), None) => Ok(Json(TestRes::Test(test))),
-        (None, Some(test_with_actions)) => Ok(Json(TestRes::TestWithActions(test_with_actions))),
+        (Some(test), None) => Ok(Json(TestRes::ChoiceTest(test))),
+        (None, Some(test_with_actions)) => Ok(Json(TestRes::ActionTest(test_with_actions))),
+        // (Some(test), Some(test_with_actions)) => 
         _ => Err(Status::InternalServerError),
     }
 }
