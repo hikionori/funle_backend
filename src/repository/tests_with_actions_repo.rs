@@ -27,8 +27,6 @@ pub struct TestsRepo {
 
 type Test = TestModelWithActions;
 
-// TODO: add implementation of methods for TestsRepo
-// TODO: add tests for methods of TestsRepo
 impl TestsRepo {
     pub async fn init() -> Self {
         dotenv().ok();
