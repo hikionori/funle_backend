@@ -1,6 +1,9 @@
 #![allow(dead_code, unused_imports)]
 
+use std::any;
+
 use mongodb::results::InsertOneResult;
+use rocket::request::FromParam;
 use rocket::{
     http::Status,
     serde::json::Json,
@@ -12,7 +15,10 @@ use serde::{Deserialize, Serialize};
 use crate::utils::auth::authorize_token;
 use crate::{
     models::tests_model::{TestModel, TestModelWithActions},
-    repository::{tests_repo::TestsRepo, user_repo::UserRepo, tests_with_actions_repo::TestsRepo as TActionRepo},
+    repository::{
+        tests_repo::TestsRepo, tests_with_actions_repo::TestsRepo as TActionRepo,
+        user_repo::UserRepo,
+    },
 };
 
 // * Admin API routes
@@ -24,13 +30,51 @@ pub struct AllTests {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TestType {
+    ChoiceTest,
+    ActionTest,
+}
+
+impl<'r> FromParam<'r> for TestType {
+    type Error = &'r str;
+
+    fn from_param(param: &'r str) -> Result<Self, Self::Error> {
+        match param {
+            "choice" => Ok(TestType::ChoiceTest),
+            "action" => Ok(TestType::ActionTest),
+            _ => Err("Invalid test type"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TestRes<T, A> {
     ChoiceTest(T),
-    ActionTest(A)
+    ActionTest(A),
+}
+
+impl<T, A> TestRes<T, A> {
+    // if T == TestModel return TestModel, else return TestModelWithActions
+    pub fn get_test(&self) -> &T {
+        match self {
+            TestRes::ChoiceTest(test) => test,
+            TestRes::ActionTest(test) => unimplemented!(),
+        }
+    }
+
+    pub fn get_test_with_actions(&self) -> &A {
+        match self {
+            TestRes::ChoiceTest(test) => unimplemented!(),
+            TestRes::ActionTest(test) => test,
+        }
+    }
 }
 
 #[get("/admin/get/all")]
-pub async fn get_all_tests(test_db: &State<TestsRepo>, ta_db: &State<TActionRepo>) -> Result<Json<AllTests>, Status> {
+pub async fn get_all_tests(
+    test_db: &State<TestsRepo>,
+    ta_db: &State<TActionRepo>,
+) -> Result<Json<AllTests>, Status> {
     let tests = test_db.get_all_tests().await.unwrap();
     let tests_with_actions = ta_db.get_all_tests().await.unwrap();
     let all_tests = AllTests {
@@ -41,50 +85,83 @@ pub async fn get_all_tests(test_db: &State<TestsRepo>, ta_db: &State<TActionRepo
 }
 
 #[get("/admin/get/test?<id>")]
-pub async fn get_test_by_id(db: &State<TestsRepo>, ta_db: &State<TActionRepo>, id: &str) -> Result<Json<TestRes<TestModel, TestModelWithActions>>, Status> {
+pub async fn get_test_by_id(
+    db: &State<TestsRepo>,
+    ta_db: &State<TActionRepo>,
+    id: &str,
+) -> Result<Json<TestRes<TestModel, TestModelWithActions>>, Status> {
     let test = db.get_test_by_id(&id.to_string()).await.unwrap();
     let test_with_actions = ta_db.get_test_by_id(id).await.unwrap();
     match (test, test_with_actions) {
         (Some(test), None) => Ok(Json(TestRes::ChoiceTest(test))),
         (None, Some(test_with_actions)) => Ok(Json(TestRes::ActionTest(test_with_actions))),
-        // (Some(test), Some(test_with_actions)) => 
+        // (Some(test), Some(test_with_actions)) =>
         _ => Err(Status::InternalServerError),
     }
 }
 
-#[post("/admin/create/test", data = "<test>")]
+#[post("/admin/<test_type>/create/test", data = "<test>")]
 pub async fn create_test(
     db: &State<TestsRepo>,
-    test: Json<TestModel>,
+    adb: &State<TActionRepo>,
+    test: Json<TestRes<TestModel, TestModelWithActions>>,
+    test_type: TestType,
 ) -> Result<Json<InsertOneResult>, Status> {
-    let test = test.into_inner();
-    let result = db.create_test(test).await;
-    match result {
-        Ok(test) => Ok(Json(test)),
-        Err(_) => Err(Status::InternalServerError),
+    match test_type {
+        TestType::ChoiceTest => {
+            let test = test.into_inner();
+            let result = db.create_test(test.get_test().to_owned()).await;
+            match result {
+                Ok(result) => Ok(Json(result)),
+                Err(_) => Err(Status::InternalServerError),
+            }
+        }
+        TestType::ActionTest => {
+            let test = test.into_inner();
+            let result = adb.create_test(test.get_test_with_actions().to_owned()).await;
+            match result {
+                Ok(result) => Ok(Json(result)),
+                Err(_) => Err(Status::InternalServerError),
+            }
+        }
     }
 }
 
-#[put("/admin/update/test?<id>", data = "<test>")]
+#[put("/admin/<test_type>/update/test?<id>", data = "<test>")]
 pub async fn update_test(
     db: &State<TestsRepo>,
+    adb: &State<TActionRepo>,
     id: &str,
-    test: Json<TestModel>,
+    test: Json<TestRes<TestModel, TestModelWithActions>>,
+    test_type: TestType
 ) -> Result<Status, Status> {
-    let test = test.into_inner();
-    let result = db.update_test_by_id(&id.to_string(), test).await;
-    match result {
-        Ok(_) => Ok(Status::Ok),
-        Err(_) => Err(Status::InternalServerError),
+    match test_type {
+        TestType::ChoiceTest => {
+            let test = test.into_inner();
+            let result = db.update_test_by_id(&id.to_string(), test.get_test().to_owned()).await;
+            match result {
+                Ok(_) => Ok(Status::Ok),
+                Err(_) => Err(Status::InternalServerError),
+            }
+        }
+        TestType::ActionTest => {
+            let test = test.into_inner();
+            let result = adb.update_test(id, test.get_test_with_actions().to_owned()).await;
+            match result {
+                Ok(_) => Ok(Status::Ok),
+                Err(_) => Err(Status::InternalServerError),
+            }
+        }
     }
 }
 
 #[delete("/admin/delete/test?<id>")]
-pub async fn delete_test(db: &State<TestsRepo>, id: &str) -> Result<Status, Status> {
+pub async fn delete_test(db: &State<TestsRepo>, adb: &State<TActionRepo>, id: &str) -> Result<Status, Status> {
     let result = db.delete_test(&id.to_string()).await;
-    match result {
-        Ok(_) => Ok(Status::Ok),
-        Err(_) => Err(Status::InternalServerError),
+    let result2 = adb.delete_test(id).await;
+    match (result, result2) {
+        (Ok(_), Ok(_)) => Ok(Status::Ok),
+        _ => Err(Status::InternalServerError),
     }
 }
 
@@ -101,19 +178,22 @@ pub async fn delete_test(db: &State<TestsRepo>, id: &str) -> Result<Status, Stat
 #[get("/user/<token>/get/test?<id>")]
 pub async fn get_test_by_id_user(
     db: &State<TestsRepo>,
+    adb: &State<TActionRepo>,
     user_db: &State<UserRepo>,
     id: &str,
     token: &str,
-) -> Result<Json<TestModel>, Status> {
+) -> Result<Json<TestRes<TestModel, TestModelWithActions>>, Status> {
     let access = authorize_token(token.to_string(), user_db).await;
     if access {
         let test = db.get_test_by_id(&id.to_string()).await.unwrap();
-        match test {
-            Some(test) => Ok(Json(test)),
-            None => Err(Status::NotFound),
+        let test_with_actions = adb.get_test_by_id(id).await.unwrap();
+        match (test, test_with_actions) {
+            (Some(test), None) => Ok(Json(TestRes::ChoiceTest(test))),
+            (None, Some(test_with_actions)) => Ok(Json(TestRes::ActionTest(test_with_actions))),
+            // (Some(test), Some(test_with_actions)) =>
+            _ => Err(Status::InternalServerError),
         }
-    }
-    else {
+    } else {
         Err(Status::Unauthorized)
     }
 }

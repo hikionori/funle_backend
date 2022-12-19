@@ -8,6 +8,7 @@ use dotenv::dotenv;
 use mongodb::bson::oid::ObjectId;
 use mongodb::bson::Document;
 use mongodb::options::UpdateModifications;
+use rocket::futures::TryStreamExt;
 use rocket::{http::ext::IntoCollection, State};
 
 use crate::repository::user_repo::UserRepo;
@@ -128,14 +129,9 @@ impl TestsRepo {
     /// 
     /// A vector of tests
     pub async fn get_all_tests(&self) -> Result<Vec<Test>, Error> {
-        let tests: Vec<Test> = self
-            .collection
-            .find(None, None)
-            .await
-            .expect("Error getting tasks")
-            .deserialize_current()
-            .into_iter()
-            .collect();
+        let tests: Vec<Test> = Vec::new();
+        let cursor = self.collection.find(None, None).await.unwrap();
+        let tests = cursor.try_collect().await.unwrap();
         Ok(tests)
     }
 

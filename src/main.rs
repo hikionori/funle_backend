@@ -24,7 +24,8 @@ async fn rocket() -> _ {
 
     rocket::build()
         .mount("/", routes![register_user, login_user, get_test_by_id_user])
-        .mount("/", routes![get_test_by_id])
+        .mount("/", routes![get_test_by_id]) // user
+        .mount("/", routes![get_all_tests, delete_test]) // admin
         .manage(UserRepo::init().await)
         .manage(TestsRepo::init().await)
         .manage(TActionRepo::init().await)

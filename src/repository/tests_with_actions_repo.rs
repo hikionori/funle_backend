@@ -8,7 +8,7 @@ use dotenv::dotenv;
 use mongodb::bson::oid::ObjectId;
 use mongodb::bson::Document;
 use mongodb::options::UpdateModifications;
-use rocket::{http::ext::IntoCollection, State};
+use rocket::{http::ext::IntoCollection, State, futures::TryStreamExt};
 
 use crate::models::response;
 use crate::models::tests_model::TestModelWithActions;
@@ -68,9 +68,9 @@ impl TestsRepo {
             .find(None, None)
             .await
             .expect("Error getting tests")
-            .deserialize_current()
-            .into_iter()
-            .collect();
+            .try_collect()
+            .await
+            .unwrap();
         Ok(tests)
     }
 
