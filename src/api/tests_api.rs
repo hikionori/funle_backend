@@ -157,9 +157,12 @@ pub async fn update_test(
 
 #[delete("/admin/delete/test?<id>")]
 pub async fn delete_test(db: &State<TestsRepo>, adb: &State<TActionRepo>, id: &str) -> Result<Status, Status> {
-    let result = db.delete_test(&id.to_string()).await;
-    let result2 = adb.delete_test(id).await;
-    match (result, result2) {
+    // Delete the test from the test table
+    let test_deleted = db.delete_test(&id.to_string()).await;
+    // Delete the test from the test action table
+    let test_action_deleted = adb.delete_test(id).await;
+    // Check the results
+    match (test_deleted, test_action_deleted) {
         (Ok(_), Ok(_)) => Ok(Status::Ok),
         _ => Err(Status::InternalServerError),
     }

@@ -70,7 +70,7 @@ pub async fn login_user(db: &State<UserRepo>, user: Json<UserLogin>) -> Result<J
 
 // * Admin api routes
 
-#[post("/admins/del/user?<id>")]
+#[delete("/admins/del/user?<id>")]
 pub async fn delete_user(db: &State<UserRepo>, id: &str) -> Result<Json<Option<UserModel>>, Status> {
     let result = db.delete_user_by_id(&id.to_string()).await.unwrap();
     Ok(Json(Some(result)))
@@ -91,7 +91,7 @@ pub async fn get_users(db: &State<UserRepo>) -> Result<Json<Vec<UserModel>>, Sta
     Ok(Json(result))
 }
 
-#[post("/admins/update/user?<id>", data = "<user>")]
+#[put("/admins/update/user?<id>", data = "<user>")]
 pub async fn update_user(db: &State<UserRepo>, id: &str, user: Json<UserModel>) -> Result<Json<Option<UserModel>>, Status> {
     let result = db.put_user_by_id(&id.to_string(), user.into_inner()).await.unwrap();
     match result {
@@ -100,7 +100,7 @@ pub async fn update_user(db: &State<UserRepo>, id: &str, user: Json<UserModel>) 
     }
 }
 
-#[post("/admins/update/user/progress?<id>", data = "<progress>")]
+#[put("/admins/update/user/progress?<id>", data = "<progress>")]
 pub async fn update_user_progress(db: &State<UserRepo>, id: &str, progress: Json<UserProgress>) -> Result<Status, Status> {
     let result = db.update_all_progress(id.to_string(), progress.into_inner()).await.unwrap();
     match result {
