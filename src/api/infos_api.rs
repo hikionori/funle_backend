@@ -3,7 +3,7 @@ use crate::{
     repository::{infos_repo::InfosRepo, user_repo::UserRepo}, utils::auth::authorize_token,
 };
 use rocket::{
-    http::Status, serde::json::Json, State, serde::{Serialize, Deserialize}, fairing::Info
+    http::Status, serde::json::Json, State
 };
 
 // User routes
