@@ -3,6 +3,8 @@
 use std::any;
 
 use mongodb::results::InsertOneResult;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use rocket::request::FromParam;
 use rocket::{
     http::Status,
@@ -25,15 +27,34 @@ use crate::{
 
 /// `AllTests` is a struct that contains a vector of `TestModel`s and a vector of
 /// `TestModelWithActions`s.
-/// 
+///
 /// Properties:
-/// 
+///
 /// * `tests`: A list of all tests that have been run.
 /// * `tests_with_actions`: This is a vector of TestModelWithActions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AllTests {
     pub tests: Vec<TestModel>,
     pub tests_with_actions: Vec<TestModelWithActions>,
+}
+
+impl AllTests {
+    /// `new` is a constructor for the `AllTests` struct.
+    ///
+    /// Arguments:
+    ///
+    /// * `tests`: A vector of `TestModel`s.
+    /// * `tests_with_actions`: A vector of `TestModelWithActions`s.
+    ///
+    /// Returns:
+    ///
+    /// An instance of `AllTests`.
+    pub fn new(tests: Vec<TestModel>, tests_with_actions: Vec<TestModelWithActions>) -> Self {
+        Self {
+            tests,
+            tests_with_actions,
+        }
+    }
 }
 
 /// Creating an enum that has two variants: ChoiceTest and ActionTest.
@@ -49,13 +70,13 @@ impl<'r> FromParam<'r> for TestType {
 
     /// `from_param` is a function that takes a string and returns a `Result` of either a `TestType` or
     /// a `&'r str`
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `param`: The parameter to be converted.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// A Result<Self, Self::Error>
     fn from_param(param: &'r str) -> Result<Self, Self::Error> {
         match param {
@@ -77,9 +98,9 @@ pub enum TestRes<T, A> {
 impl<T, A> TestRes<T, A> {
     // if T == TestModel return TestModel, else return TestModelWithActions
     /// `match` is a pattern matching construct that allows you to match on the variant of an enum
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// A reference to the test.
     pub fn get_test(&self) -> &T {
         match self {
@@ -90,9 +111,9 @@ impl<T, A> TestRes<T, A> {
 
     /// `get_test_with_actions` returns a reference to the `A` type in the `ActionTest` variant of the
     /// `TestRes` enum
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// A reference to the action test.
     pub fn get_test_with_actions(&self) -> &A {
         match self {
@@ -103,15 +124,15 @@ impl<T, A> TestRes<T, A> {
 }
 
 /// It gets all the tests from the database and returns them as a JSON object
-/// 
+///
 /// Arguments:
-/// 
+///
 /// * `test_db`: &State<TestsRepo> - this is the database connection that we created in the main.rs
 /// file.
 /// * `ta_db`: &State<TActionRepo> - this is the database that contains the tests with actions.
-/// 
+///
 /// Returns:
-/// 
+///
 /// A JSON object containing all tests and tests with actions.
 #[get("/admin/get/all")]
 pub async fn get_all_tests(
@@ -128,15 +149,15 @@ pub async fn get_all_tests(
 }
 
 /// It takes a test id, and returns a test with that id
-/// 
+///
 /// Arguments:
-/// 
+///
 /// * `db`: &State<TestsRepo> - this is the database connection.
 /// * `ta_db`: &State<TActionRepo> - this is the database connection for the test_action table
 /// * `id`: &str - the id of the test to get
-/// 
+///
 /// Returns:
-/// 
+///
 /// A test with the given id.
 #[get("/admin/get/test?<id>")]
 pub async fn get_test_by_id(
@@ -156,16 +177,16 @@ pub async fn get_test_by_id(
 
 /// It takes a test type, a test, and a database connection, and returns a result of either a JSON
 /// object or a status code
-/// 
+///
 /// Arguments:
-/// 
+///
 /// * `db`: &State<TestsRepo> - this is the database connection that we created in the main.rs file.
 /// * `adb`: &State<TActionRepo> - this is the connection to the database for the action test.
 /// * `test`: Json<TestRes<TestModel, TestModelWithActions>>
 /// * `test_type`: TestType - this is the type of test we're creating.
-/// 
+///
 /// Returns:
-/// 
+///
 /// A JSON object with the result of the insert operation.
 #[post("/admin/<test_type>/create/test", data = "<test>")]
 pub async fn create_test(
@@ -185,7 +206,9 @@ pub async fn create_test(
         }
         TestType::ActionTest => {
             let test = test.into_inner();
-            let result = adb.create_test(test.get_test_with_actions().to_owned()).await;
+            let result = adb
+                .create_test(test.get_test_with_actions().to_owned())
+                .await;
             match result {
                 Ok(result) => Ok(Json(result)),
                 Err(_) => Err(Status::InternalServerError),
@@ -195,18 +218,18 @@ pub async fn create_test(
 }
 
 /// It updates a test in the database
-/// 
+///
 /// Arguments:
-/// 
+///
 /// * `db`: &State<TestsRepo> - this is the database connection.
 /// * `adb`: &State<TActionRepo> - this is the database connection for the action tests.
 /// * `id`: &str - the id of the test to update
 /// * `test`: Json<TestRes<TestModel, TestModelWithActions>>
 /// * `test_type`: TestType - this is an enum that is defined in the models.rs file. It's used to
 /// determine which type of test we're dealing with.
-/// 
+///
 /// Returns:
-/// 
+///
 /// Status
 #[put("/admin/<test_type>/update/test?<id>", data = "<test>")]
 pub async fn update_test(
@@ -214,12 +237,14 @@ pub async fn update_test(
     adb: &State<TActionRepo>,
     id: &str,
     test: Json<TestRes<TestModel, TestModelWithActions>>,
-    test_type: TestType
+    test_type: TestType,
 ) -> Result<Status, Status> {
     match test_type {
         TestType::ChoiceTest => {
             let test = test.into_inner();
-            let result = db.update_test_by_id(&id.to_string(), test.get_test().to_owned()).await;
+            let result = db
+                .update_test_by_id(&id.to_string(), test.get_test().to_owned())
+                .await;
             match result {
                 Ok(_) => Ok(Status::Ok),
                 Err(_) => Err(Status::InternalServerError),
@@ -227,7 +252,9 @@ pub async fn update_test(
         }
         TestType::ActionTest => {
             let test = test.into_inner();
-            let result = adb.update_test(id, test.get_test_with_actions().to_owned()).await;
+            let result = adb
+                .update_test(id, test.get_test_with_actions().to_owned())
+                .await;
             match result {
                 Ok(_) => Ok(Status::Ok),
                 Err(_) => Err(Status::InternalServerError),
@@ -237,18 +264,22 @@ pub async fn update_test(
 }
 
 /// Delete a test from the database
-/// 
+///
 /// Arguments:
-/// 
+///
 /// * `db`: &State<TestsRepo> - This is the database connection to the tests table
 /// * `adb`: &State<TActionRepo> - This is the test action repository.
 /// * `id`: The id of the test to delete
-/// 
+///
 /// Returns:
-/// 
+///
 /// A status code
 #[delete("/admin/delete/test?<id>")]
-pub async fn delete_test(db: &State<TestsRepo>, adb: &State<TActionRepo>, id: &str) -> Result<Status, Status> {
+pub async fn delete_test(
+    db: &State<TestsRepo>,
+    adb: &State<TActionRepo>,
+    id: &str,
+) -> Result<Status, Status> {
     // Delete the test from the test table
     let test_deleted = db.delete_test(&id.to_string()).await;
     // Delete the test from the test action table
@@ -271,18 +302,18 @@ pub async fn delete_test(db: &State<TestsRepo>, adb: &State<TActionRepo>, id: &s
 */
 
 /// It gets a test by id, and returns it as a JSON object
-/// 
+///
 /// Arguments:
-/// 
+///
 /// * `db`: &State<TestsRepo> - this is the database connection to the tests table
 /// * `adb`: &State<TActionRepo> - this is the connection to the database
 /// * `user_db`: &State<UserRepo> - this is the user database, which is used to check if the user is
 /// authorized to access the test.
 /// * `id`: &str - the id of the test
 /// * `token`: the token of the user who is requesting the test
-/// 
+///
 /// Returns:
-/// 
+///
 /// A test with the given id.
 #[get("/user/<token>/get/test?<id>")]
 pub async fn get_test_by_id_user(
@@ -307,7 +338,57 @@ pub async fn get_test_by_id_user(
     }
 }
 
-/* 
-TODO: Add a route to get random test by level
-Percentage of tests by type: choice - 70%, action - 30%
-*/
+/// This function returns a random test for a user based on the level of the test
+/// 
+/// Arguments:
+/// 
+/// * `db`: &State<TestsRepo> - this is the database connection to the tests table
+/// * `adb`: &State<TActionRepo> - this is the action test database
+/// * `user_db`: &State<UserRepo> - this is the user database that we created in the previous step.
+/// * `level`: i32 - the level of the test
+/// * `id`: The user's id
+/// * `token`: The token that the user has received when they logged in.
+/// 
+/// Returns:
+/// 
+/// All tests with the given level
+#[get("/user/<id>/<token>/get/random/test?<level>")]
+pub async fn get_random_test_by_level_user(
+    db: &State<TestsRepo>,
+    adb: &State<TActionRepo>,
+    user_db: &State<UserRepo>,
+    level: i32,
+    id: &str,
+    token: &str,
+) -> Result<Json<AllTests>, Status> {
+    if authorize_token(token.to_string(), user_db).await {
+        let user = user_db.get_user_by_id(&id.to_string()).await.unwrap().unwrap();
+        let user_level_progress = user.progress.tests;
+        let mut choice_tests = db
+            .get_all_tests()
+            .await
+            .unwrap()
+            .into_iter()
+            .filter(|test| test.level == level && !user_level_progress.contains(&test.id.unwrap().to_string()))
+            .collect::<Vec<TestModel>>();
+        let mut action_tests = adb
+            .get_all_tests()
+            .await
+            .unwrap()
+            .into_iter()
+            .filter(|test| test.level == level && !user_level_progress.contains(&test.id.unwrap().to_string()))
+            .collect::<Vec<TestModelWithActions>>();
+        // Create all tests with choice test percentage of 70% and action test percentage of 30%
+        choice_tests.shuffle(&mut thread_rng());
+        action_tests.shuffle(&mut thread_rng());
+
+        choice_tests.truncate((choice_tests.len() as f32 * 0.7) as usize);
+        action_tests.truncate((action_tests.len() as f32 * 0.3) as usize);
+
+        let all_tests = AllTests::new(choice_tests, action_tests);
+
+        Ok(Json(all_tests))
+    } else {
+        Err(Status::Unauthorized)
+    }
+}
