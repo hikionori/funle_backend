@@ -163,6 +163,7 @@ mod test_repo_tests {
     async fn gen_test() -> TestModel {
         TestModel {
             id: None,
+            theme: "addition".to_string(),
             text_of_question: "1 + 1".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()
@@ -238,6 +239,7 @@ mod test_repo_tests {
         let client = setup(true).await;
         let test = TestModel {
             id: None,
+            theme: "addition".to_string(),
             text_of_question: "1 + 1".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()
@@ -251,6 +253,7 @@ mod test_repo_tests {
         println!("{:?}", test_id.to_string());
         let new_test = TestModel {
             id: Some(test_id),
+            theme: "addition".to_string(),
             text_of_question: "2 + 2".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()
@@ -279,6 +282,7 @@ mod test_repo_tests {
         let client = setup(true).await;
         let test = TestModel {
             id: None,
+            theme: "addition".to_string(),
             text_of_question: "1 + 1".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()

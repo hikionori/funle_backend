@@ -486,25 +486,16 @@ mod cource_repo_tests {
         let info_id = create_info_in_db(info).await;
         let test = TestModel {
             id: None,
+            theme: "addition".to_string(),
             text_of_question: "1 + 1".to_string(),
             correct_answer: "2".to_string(),
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
-        let test_id = create_test_in_db(test).await;
+        create_test_in_db(test).await;
 
-        let test_cell = Level {
-            id: test_id.clone(),
-            title: "Level title".to_string(),
-            mini_image: "Bytes".to_string().as_bytes().to_vec(),
-            n_of_tests: Some(1)
-        };
-        let info_cell = Level {
-            id: info_id.clone(),
-            title: "Level title".to_string(),
-            mini_image: "Bytes".to_string().as_bytes().to_vec(),
-            n_of_tests: None
-        };
+        let test_cell = Level::new("Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
+        let info_cell = Level::new("Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), None, "info".to_owned());
 
         cource_repo
             .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
@@ -552,25 +543,16 @@ mod cource_repo_tests {
         let info_id = create_info_in_db(info).await;
         let test = TestModel {
             id: None,
+            theme: "addition".to_string(),
             text_of_question: "1 + 1".to_string(),
             correct_answer: "2".to_string(),
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
-        let test_id = create_test_in_db(test).await;
+        create_test_in_db(test).await;
 
-        let test_cell = Level {
-            id: test_id.clone(),
-            title: "Level title".to_string(),
-            mini_image: "Bytes".to_string().as_bytes().to_vec(),
-            n_of_tests: 2.into()
-        };
-        let info_cell = Level {
-            id: info_id.clone(),
-            title: "Level title".to_string(),
-            mini_image: "Bytes".to_string().as_bytes().to_vec(),
-            n_of_tests: None
-        };
+        let test_cell = Level::new("Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
+        let info_cell = Level::new("Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), None, "info".to_owned());
 
         cource_repo
             .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
@@ -624,25 +606,16 @@ mod cource_repo_tests {
         let info_id = create_info_in_db(info).await;
         let test = TestModel {
             id: None,
+            theme: "addition".to_string(),
             text_of_question: "1 + 1".to_string(),
             correct_answer: "2".to_string(),
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
-        let test_id = create_test_in_db(test).await;
+        create_test_in_db(test).await;
 
-        let test_cell = Level {
-            id: test_id.clone(),
-            title: "Level title".to_string(),
-            mini_image: "Bytes".to_string().as_bytes().to_vec(),
-            n_of_tests: 2.into(),
-        };
-        let info_cell = Level {
-            id: info_id.clone(),
-            title: "Level title".to_string(),
-            mini_image: "Bytes".to_string().as_bytes().to_vec(),
-            n_of_tests: None
-        };
+        let test_cell = Level::new("Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
+        let info_cell = Level::new("Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), None, "info".to_owned());
 
         cource_repo
             .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
@@ -657,12 +630,7 @@ mod cource_repo_tests {
             .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
             .await;
 
-        let new_test_cell = Level {
-            id: test_id.clone(),
-            title: "New Level title".to_string(),
-            mini_image: "Bytes".to_string().as_bytes().to_vec(),
-            n_of_tests: 2.into()
-        };
+        let new_test_cell = Level::new("New cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
         cource_repo
             .update_level(
                 cource_id.clone().unwrap().as_str(),

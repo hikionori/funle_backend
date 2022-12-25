@@ -338,6 +338,15 @@ pub async fn get_test_by_id_user(
     }
 }
 
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RandReq<'r> {
+    pub level: i32,
+    pub number_of_tests: i32,
+    pub theme: &'r str,
+    pub id: &'r str,
+}
+
 /// This function returns a random test for a user based on the level of the test
 /// 
 /// Arguments:
@@ -349,21 +358,26 @@ pub async fn get_test_by_id_user(
 /// * `id`: The user's id
 /// * `token`: The token that the user has received when they logged in.
 /// * `number_of_tests`: The number of tests that the user wants to get
+/// * `theme`: The theme of the test
 /// 
 /// Returns:
 /// 
 /// N number of tests based on the level of the test and what the user has not completed yet.
-#[get("/user/<id>/<token>/get/random/<number_of_tests>/test?<level>")]
+#[get("/user/<token>/get/test/random", data="<req>")]
 pub async fn get_random_test_by_level_user(
     db: &State<TestsRepo>,
     adb: &State<TActionRepo>,
     user_db: &State<UserRepo>,
-    level: i32,
-    id: &str,
     token: &str,
-    number_of_tests: i32,
+    req: Json<RandReq<'_>>,
 ) -> Result<Json<AllTests>, Status> {
     if authorize_token(token.to_string(), user_db).await {
+        let req = req.into_inner();
+        let level = req.level;
+        let number_of_tests = req.number_of_tests;
+        let theme = req.theme;
+        let id = req.id;
+        
         let user = user_db.get_user_by_id(&id.to_string()).await.unwrap().unwrap();
         let user_level_progress = user.progress.tests;
         let mut choice_tests = db
@@ -371,14 +385,14 @@ pub async fn get_random_test_by_level_user(
             .await
             .unwrap()
             .into_iter()
-            .filter(|test| test.level == level && !user_level_progress.contains(&test.id.unwrap().to_string()))
+            .filter(|test| test.level == level && !user_level_progress.contains(&test.id.unwrap().to_string()) && test.theme == *theme)
             .collect::<Vec<TestModel>>();
         let mut action_tests = adb
             .get_all_tests()
             .await
             .unwrap()
             .into_iter()
-            .filter(|test| test.level == level && !user_level_progress.contains(&test.id.unwrap().to_string()))
+            .filter(|test| test.level == level && !user_level_progress.contains(&test.id.unwrap().to_string()) && test.theme == *theme)
             .collect::<Vec<TestModelWithActions>>();
         // Create all tests with choice test percentage of 70% and action test percentage of 30%
         choice_tests.shuffle(&mut thread_rng());

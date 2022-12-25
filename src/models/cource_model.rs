@@ -5,6 +5,7 @@ use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as};
 
+use uuid::Uuid;
 // use crate::models::{info_model::InfoModel, tests_model::TestModel};
 
 /*
@@ -63,21 +64,26 @@ pub struct CourseModel {
 /// * `id`: The id of the level.
 /// * `title`: The title of the level.
 /// * `mini_image`: The image that will be displayed in the level selection screen.
+/// * `type_`: The type of the level (info or test).
+/// * `n_of_tests`: The number of tests in the level.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Level {
-    pub id: String,          // id of info or test
+    pub id: String,          // cell id
     pub title: String,       // title of info or test
     pub mini_image: Vec<u8>, // mini image of info or test
+    pub type_: String,       // type of level (info or test)
     pub n_of_tests: Option<i32>, // number of tests in the level
 }
 
 #[allow(dead_code)]
 impl Level {
-    pub fn new(id: String, title: String, mini_image: Vec<u8>, n_of_tests: Option<i32>) -> Self {
+    pub fn new(title: String, mini_image: Vec<u8>, n_of_tests: Option<i32>, type_: String) -> Self {
+        let id = Uuid::new_v4().to_string();
         Self {
             id,
             title,
             mini_image,
+            type_,
             n_of_tests,
         }
     }
@@ -87,6 +93,7 @@ impl Level {
             id: self.id.clone(),
             title: self.title.clone(),
             mini_image: self.mini_image.clone(),
+            type_: self.type_.clone(),
             n_of_tests: self.n_of_tests,
         }
     }

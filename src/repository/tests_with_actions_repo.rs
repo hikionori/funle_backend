@@ -108,6 +108,7 @@ mod tests_with_actions_tests {
     async fn gen_test() -> Test {
         Test {
             id: None,
+            theme: "arithmetic".to_string(),
             example: "2 + 2 * 2".to_string(),
             actions: vec!["2 * 2".to_string(), "2 + 4".to_owned()],
             answer: "6".to_owned(),
@@ -246,6 +247,7 @@ mod tests_with_actions_tests {
                     .unwrap();
                 let new_test = Test {
                     id: Some(test.id.unwrap()),
+                    theme: "addition".to_string(),
                     example: "2 + 2 / 2".to_string(),
                     actions: vec!["2 / 2".to_string(), "2 + 1".to_string()],
                     answer: "3".to_string(),
