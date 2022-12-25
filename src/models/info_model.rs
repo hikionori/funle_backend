@@ -25,6 +25,7 @@ pub struct InfoModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub title: String,
+    pub theme: String,
     #[serde_as(as = "Vec<(_, _)>")]
     pub content_levels: HashMap<i32, Vec<ContentLevel>>,
 }

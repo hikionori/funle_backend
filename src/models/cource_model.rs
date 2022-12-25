@@ -68,17 +68,21 @@ pub struct CourseModel {
 /// * `n_of_tests`: The number of tests in the level.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Level {
-    pub id: String,          // cell id
+    pub id: String,          // cell id. If None, then generate new id, else use id
     pub title: String,       // title of info or test
     pub mini_image: Vec<u8>, // mini image of info or test
     pub type_: String,       // type of level (info or test)
     pub n_of_tests: Option<i32>, // number of tests in the level
+
 }
 
 #[allow(dead_code)]
 impl Level {
-    pub fn new(title: String, mini_image: Vec<u8>, n_of_tests: Option<i32>, type_: String) -> Self {
-        let id = Uuid::new_v4().to_string();
+    pub fn new(id: Option<String>, title: String, mini_image: Vec<u8>, n_of_tests: Option<i32>, type_: String) -> Self {
+        let id = match id {
+            Some(id) => id,
+            None => Uuid::new_v4().to_string(),
+        };
         Self {
             id,
             title,

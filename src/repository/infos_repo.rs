@@ -192,6 +192,7 @@ mod info_repo_tests {
         }
         InfoModel {
             id: None,
+            theme: "test".to_string(),
             title: "test".to_string(),
             content_levels,
         }
@@ -271,6 +272,7 @@ mod info_repo_tests {
         let info_id = get_info_id(&"test".to_string()).await;
         let new_info = InfoModel {
             id: ObjectId::parse_str(info_id.clone().as_str()).ok(),
+            theme: "test2".to_string(),
             title: "test2".to_string(),
             content_levels: info.content_levels,
         };
