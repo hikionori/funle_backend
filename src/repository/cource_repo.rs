@@ -1,19 +1,18 @@
-#![allow(unused_imports)]
 #![allow(dead_code)]
-#![allow(unused_parens)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
 
 use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
 
-use crate::models::cource_model::{self, *};
+use crate::models::cource_model::*;
 use mongodb::{
-    bson::{bson, doc, extjson::de::Error, oid::ObjectId},
+    bson::{doc, oid::ObjectId},
     results::{DeleteResult, InsertOneResult},
     Client, Collection,
 };
-use tokio;
 
 pub struct CourceRepo {
     collection: Collection<CourseModel>,
@@ -442,7 +441,7 @@ mod cource_repo_tests {
             .delete(cource_id.clone().unwrap().as_str())
             .await;
         let cource = cource_repo.get(cource_id.unwrap().as_str()).await;
-        if let Some(_) = cource {
+        if cource.is_some() {
             panic!("Cource not deleted");
         }
     }
