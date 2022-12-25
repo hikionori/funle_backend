@@ -68,14 +68,17 @@ pub struct Level {
     pub id: String,          // id of info or test
     pub title: String,       // title of info or test
     pub mini_image: Vec<u8>, // mini image of info or test
+    pub n_of_tests: Option<i32>, // number of tests in the level
 }
 
+#[allow(dead_code)]
 impl Level {
-    pub fn new(id: String, title: String, mini_image: Vec<u8>) -> Self {
+    pub fn new(id: String, title: String, mini_image: Vec<u8>, n_of_tests: Option<i32>) -> Self {
         Self {
             id,
             title,
             mini_image,
+            n_of_tests,
         }
     }
 
@@ -84,6 +87,7 @@ impl Level {
             id: self.id.clone(),
             title: self.title.clone(),
             mini_image: self.mini_image.clone(),
+            n_of_tests: self.n_of_tests,
         }
     }
 }

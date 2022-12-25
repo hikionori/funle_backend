@@ -348,11 +348,12 @@ pub async fn get_test_by_id_user(
 /// * `level`: i32 - the level of the test
 /// * `id`: The user's id
 /// * `token`: The token that the user has received when they logged in.
+/// * `number_of_tests`: The number of tests that the user wants to get
 /// 
 /// Returns:
 /// 
-/// All tests with the given level
-#[get("/user/<id>/<token>/get/random/test?<level>")]
+/// N number of tests based on the level of the test and what the user has not completed yet.
+#[get("/user/<id>/<token>/get/random/<number_of_tests>/test?<level>")]
 pub async fn get_random_test_by_level_user(
     db: &State<TestsRepo>,
     adb: &State<TActionRepo>,
@@ -360,6 +361,7 @@ pub async fn get_random_test_by_level_user(
     level: i32,
     id: &str,
     token: &str,
+    number_of_tests: i32,
 ) -> Result<Json<AllTests>, Status> {
     if authorize_token(token.to_string(), user_db).await {
         let user = user_db.get_user_by_id(&id.to_string()).await.unwrap().unwrap();
@@ -382,9 +384,14 @@ pub async fn get_random_test_by_level_user(
         choice_tests.shuffle(&mut thread_rng());
         action_tests.shuffle(&mut thread_rng());
 
+        // Get the number of tests that we need to return to the user
+        let number_of_tests = number_of_tests as usize;
+        choice_tests.truncate(number_of_tests);
+        action_tests.truncate(number_of_tests);
+
         choice_tests.truncate((choice_tests.len() as f32 * 0.7) as usize);
         action_tests.truncate((action_tests.len() as f32 * 0.3) as usize);
-
+        
         let all_tests = AllTests::new(choice_tests, action_tests);
 
         Ok(Json(all_tests))

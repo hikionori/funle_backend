@@ -497,11 +497,13 @@ mod cource_repo_tests {
             id: test_id.clone(),
             title: "Level title".to_string(),
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
+            n_of_tests: Some(1)
         };
         let info_cell = Level {
             id: info_id.clone(),
             title: "Level title".to_string(),
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
+            n_of_tests: None
         };
 
         cource_repo
@@ -561,11 +563,13 @@ mod cource_repo_tests {
             id: test_id.clone(),
             title: "Level title".to_string(),
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
+            n_of_tests: 2.into()
         };
         let info_cell = Level {
             id: info_id.clone(),
             title: "Level title".to_string(),
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
+            n_of_tests: None
         };
 
         cource_repo
@@ -631,11 +635,13 @@ mod cource_repo_tests {
             id: test_id.clone(),
             title: "Level title".to_string(),
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
+            n_of_tests: 2.into(),
         };
         let info_cell = Level {
             id: info_id.clone(),
             title: "Level title".to_string(),
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
+            n_of_tests: None
         };
 
         cource_repo
@@ -655,6 +661,7 @@ mod cource_repo_tests {
             id: test_id.clone(),
             title: "New Level title".to_string(),
             mini_image: "Bytes".to_string().as_bytes().to_vec(),
+            n_of_tests: 2.into()
         };
         cource_repo
             .update_level(
