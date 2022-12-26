@@ -134,7 +134,7 @@ impl<T, A> TestRes<T, A> {
 /// Returns:
 ///
 /// A JSON object containing all tests and tests with actions.
-#[get("/admin/get/all")]
+#[get("/admin/get/tests/all")]
 pub async fn get_all_tests(
     test_db: &State<TestsRepo>,
     ta_db: &State<TActionRepo>,

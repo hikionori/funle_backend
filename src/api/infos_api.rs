@@ -77,7 +77,7 @@ pub async fn get_info_admin(db: &State<InfosRepo>, id: &str) -> Result<Json<Info
 /// Returns:
 /// 
 /// A vector of InfoModel
-#[get("/admin/get/infos")]
+#[get("/admin/get/info/all")]
 pub async fn get_all_infos(db: &State<InfosRepo>) -> Result<Json<Vec<InfoModel>>, Status> {
     let infos = db.get_all_infos().await;
     match infos {

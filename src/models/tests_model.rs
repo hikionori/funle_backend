@@ -10,12 +10,12 @@ use mongodb::{bson::oid::ObjectId, options::UpdateModifications};
 /// `TestModel` is a struct that has an `id` field of type `Option<ObjectId>`, a `text_of_question`
 /// field of type `String`, an `answers` field of type `Vec<String>`, a `correct_answer` field of type
 /// `String`, and a `level` field of type `i32`.
-/// 
+///
 /// The `#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]` line is a Rust annotation that
 /// tells the Rust compiler to automatically
-/// 
+///
 /// Properties:
-/// 
+///
 /// * `id`: The id of the test.
 /// * `text_of_question`: The question itself
 /// * `answers`: A vector of strings that are the possible answers to the question.
@@ -35,12 +35,12 @@ pub struct TestModel {
 /// `TestModelWithActions` is a struct that has an `id` field of type `Option<ObjectId>`, a `example`
 /// field of type `String`, an `actions` field of type `Vec<String>`, an `answer` field of type
 /// `String`, and a `level` field of type `i32`.
-/// 
+///
 /// The `#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]` line is a Rust annotation that
 /// tells the Rust compiler to automatically generate some code for us. In this
-/// 
+///
 /// Properties:
-/// 
+///
 /// * `id`: The id of the test model.
 /// * `example`: The example sentence that the user will see.
 /// * `actions`: A list of actions that the user can take.
