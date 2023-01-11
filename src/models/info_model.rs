@@ -41,10 +41,10 @@ pub struct InfoModel {
 /// Properties:
 /// 
 /// * `content_type`: The content type of the data.
-/// * `data`: The actual data of the content level.
+/// * `data`: The actual data of the content level in base64.
 #[serde_as]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct ContentLevel {
     pub content_type: String,
-    pub data: Vec<u8>
+    pub data: String,
 }

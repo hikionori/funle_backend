@@ -154,3 +154,9 @@ pub async fn delete_cource_admin(db: &State<CourceRepo>, id: &str) -> Result<Sta
     db.delete(id).await;
     Ok(Status::Ok)
 }
+
+#[post("/admin/add/cource/<cource_id>/level?<layer_number>", data="<level>")]
+pub async fn add_level_admin(db: &State<CourceRepo>, cource_id: &str, level: Json<Level>, layer_number: i32) -> Result<Status, Status> {
+    db.add_level(cource_id, level.into_inner(), layer_number).await;
+    Ok(Status::Ok)
+}

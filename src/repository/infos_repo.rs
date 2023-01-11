@@ -12,7 +12,10 @@ use mongodb::{
     results::{DeleteResult, InsertOneResult, UpdateResult},
     Client, Collection, Cursor
 };
-
+use base64::{
+    Engine as _,
+    engine::{general_purpose}
+};
 
 pub struct InfosRepo {
     collection: Collection<InfoModel>,
@@ -142,6 +145,14 @@ impl InfosRepo {
         Ok(result.unwrap())
     }
 
+    pub async fn encode_info_data(&self, data: Vec<u8>) -> String {
+        general_purpose::STANDARD.encode(data) 
+    }
+
+    pub async fn decode_info_data(&self, data: String) -> Vec<u8> {
+        general_purpose::STANDARD.decode(data).unwrap()
+    }
+
     /// "If you are sure, drop the collection."
     /// 
     /// The function takes a boolean parameter, `you_are_sure`. If the parameter is `true`, the function
@@ -186,7 +197,7 @@ mod info_repo_tests {
         for i in 0..3 {
             contents.push(ContentLevel {
                 content_type: "text".to_string(),
-                data: "test".as_bytes().to_vec(),
+                data: "test".to_owned(),
             });
             content_levels.insert(i, contents.clone());
         }
