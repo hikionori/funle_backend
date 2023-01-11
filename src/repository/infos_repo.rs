@@ -145,10 +145,30 @@ impl InfosRepo {
         Ok(result.unwrap())
     }
 
+    /// It encodes the data into a string.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `data`: The data to be encoded. It is a vector of bytes.
+    /// 
+    /// Returns:
+    /// 
+    /// A String
+    #[allow(dead_code)]
     pub async fn encode_info_data(&self, data: Vec<u8>) -> String {
         general_purpose::STANDARD.encode(data) 
     }
 
+    /// It decodes the data.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `data`: The data to be decoded. Base64 encoded string.
+    /// 
+    /// Returns:
+    /// 
+    /// A vector of bytes.
+    #[allow(dead_code)]
     pub async fn decode_info_data(&self, data: String) -> Vec<u8> {
         general_purpose::STANDARD.decode(data).unwrap()
     }
