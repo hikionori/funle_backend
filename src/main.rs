@@ -35,6 +35,7 @@ use repository::{
     user_repo::UserRepo,
 };
 
+
 #[launch]
 async fn rocket() -> _ {
     env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
