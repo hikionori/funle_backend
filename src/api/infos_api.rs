@@ -22,7 +22,7 @@ use rocket::{
 /// A JSON object containing the info with the given id.
 #[get("/user/<token>/get/info?<id>")]
 pub async fn get_info_user(db: &State<InfosRepo>, user_db: &State<UserRepo>, token: &str, id: &str) -> Result<Json<InfoModel>, Status> {
-    if authorize_token(token.to_string(), user_db).await {
+    if authorize_token(token.to_string(), user_db).await.0 {
         let info = db.get_info(&id.to_string()).await;
         match info {
             Ok(info) => {

@@ -157,8 +157,7 @@ pub async fn join_course(
     token: String,
     joining_data: Json<JoiningData>,
 ) -> Result<Status, Status> {
-    let access = authorize_token(token, db).await;
-    if access {
+    if authorize_token(token, db).await.0 {
         let joining_data = joining_data.into_inner();
         db.add_cource_to_user(joining_data.user_id, joining_data.course_id)
             .await;
@@ -187,8 +186,7 @@ pub async fn leave_course(
     token: String,
     joining_data: Json<JoiningData>,
 ) -> Result<Status, Status> {
-    let access = authorize_token(token, db).await;
-    if access {
+    if authorize_token(token, db).await.0 {
         let joining_data = joining_data.into_inner();
         db.remove_cource_from_user(joining_data.user_id, joining_data.course_id)
             .await;
@@ -242,8 +240,7 @@ pub async fn pass_test(
     token: String,
     test_passing_data: Json<TestPassingData>,
 ) -> Result<Status, Status> {
-    let access = authorize_token(token, db).await;
-    if access {
+    if authorize_token(token, db).await.0 {
         let test_passing_data = test_passing_data.into_inner();
         db.add_test_to_user(test_passing_data.user_id, test_passing_data.test_id)
             .await;
@@ -295,8 +292,7 @@ pub async fn pass_info(
     token: String,
     info_passing_data: Json<InfoPassingData>,
 ) -> Result<Status, Status> {
-    let access = authorize_token(token, db).await;
-    if access {
+    if  authorize_token(token, db).await.0 {
         let info_passing_data = info_passing_data.into_inner();
         db.add_info_to_user(info_passing_data.user_id, info_passing_data.info_id)
             .await;

@@ -323,8 +323,7 @@ pub async fn get_test_by_id_user(
     id: &str,
     token: &str,
 ) -> Result<Json<TestRes<TestModel, TestModelWithActions>>, Status> {
-    let access = authorize_token(token.to_string(), user_db).await;
-    if access {
+    if authorize_token(token.to_string(), user_db).await.0 {
         let test = db.get_test_by_id(&id.to_string()).await.unwrap();
         let test_with_actions = adb.get_test_by_id(id).await.unwrap();
         match (test, test_with_actions) {
@@ -371,7 +370,7 @@ pub async fn get_random_test_by_level_user(
     token: &str,
     req: Json<RandReq<'_>>,
 ) -> Result<Json<AllTests>, Status> {
-    if authorize_token(token.to_string(), user_db).await {
+    if authorize_token(token.to_string(), user_db).await.0 {
         let req = req.into_inner();
         let level = req.level;
         let number_of_tests = req.number_of_tests;

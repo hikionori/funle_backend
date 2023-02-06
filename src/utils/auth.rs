@@ -156,7 +156,7 @@ pub async fn authorize(headers: &rocket::http::HeaderMap<'_>) -> WebResult<Strin
 /// Returns:
 /// 
 /// A boolean value
-pub async fn authorize_token(token: String, db: &State<UserRepo>) -> bool {
+pub async fn authorize_token(token: String, db: &State<UserRepo>) -> (bool, String) {
     let decode = decode::<Claims>(
         &token,
         &DecodingKey::from_secret(JWT_SECRET),
@@ -167,7 +167,7 @@ pub async fn authorize_token(token: String, db: &State<UserRepo>) -> bool {
 
     let user = db.get_user_by_id(&decode.claims.sub).await.unwrap();
     if user.is_some() {
-        return true;
+        return (true, decode.claims.sub);
     }
-    false
+    (false, "null".to_string())
 }

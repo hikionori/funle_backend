@@ -29,7 +29,7 @@ use rocket::{
 /// A vector of CourseModel
 #[get("/user/<token>/get/cources/all")]
 pub async fn get_all_cources_user(db: &State<CourceRepo>, udb: &State<UserRepo>, token: &str) -> Result<Json<Vec<CourseModel>>, Status> {
-    if authorize_token(token.to_string(), udb).await {
+    if authorize_token(token.to_string(), udb).await.0 {
         let cources = db.get_all().await;
         match cources {
             Some(cources) => Ok(Json(cources)),
@@ -54,7 +54,7 @@ pub async fn get_all_cources_user(db: &State<CourceRepo>, udb: &State<UserRepo>,
 /// A JSON object of the course with the given ID.
 #[get("/user/<token>/get/cource?<id>")]
 pub async fn get_cource_user(db: &State<CourceRepo>, udb: &State<UserRepo>, token: &str, id: &str) -> Result<Json<CourseModel>, Status> {
-    if authorize_token(token.to_string(), udb).await {
+    if authorize_token(token.to_string(), udb).await.0 {
         let cource = db.get(id).await;
         match cource {
             Some(cource) => Ok(Json(cource)),
