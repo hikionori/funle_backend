@@ -52,7 +52,7 @@ pub struct UserLoginResponse {
 pub async fn register_user(
     db: &State<UserRepo>,
     user: Json<UserRegister>,
-) -> Result<Json<InsertOneResult>, Status> {
+) -> Result<Status, Status> {
     let user = user.into_inner();
     let user = UserModel {
         id: None,
@@ -68,7 +68,7 @@ pub async fn register_user(
     };
     let result = db.create_user(user).await;
     match result {
-        Ok(user) => Ok(Json(user)),
+        Ok(user) => Ok(Status::Created),
         Err(_) => Err(Status::InternalServerError),
     }
 }
@@ -292,7 +292,7 @@ pub async fn pass_info(
     token: String,
     info_passing_data: Json<InfoPassingData>,
 ) -> Result<Status, Status> {
-    if  authorize_token(token, db).await.0 {
+    if authorize_token(token, db).await.0 {
         let info_passing_data = info_passing_data.into_inner();
         db.add_info_to_user(info_passing_data.user_id, info_passing_data.info_id)
             .await;
