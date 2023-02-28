@@ -24,6 +24,7 @@ rand = "0.8.5"
 tokio = "1.22.0"
 serde_with = "2.1.0"
 base64 = "0.21.0"
+rocket_cors = "0.5.2"
 
 [dependencies.uuid]
 version = "1.2.2"

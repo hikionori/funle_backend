@@ -5,6 +5,7 @@ mod utils;
 
 #[macro_use]
 extern crate rocket;
+use rocket::{fairing::{Fairing, Info, Kind}, Request, Response, http::Header};
 use api::{
     auth_api::auth,
     cources_api::{
@@ -35,11 +36,31 @@ use repository::{
     user_repo::UserRepo,
 };
 
+pub struct CORS;
+
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
+
 #[launch]
 async fn rocket() -> _ {
     env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
 
     rocket::build()
+        .attach(CORS)
         // User API
         .mount(
             "/",
