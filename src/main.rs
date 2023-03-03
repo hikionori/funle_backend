@@ -5,7 +5,6 @@ mod utils;
 
 #[macro_use]
 extern crate rocket;
-use rocket::{fairing::{Fairing, Info, Kind}, Request, Response, http::Header};
 use api::{
     auth_api::auth,
     cources_api::{
@@ -20,11 +19,16 @@ use api::{
         get_test_by_id_user, update_test,
     },
     user_api::{
-        add_course_to_user, add_info_to_user, add_test_to_user, delete_user, get_user, get_users,
-        join_course, leave_course, login_user, pass_info, pass_test, register_user,
-        remove_course_from_user, remove_info_from_user, remove_test_from_user, update_user,
-        update_user_progress,
+        add_course_to_user, add_info_to_user, add_test_to_user, delete_user, get_user,
+        get_user_info, get_users, join_course, leave_course, login_user, pass_info, pass_test,
+        register_user, remove_course_from_user, remove_info_from_user, remove_test_from_user,
+        update_user, update_user_progress,
     },
+};
+use rocket::{
+    fairing::{Fairing, Info, Kind},
+    http::Header,
+    Request, Response,
 };
 use std::env;
 
@@ -43,13 +47,16 @@ impl Fairing for CORS {
     fn info(&self) -> Info {
         Info {
             name: "Add CORS headers to responses",
-            kind: Kind::Response
+            kind: Kind::Response,
         }
     }
 
     async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
         response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
-        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, GET, PATCH, OPTIONS",
+        ));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
     }
@@ -67,6 +74,7 @@ async fn rocket() -> _ {
             routes![
                 register_user,
                 login_user,
+                get_user_info,
                 join_course,
                 leave_course,
                 pass_info,

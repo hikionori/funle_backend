@@ -3,9 +3,8 @@
 use crate::{
     models::user_model::{UserModel, UserProgress},
     repository::user_repo::UserRepo,
-    utils::auth::authorize_token,
+    utils::auth::{authorize_token, decode_jwt},
 };
-use mongodb::results::InsertOneResult;
 use rocket::{
     http::Status,
     serde::json::Json,
@@ -68,7 +67,7 @@ pub async fn register_user(
     };
     let result = db.create_user(user).await;
     match result {
-        Ok(user) => Ok(Status::Created),
+        Ok(_) => Ok(Status::Created),
         Err(_) => Err(Status::InternalServerError),
     }
 }
@@ -109,6 +108,17 @@ pub async fn login_user(
             refresh_token,
         };
         Ok(Json(response))
+    } else {
+        Err(Status::Unauthorized)
+    }
+}
+
+#[post("/user/get/user/<token>")]
+pub async fn get_user_info(db: &State<UserRepo>, token: String) -> Result<Json<UserModel>, Status> {
+    if authorize_token(token.clone(), db).await.0 {
+        let user_id = decode_jwt(token.as_str()).unwrap().sub;
+        let user = db.get_user_by_id(&user_id).await.unwrap().unwrap();
+        Ok(Json(user))
     } else {
         Err(Status::Unauthorized)
     }

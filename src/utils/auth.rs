@@ -18,11 +18,11 @@ use crate::repository::user_repo::UserRepo;
 type WebResult<T> = std::result::Result<T, rocket::http::Status>;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Claims {
-    sub: String, // user id
-    iat: i64, // issued at
-    exp: i64, // expiration
-    role: UserRole, // role
+pub struct Claims {
+    pub sub: String, // user id
+    pub iat: i64, // issued at
+    pub exp: i64, // expiration
+    pub role: UserRole, // role
 }
 
 static JWT_SECRET: &[u8] = b"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDCYxcLzAo66NVlv8tCdzFEY5ap
@@ -106,7 +106,7 @@ fn jwt_from_header(headers: &rocket::http::HeaderMap) -> JWTResult<String> {
     Ok(auth_header.trim_start_matches("FunLe Security").to_string())
 }
 
-fn decode_jwt(token: &str) -> JWTResult<Claims> {
+pub fn decode_jwt(token: &str) -> JWTResult<Claims> {
     let validation = Validation::new(Algorithm::HS512);
     let token_data = decode::<Claims>(
         token,
