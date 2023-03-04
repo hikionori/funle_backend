@@ -113,7 +113,7 @@ pub async fn login_user(
     }
 }
 
-#[post("/user/get/user/<token>")]
+#[get("/user/get/user/<token>")]
 pub async fn get_user_info(db: &State<UserRepo>, token: String) -> Result<Json<UserModel>, Status> {
     if authorize_token(token.clone(), db).await.0 {
         let user_id = decode_jwt(token.as_str()).unwrap().sub;
