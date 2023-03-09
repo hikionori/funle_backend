@@ -1,52 +1,39 @@
 export {
-    Course,
     CourceBuilder,
-    LevelBuilder,
-    Level,
-    Type,
+    LevelBuilder, Type,
     createCource,
     updateCource,
     deleteCource,
     getCourceById,
-    getAllCources,
+    getAllCources
 } from "./cource";
+export type { Course, Level } from "./cource";
 
 export {
-    Info,
-    InfoBuilder,
-    Content,
-    ContentBuilder,
+    InfoBuilder, ContentBuilder,
     createInfo,
     updateInfo,
     deleteInfo,
     getInfoById,
-    getAllInfos,
+    getAllInfos
 } from "./info";
+export type { Info, Content } from "./info";
 
 export {
-    ActionTest,
-    ActionTestBuilder,
-    ChoiceTest,
-    ChoiceTestBuilder,
-    Test,
-    TestType,
-    AllTests,
-    createTest,
+    ActionTestBuilder, ChoiceTestBuilder, createTest,
     updateTest,
     deleteTest,
     getTestById,
-    getAllTests,
+    getAllTests
+} from "./tests";
+export type {
+    ActionTest, ChoiceTest, Test,
+    TestType,
+    AllTests
 } from "./tests";
 
 export {
-    User,
-    UserProgress,
-    JoiningData,
-    TestPassingData,
-    InfoPassingData,
-    UserBuilder,
-    UserRole,
-    addCourceToUserProgress,
+    UserBuilder, addCourceToUserProgress,
     removeCourceFromUserProgress,
     addInfoToUserProgress,
     removeInfoFromUserProgress,
@@ -56,5 +43,12 @@ export {
     getAllUsers,
     getUserById,
     updateUser,
-    updateUserProgress,
+    updateUserProgress
+} from "./user";export type {
+    User,
+    UserProgress,
+    JoiningData,
+    TestPassingData,
+    InfoPassingData, UserRole
 } from "./user";
+

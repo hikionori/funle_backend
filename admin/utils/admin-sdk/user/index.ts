@@ -19,12 +19,12 @@ export interface User {
 }
 
 export class UserBuilder implements User {
-    id: string | "None";
-    username: string;
-    email: string;
-    hashed_password: string;
-    role: UserRole;
-    progress: UserProgress;
+    id!: string | "None";
+    username!: string;
+    email!: string;
+    hashed_password!: string;
+    role!: UserRole;
+    progress!: UserProgress;
 
     public setId(id: string | "None") {
         this.id = id;

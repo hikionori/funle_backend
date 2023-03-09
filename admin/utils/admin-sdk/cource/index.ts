@@ -11,10 +11,10 @@ export interface Course {
 }
 
 export class CourceBuilder implements Course{
-    id: string;
-    title: string;
-    description: string;
-    levels: { [key: string]: Level[]; };
+    id!: string;
+    title!: string;
+    description!: string;
+    levels!: { [key: string]: Level[]; };
 
     public setId(id:string) {
         this.id = id;
@@ -65,11 +65,11 @@ export enum Type {
 }
 
 export class LevelBuilder implements Level {
-    id: string;
-    title: string;
-    mini_image: Uint8Array[];
-    type_: Type;
-    n_of_tests: number | "None";
+    id!: string;
+    title!: string;
+    mini_image!: Uint8Array[];
+    type_!: Type;
+    n_of_tests!: number | "None";
 
     public setId(id: string | "None") {
         this.id = id

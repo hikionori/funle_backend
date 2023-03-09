@@ -27,12 +27,12 @@ export interface AllTests {
 }
 
 export class ChoiceTestBuilder implements ChoiceTest {
-    id: string | "None";
-    theme: string;
-    text_of_question: string;
-    answers: string[];
-    correct_answer: string;
-    level: number;
+    id!: string | "None";
+    theme!: string;
+    text_of_question!: string;
+    answers!: string[];
+    correct_answer!: string;
+    level!: number;
 
     public setId(id: string | "None") {
         this.id = id;
@@ -84,12 +84,12 @@ export class ChoiceTestBuilder implements ChoiceTest {
 }
 
 export class ActionTestBuilder implements ActionTest {
-    id: string | "None";
-    theme: string;
-    example: string;
-    actions: string[];
-    answer: string;
-    level: number;
+    id!: string | "None";
+    theme!: string;
+    example!: string;
+    actions!: string[];
+    answer!: string;
+    level!: number;
 
     public setId(id: string | "None") {
         this.id = id;

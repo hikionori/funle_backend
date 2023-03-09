@@ -13,8 +13,8 @@ export interface Content {
 }
 
 export class ContentBuilder implements Content {
-    content_type: string;
-    data: Uint8Array;
+    content_type!: string;
+    data!: Uint8Array;
     
     public setContentType(content_type: string) {
         this.content_type = content_type;
@@ -34,10 +34,10 @@ export class ContentBuilder implements Content {
 }
 
 export class InfoBuilder implements Info {
-  id: string;
-  title: string;
-  theme: string;
-  content_levels: { [key: number]: Content[] };
+  id!: string;
+  title!: string;
+  theme!: string;
+  content_levels!: { [key: number]: Content[] };
 
   public setId(id: string | "None") {
     this.id = id;
