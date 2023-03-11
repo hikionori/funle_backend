@@ -1,9 +1,38 @@
 import React from "react";
 import Head from "next/head";
-import { Box } from "@chakra-ui/react";
-import TestCard from "../components/card";
+import { Box, Button } from "@chakra-ui/react";
+import TestCard, { TestCardProps } from "../components/card";
+import CardList from "../components/cardList";
+import { FaPlus, FaPlusCircle } from "react-icons/fa";
+import { color } from "framer-motion";
 
 export default function Tests() {
+    // Debugging list of cards. This will be replaced by a call to the SDK.
+    let cards: TestCardProps[] = [
+        {
+            id: "1",
+            text: "test",
+            type: "choice",
+            onClick: (id: string) => editButtonHandler(id),
+            onDelete: (id: string) => deleteButtonHandler(id),
+        },
+        {
+            id: "2",
+            text: "test",
+            type: "choice",
+            onClick: (id: string) => editButtonHandler(id),
+            onDelete: (id: string) => deleteButtonHandler(id),
+        },
+    ];
+
+    const editButtonHandler = (id: string) => {
+        console.log("edit button clicked at card with id: " + id);
+    };
+
+    const deleteButtonHandler = (id: string) => {
+        console.log("delete button clicked at card with id: " + id);
+    };
+
     return (
         <>
             <Head>
@@ -14,8 +43,25 @@ export default function Tests() {
                 />
             </Head>
             <Box>
-                <TestCard id="test" text="test" type="action" onClick={() => {}} onDelete={() => {}}/>
+                <CardList theme={"theme"} cards={cards} />
+                <CardList theme={"theme"} cards={cards} />
             </Box>
+            {/* Create FloatingBottomButton */}
+            {/* TODO: onClick for create new test */}
+            <Button
+                position={"fixed"}
+                bgColor={"orange.200"}
+                _hover={{ bgColor: "orange.400", color: "white" }}
+                borderRadius="full"
+                bottom="40px"
+                right={"40px"}
+                height="70px"
+                width="70px"
+                zIndex={2}
+                onClick={() => {}}
+            >
+                <FaPlus size={"30px"} />
+            </Button>
         </>
     );
 }

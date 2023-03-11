@@ -5,17 +5,20 @@ import {
     Button,
     ButtonGroup,
     Center,
+    Flex,
+    Spacer,
+    HStack,
 } from "@chakra-ui/react";
 import { TestType } from "../../utils/admin-sdk/tests/index";
 import { FiTrash, FiEdit } from "react-icons/fi";
 import React from "react";
 
-interface TestCardProps {
+export interface TestCardProps {
     id: string;
     text: string;
     type: TestType;
-    onClick: (id: string) => void;
-    onDelete?: (id: string) => void;
+    onClick: Function;
+    onDelete?: Function;
 }
 
 export default function TestCard(props: TestCardProps) {
@@ -23,45 +26,57 @@ export default function TestCard(props: TestCardProps) {
     const onDelete = props.onDelete;
 
     return (
-        <>
-            <Box height={"80px"}>
-                <Stack
-                    height={"100%"}
-                    borderColor={"black"}
-                    borderRadius={"xl"}
-                    backgroundColor={"blue.100"}
-                    justifyContent={"space-around"}
-                    direction={"row"}
-                    textAlign={"center"}
-                >
-                    <Center>
+        <Box height={"80px"} paddingTop="3">
+            <Flex
+                height={"100%"}
+                borderWidth={"thin"}
+                borderColor={"black"}
+                borderRadius={"xl"}
+                backgroundColor={"whiteAlpha.400"}
+                // justifyContent={"space-around"}
+                direction={"row"}
+                textAlign={"center"}
+            >
+                <HStack spacing={"20"}>
+                    <Center paddingLeft={"40"}>
                         <Text>id: {id}</Text>
                     </Center>
-                    <Center>
+                    <Spacer />
+                    <Center paddingLeft={"10"} paddingRight={"20"}>
                         <Text>task: {text}</Text>
                     </Center>
                     <Center>
                         <Text>type : {type}</Text>
                     </Center>
-
-                    <ButtonGroup
-                        flexDir={"row"}
-                        alignSelf={"center"}
-                        justifyContent={"space-around"}
-                        width={"40"}
+                </HStack>
+                <Spacer />
+                <ButtonGroup
+                    flexDir={"row"}
+                    alignSelf={"center"}
+                    justifyContent={"space-around"}
+                    paddingRight={"20"}
+                >
+                    <Button
+                        bgColor={"blackAlpha.200"}
+                        color="black"
+                        onClick={() => onClick(id)}
+                        _hover={{ color: "white", bgColor: "orange.400" }}
                     >
-                        <Button onClick={() => onClick(id)}>
-                            <FiEdit />
-                        </Button>
+                        <FiEdit />
+                    </Button>
 
-                        {onDelete && (
-                            <Button onClick={() => onDelete(id)}>
-                                <FiTrash />
-                            </Button>
-                        )}
-                    </ButtonGroup>
-                </Stack>
-            </Box>
-        </>
+                    {onDelete && (
+                        <Button
+                            bgColor={"blackAlpha.200"}
+                            color="black"
+                            _hover={{ color: "white", bgColor: "red.600" }}
+                            onClick={() => onDelete(id)}
+                        >
+                            <FiTrash />
+                        </Button>
+                    )}
+                </ButtonGroup>
+            </Flex>
+        </Box>
     );
 }
