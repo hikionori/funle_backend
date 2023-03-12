@@ -5,6 +5,7 @@ import TestCard, { TestCardProps } from "../../components/card";
 import CardList from "../../components/cardList";
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
 import { color } from "framer-motion";
+import { useRouter } from "next/router";
 
 interface ThemeCardListProps {
     theme: string;
@@ -58,15 +59,15 @@ export default function Tests() {
         },
      ]
     */
-    
+
+    const router = useRouter();
     const [ready, setReady] = React.useState(false);
-    
+
     const [themeCardLists, setThemeCardLists] = React.useState<
         ThemeCardListProps[]
     >([]);
-    
-    const themeList: string[] = [];
 
+    const themeList: string[] = [];
 
     useEffect(() => {
         // TODO: Get tests from SDK
@@ -78,8 +79,8 @@ export default function Tests() {
                         id: "1",
                         text: "test",
                         type: "choice",
-                        onClick: () => {
-                            console.log("test");
+                        onClick: (id: string) => {
+                            editButtonHandler(id);
                         },
                         onDelete: () => {
                             console.log("test");
@@ -128,12 +129,11 @@ export default function Tests() {
         ]);
         setTimeout(() => {
             setReady(true);
-        }
-        , 1000);
+        }, 1000);
     }, [ready]);
 
     const editButtonHandler = (id: string) => {
-        console.log("edit button clicked at card with id: " + id);
+        router.push("/tests/edit/" + id);
     };
 
     const deleteButtonHandler = (id: string) => {
@@ -186,7 +186,9 @@ export default function Tests() {
                 width="70px"
                 zIndex={2}
                 onClick={() => {
-                    console.log("create new test");
+                    // Navigate to create new test page
+                    // folder structure: pages/tests/create.tsx
+                    router.push("/tests/create");
                 }}
             >
                 <FaPlus size={"30px"} />
