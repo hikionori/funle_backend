@@ -64,7 +64,7 @@ export default function Tests() {
     const router = useRouter();
     const [ready, setReady] = React.useState(false);
 
-    const [themeCardLists, setThemeCardLists] = React.useState<
+    const [cardLists, setCardLists] = React.useState<
         ThemeCardListProps[]
     >([]);
 
@@ -72,7 +72,7 @@ export default function Tests() {
 
     useEffect(() => {
         // TODO: Get tests from SDK
-        setThemeCardLists([
+        setCardLists([
             {
                 theme: "test",
                 cards: [
@@ -153,10 +153,10 @@ export default function Tests() {
             </Head>
             <Box>
                 {ready ? (
-                    themeCardLists.map((themeCardList) => (
+                    cardLists.map((cardList) => (
                         <CardList
-                            theme={themeCardList.theme}
-                            cards={themeCardList.cards}
+                        theme={cardList.theme}
+                        cards={cardList.cards}
                         />
                     ))
                 ) : (
@@ -171,8 +171,6 @@ export default function Tests() {
                     </AbsoluteCenter>
                 )}
             </Box>
-            {/* Create FloatingBottomButton */}
-            {/* TODO: onClick for create new test */}
             <BottomFloatingButton onClick={() => { router.push("/tests/create") } } icon={<FaPlus size={30} />} />
         </>
     );
