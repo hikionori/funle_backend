@@ -6,6 +6,7 @@ import CardList from "../../components/cardList";
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
 import { color } from "framer-motion";
 import { useRouter } from "next/router";
+import BottomFloatingButton from "../../components/bottomFloatingButton";
 
 interface ThemeCardListProps {
     theme: string;
@@ -83,6 +84,7 @@ export default function Tests() {
                             editButtonHandler(id);
                         },
                         onDelete: () => {
+                            // TODO: Delete test from SDK and update list
                             console.log("test");
                         },
                     },
@@ -171,28 +173,7 @@ export default function Tests() {
             </Box>
             {/* Create FloatingBottomButton */}
             {/* TODO: onClick for create new test */}
-            <Button
-                position={"fixed"}
-                bgColor={"white"}
-                _hover={{
-                    bgColor: "black",
-                    color: "white",
-                    transition: "50ms linear",
-                }}
-                borderRadius="full"
-                bottom="40px"
-                right={"40px"}
-                height="70px"
-                width="70px"
-                zIndex={2}
-                onClick={() => {
-                    // Navigate to create new test page
-                    // folder structure: pages/tests/create.tsx
-                    router.push("/tests/create");
-                }}
-            >
-                <FaPlus size={"30px"} />
-            </Button>
+            <BottomFloatingButton onClick={() => { router.push("/tests/create") } } icon={<FaPlus size={30} />} />
         </>
     );
 }
