@@ -30,7 +30,7 @@ export default function TestCard(props: TestCardProps) {
             <Flex
                 height={"100%"}
                 borderWidth={"thin"}
-                borderColor={"black"}
+                borderColor={"blackAlpha.400"}
                 borderRadius={"xl"}
                 backgroundColor={"whiteAlpha.400"}
                 // justifyContent={"space-around"}
@@ -46,7 +46,7 @@ export default function TestCard(props: TestCardProps) {
                         <Text>task: {text}</Text>
                     </Center>
                     <Center>
-                        <Text>type : {type}</Text>
+                        <Text>type: {type}</Text>
                     </Center>
                 </HStack>
                 <Spacer />
