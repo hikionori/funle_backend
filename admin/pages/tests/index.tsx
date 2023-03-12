@@ -92,8 +92,8 @@ export default function Tests() {
                         id: "2",
                         text: "test",
                         type: "action",
-                        onClick: () => {
-                            console.log("test");
+                        onClick: (id: string) => {
+                            editButtonHandler(id);
                         },
                         onDelete: () => {
                             console.log("test");
@@ -108,8 +108,8 @@ export default function Tests() {
                         id: "3",
                         text: "test",
                         type: "choice",
-                        onClick: () => {
-                            console.log("test");
+                        onClick: (id: string) => {
+                            editButtonHandler(id);
                         },
                         onDelete: () => {
                             console.log("test");
@@ -119,8 +119,8 @@ export default function Tests() {
                         id: "4",
                         text: "test",
                         type: "action",
-                        onClick: () => {
-                            console.log("test");
+                        onClick: (id: string) => {
+                            editButtonHandler(id);
                         },
                         onDelete: () => {
                             console.log("test");
