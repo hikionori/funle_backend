@@ -31,9 +31,9 @@ interface LinkItemProps {
 }
 const LinkItems: Array<LinkItemProps> = [
     { name: "Home", icon: FiHome, path: "/" },
-    { name: "Cources", icon: FiCodesandbox, path: "/cources" },
-    { name: "Tests", icon: FiFileText, path: "/tests" },
-    { name: "Tutotials", icon: FiBookOpen, path: "/tutorials" },
+    { name: "Cources", icon: FiCodesandbox, path: "/cources/" },
+    { name: "Tests", icon: FiFileText, path: "/tests/" },
+    { name: "Tutotials", icon: FiBookOpen, path: "/tutorials/" },
 ];
 
 export default function SimpleSidebar({ children }: { children: ReactNode }) {

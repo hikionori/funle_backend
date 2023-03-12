@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import Head from "next/head";
 import { AbsoluteCenter, Box, Button, Center, Spinner } from "@chakra-ui/react";
-import TestCard, { TestCardProps } from "../components/card";
-import CardList from "../components/cardList";
+import TestCard, { TestCardProps } from "../../components/card";
+import CardList from "../../components/cardList";
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
 import { color } from "framer-motion";
 
