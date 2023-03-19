@@ -6,22 +6,40 @@ import {
     HStack,
     Input,
     Spacer,
+    Text,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 
 interface OptionCardProps {
+    data: any;
     type: string;
-    onDelete: () => void;
+    index: number;
+    onEdit: (data: any) => void;
+    onDelete?: (index: number) => void;
 }
 
 export default function OptionCard(props: OptionCardProps) {
-    const [text, setText] = useState<string>("");
-    const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [isCorrect, setIsCorrect] = useState<boolean>(false);
+    const [text, setText] = useState<string>(props.data.text);
+    const [isCorrect, setIsCorrect] = useState<boolean>(props.data?.isCorrect);
 
     const typeIs = props.type;
     const onDelete = props.onDelete;
+    const onEdit = props.onEdit;
+    const index = props.index;
+
+    useEffect(() => {
+        if (typeIs==="choice") {
+            onEdit({ text, isCorrect });
+        } else {
+            onEdit({ text });
+        }
+    }, [text, isCorrect]);
+
+    useEffect(() => {
+        setText(props.data.text);
+        setIsCorrect(props.data?.isCorrect);
+    }, [props.data]);
 
     if (typeIs === "choice") {
         return (
@@ -35,8 +53,10 @@ export default function OptionCard(props: OptionCardProps) {
                 <Spacer />
                 <HStack marginBottom={"10px"}>
                     <Button
-                        onClick={onDelete}
                         color="black"
+                        onClick={() => {
+                            if (onDelete) onDelete(index);
+                        }}
                         bgColor="red.200"
                         _hover={{
                             bgColor: "red.300",
@@ -56,6 +76,7 @@ export default function OptionCard(props: OptionCardProps) {
                         _hover={{
                             borderColor: "orange.400",
                         }}
+                        onChange={(e) => setText(e.target.value)}
                     ></Input>
                     <Checkbox
                         isChecked={isCorrect}
@@ -81,9 +102,11 @@ export default function OptionCard(props: OptionCardProps) {
             <Spacer />
             <HStack marginBottom={"10px"}>
                 <Button
-                    onClick={onDelete}
                     color="black"
                     bgColor="red.200"
+                    onClick={() => {
+                        if (onDelete) onDelete(props.index);
+                    }}
                     _hover={{
                         bgColor: "red.300",
                         border: "2px solid red.500",
@@ -102,6 +125,7 @@ export default function OptionCard(props: OptionCardProps) {
                     _hover={{
                         borderColor: "orange.400",
                     }}
+                    onChange={(e) => setText(e.target.value)}
                 ></Input>
                 <Box width={"25px"} />
             </HStack>

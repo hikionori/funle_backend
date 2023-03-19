@@ -6,13 +6,15 @@ import {
     Input,
     Menu,
     MenuOptionGroup,
+    NumberInput,
+    NumberInputField,
     Radio,
     RadioGroup,
     Switch,
     Text,
 } from "@chakra-ui/react";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import AddOptionButton from "../../components/addOptionButton";
 import BottomFloatingButton from "../../components/bottomFloatingButton";
@@ -30,22 +32,66 @@ interface ActionsOptionsAction {
 export default function CreateNewTest() {
     const [testType, setTestType] = useState<"choice" | "action">("choice"); // "choice" or "action"
 
-    // if testType is "choice", this is the list of choices
-    // if testType is "action", this is the list of actions
     const [actions, setActions] = useState<
         ActionsOptionsChoice[] | ActionsOptionsAction[]
     >([]);
-
     const [question, setQuestion] = useState<string>("");
+    const [themeOfTest, setThemeOfTest] = useState<string>("");
+    const [levelOfTest, setLevelOfTest] = useState<number>();
 
-    useEffect(() => {
-        console.log(testType);
-    }, [testType]);
+    let apiAnswers: any = [];
+    let correctAnswers: string = "";
+    for (let i = 0; i < actions.length; i++) {
+        apiAnswers.push(actions[i].text);
+        if (testType === "choice") {
+            if ((actions[i] as ActionsOptionsChoice).isCorrect) {
+                correctAnswers = actions[i].text;
+            }
+        }
+    }
+
+    const handleCreateTestButton = () => {
+        if (testType === "choice") {
+            let apiObject = {
+                theme: themeOfTest,
+                text_of_question: question,
+                answers: apiAnswers,
+                correct_answers: correctAnswers,
+                level: levelOfTest,
+            };
+            console.log(apiObject); // TODO: send to API
+        } else {
+            let apiObject = {
+                theme: themeOfTest,
+                example: question,
+                actions: actions,
+                // get last action from actions list
+                answer: actions[actions.length - 1].text,
+                level: levelOfTest,
+            };
+            console.log(apiObject); // TODO: send to API
+        }
+    };
 
     const onTestTypeChanged = (value: string) => {
         setTestType(value as "choice" | "action");
         setActions([]);
     };
+
+    const deleteOption = (index: number) => {
+        // remove object from actions list. index is the index of the object to be removed
+        for (let i = 0; i < actions.length; i++) {
+            if (i === index) {
+                const temp = [...actions];
+                temp.splice(index, 1);
+                setActions(temp);
+            }
+        }
+    };
+
+    useEffect(() => {
+        console.log(actions);
+    }, [actions]);
 
     return (
         <>
@@ -70,6 +116,33 @@ export default function CreateNewTest() {
                         _placeholder: { color: "blackAlpha.900" },
                     }}
                 />
+                <Input
+                    marginTop={"10px"}
+                    marginBottom={"10px"}
+                    value={themeOfTest}
+                    onChange={(e) => setThemeOfTest(e.target.value)}
+                    border={"1px solid black"}
+                    placeholder={"Theme of test"}
+                    focusBorderColor={"orange.500"}
+                    _hover={{
+                        borderColor: "orange.400",
+                        bgColor: "orange.50",
+                        _placeholder: { color: "blackAlpha.900" },
+                    }}
+                />
+                <NumberInput focusBorderColor="orange.500">
+                    <NumberInputField
+                        placeholder="Level of question"
+                        value={levelOfTest}
+                        onChange={(e) => setLevelOfTest(Number(e.target.value))}
+                        border={"1px solid black"}
+                        _hover={{
+                            borderColor: "orange.400",
+                            bgColor: "orange.50",
+                            _placeholder: { color: "blackAlpha.900" },
+                        }}
+                    />
+                </NumberInput>
                 {/* Text type switch */}
                 <Center>
                     <RadioGroup
@@ -83,31 +156,26 @@ export default function CreateNewTest() {
                         </HStack>
                     </RadioGroup>
                 </Center>
-                {/* if type "choice" or "action" and actions list is empty display button */}
                 {
-                    /* Map actions */
-                    actions.map((action, index) => {
-                        if (testType === "choice") {
+                    // if emit("update_actions") is called, this will be updated
+                    actions &&
+                        actions.map((action, index) => {
                             return (
                                 <OptionCard
+                                    key={index.toString()}
+                                    data={action}
                                     type={testType}
-                                    key={index}
-                                    onDelete={() => {}}
+                                    index={index}
+                                    onEdit={(data) => {
+                                        const temp = [...actions];
+                                        temp[index] = data;
+                                        setActions(temp);
+                                    }}
+                                    onDelete={deleteOption}
                                 />
                             );
-                        } else {
-                            return (
-                                <OptionCard
-                                    type={testType}
-                                    key={index}
-                                    onDelete={() => {}}
-                                />
-                            );
-                        }
-                    })
+                        })
                 }
-                {/* if type "choice" or "action" and actions list is not empty display list with button on bottom list */}
-                {/* Create button with onClick method */}
                 <AddOptionButton
                     _type={testType}
                     onClick={() => {
@@ -134,7 +202,9 @@ export default function CreateNewTest() {
             <BottomFloatingButton
                 text="Create"
                 icon={<FaPlus />}
-                onClick={() => {}}
+                onClick={() => {
+                    handleCreateTestButton();
+                }}
             />
         </>
     );
