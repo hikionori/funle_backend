@@ -69,17 +69,9 @@ impl TestsRepo {
     /// 
     /// A Result<Option<Test>, TestsError>
     pub async fn get_test_by_id(&self, id: &String) -> Result<Option<Test>, Error> {
-        let oid = ObjectId::parse_str(id.as_str());
-        let oid = match oid {
-            Ok(oid) => oid,
-            Err(_) => return Ok(None),
-        };
-        let task = self
-            .collection
-            .find_one(doc! {"_id": oid}, None)
-            .await
-            .expect("Error getting task");
-        Ok(task)
+        let oid = ObjectId::parse_str(id.as_str()).unwrap();
+        let test = self.collection.find_one(doc! {"_id": oid}, None).await;
+        Ok(test.unwrap())
     }
 
     /// It deletes a test from the database.
@@ -164,12 +156,12 @@ mod test_repo_tests {
         TestModel {
             id: None,
             theme: "addition".to_string(),
-            text_of_question: "1 + 1".to_string(),
+            question: "1 + 1".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()
                 .map(|x| x.to_string())
                 .collect(),
-            correct_answer: "2".to_string(),
+            answer: "2".to_string(),
             level: 1,
         }
     }
@@ -219,7 +211,7 @@ mod test_repo_tests {
         client.create_test(test).await.unwrap();
         let test_id = get_test_id(&"1 + 1".to_string()).await;
         let result = client.get_test_by_id(&test_id.to_string()).await.unwrap();
-        assert_eq!(result.unwrap().text_of_question, "1 + 1".to_string());
+        assert_eq!(result.unwrap().question, "1 + 1".to_string());
     }
 
     #[tokio::test]
@@ -240,12 +232,12 @@ mod test_repo_tests {
         let test = TestModel {
             id: None,
             theme: "addition".to_string(),
-            text_of_question: "1 + 1".to_string(),
+            question: "1 + 1".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()
                 .map(|x| x.to_string())
                 .collect(),
-            correct_answer: "2".to_string(),
+            answer: "2".to_string(),
             level: 1,
         };
         client.create_test(test).await.unwrap();
@@ -254,12 +246,12 @@ mod test_repo_tests {
         let new_test = TestModel {
             id: Some(test_id),
             theme: "addition".to_string(),
-            text_of_question: "2 + 2".to_string(),
+            question: "2 + 2".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()
                 .map(|x| x.to_string())
                 .collect(),
-            correct_answer: "4".to_string(),
+            answer: "4".to_string(),
             level: 1,
         };
         let updated_id = client
@@ -283,12 +275,12 @@ mod test_repo_tests {
         let test = TestModel {
             id: None,
             theme: "addition".to_string(),
-            text_of_question: "1 + 1".to_string(),
+            question: "1 + 1".to_string(),
             answers: vec!["2", "3", "4"]
                 .into_iter()
                 .map(|x| x.to_string())
                 .collect(),
-            correct_answer: "2".to_string(),
+            answer: "2".to_string(),
             level: 1,
         };
         client.create_test(test).await.unwrap();

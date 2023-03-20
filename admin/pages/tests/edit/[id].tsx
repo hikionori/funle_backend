@@ -1,12 +1,76 @@
 import { AbsoluteCenter } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
+interface TestDataChoice {
+    _id: string;
+    type: "choice";
+    theme: string;
+    text_of_question: string;
+    answers: string[];
+    correct_answer: string;
+    level: number;
+}
+
+interface TestDataAction {
+    _id: string;
+    type: "action";
+    theme: string;
+    example: string;
+    actions: string[];
+    answer: string;
+    level: number;
+}
 
 export default function EditTest() {
-
     const router = useRouter();
     const id = router.query.id;
+
+    const [testData, setTestData] = useState<TestDataChoice | TestDataAction>();
+
+    const [testType, setTestType] = useState<"choice" | "action">("choice");
+    const [themeOfTest, setThemeOfTest] = useState<string>("");
+    const [question, setQuestion] = useState<string>("");
+    const [actions, setActions] = useState<string[]>([]);
+    const [answer, setAnswer] = useState<string>("");
+    const [levelOfTest, setLevelOfTest] = useState<number>();
+
+    /* 
+        <testType>: CamelCase (ChoiceTest, ActionTest)
+        API Response:
+        {
+            <testType>: {
+                _id: String
+                theme: String (about the test)
+                question: String
+                answers: Array of Strings
+                answer: String
+                level: number (difficulty level from 1 to 5)
+            }
+        }
+         
+       Algorithm:
+           1. Get the test with the given ID from API using SDK.
+           2. Display the test data
+            2.1. convert the test data to the state variables
+                2.1.1 Convert CamelCase to single word (ChoiceTest -> choice, ActionTest -> action)
+                2.1.2 Convert the test data to the state variables
+            2.2. Display the test data
+   */
+
+    useEffect(() => {
+        // TODO: get test data from API
+        setTestData({
+            _id: "123",
+            type: "choice",
+            theme: "test theme",
+            text_of_question: "test question",
+            answers: ["answer 1", "answer 2", "answer 3"],
+            correct_answer: "answer 2",
+            level: 3,
+        } as TestDataChoice);
+    }, []);
 
     return (
         <>
@@ -21,5 +85,5 @@ export default function EditTest() {
                 <h1>Edit Test with ID: {id}</h1>
             </AbsoluteCenter>
         </>
-    )
+    );
 }

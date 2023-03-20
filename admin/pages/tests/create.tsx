@@ -54,17 +54,17 @@ export default function CreateNewTest() {
         if (testType === "choice") {
             let apiObject = {
                 theme: themeOfTest,
-                text_of_question: question,
-                answers: apiAnswers,
-                correct_answers: correctAnswers,
-                level: levelOfTest,
+                question: question,
+                answers: apiAnswers as string[],
+                answer: correctAnswers,
+                level: levelOfTest as number,
             };
-            console.log(apiObject); // TODO: send to API
+            console.log(apiObject); // TODO: send to API with testType in url
         } else {
             let apiObject = {
                 theme: themeOfTest,
-                example: question,
-                actions: actions,
+                question: question,
+                answers: apiAnswers as string[],
                 // get last action from actions list
                 answer: actions[actions.length - 1].text,
                 level: levelOfTest,

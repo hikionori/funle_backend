@@ -54,7 +54,7 @@ impl TestsRepo {
             .collection
             .find_one(
                 doc! {
-                    "example": ex
+                    "question": ex
                 },
                 None,
             )
@@ -109,8 +109,8 @@ mod tests_with_actions_tests {
         Test {
             id: None,
             theme: "arithmetic".to_string(),
-            example: "2 + 2 * 2".to_string(),
-            actions: vec!["2 * 2".to_string(), "2 + 4".to_owned()],
+            question: "2 + 2 * 2".to_string(),
+            answers: vec!["2 * 2".to_string(), "2 + 4".to_owned()],
             answer: "6".to_owned(),
             level: 1,
         }
@@ -170,7 +170,7 @@ mod tests_with_actions_tests {
                 match test {
                     Ok(test) => {
                         let test = test.unwrap();
-                        assert!(test.actions.len() == 2);
+                        assert!(test.answers.len() == 2);
                     }
                     Err(_) => {
                         panic!("Test dont get");
@@ -195,7 +195,7 @@ mod tests_with_actions_tests {
                 match test {
                     Ok(test) => {
                         let test = test.unwrap();
-                        assert!(test.actions.len() == 2);
+                        assert!(test.answers.len() == 2);
                     }
                     Err(_) => {
                         panic!("Test dont get");
@@ -248,8 +248,8 @@ mod tests_with_actions_tests {
                 let new_test = Test {
                     id: Some(test.id.unwrap()),
                     theme: "addition".to_string(),
-                    example: "2 + 2 / 2".to_string(),
-                    actions: vec!["2 / 2".to_string(), "2 + 1".to_string()],
+                    question: "2 + 2 / 2".to_string(),
+                    answers: vec!["2 / 2".to_string(), "2 + 1".to_string()],
                     answer: "3".to_string(),
                     level: 1,
                 };
@@ -264,7 +264,7 @@ mod tests_with_actions_tests {
                             .unwrap()
                             .unwrap();
                         assert_eq!(res.id, test.id);
-                        assert_eq!(res.example, "2 + 2 / 2".to_string());
+                        assert_eq!(res.question, "2 + 2 / 2".to_string());
                     }
                     Err(_) => panic!("Test dont updated"),
                 }

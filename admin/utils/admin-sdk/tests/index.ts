@@ -4,17 +4,17 @@ import { baseUrl } from "../config";
 export interface ChoiceTest {
     id: string | "None";
     theme: string;
-    text_of_question: string;
+    question: string;
     answers: string[];
-    correct_answer: string;
+    answer: string;
     level: number;
 }
 
 export interface ActionTest {
     id: string | "None";
     theme: string;
-    example: string;
-    actions: string[];
+    question: string;
+    answers: string[];
     answer: string;
     level: number;
 }
@@ -29,9 +29,9 @@ export interface AllTests {
 export class ChoiceTestBuilder implements ChoiceTest {
     id!: string | "None";
     theme!: string;
-    text_of_question!: string;
+    question!: string;
     answers!: string[];
-    correct_answer!: string;
+    answer!: string;
     level!: number;
 
     public setId(id: string | "None") {
@@ -42,16 +42,16 @@ export class ChoiceTestBuilder implements ChoiceTest {
         this.theme = theme;
     }
 
-    public setTextOfQuestion(text_of_question: string) {
-        this.text_of_question = text_of_question;
+    public setTextOfQuestion(question: string) {
+        this.question = question;
     }
 
     public setAnswers(answers: string[]) {
         this.answers = answers;
     }
 
-    public setCorrectAnswer(correct_answer: string) {
-        this.correct_answer = correct_answer;
+    public setCorrectAnswer(answer: string) {
+        this.answer = answer;
     }
 
     public setLevel(level: number) {
@@ -67,7 +67,7 @@ export class ChoiceTestBuilder implements ChoiceTest {
     }
 
     public getTextOfQuestion() {
-        return this.text_of_question;
+        return this.question;
     }
 
     public getAnswers() {
@@ -75,7 +75,7 @@ export class ChoiceTestBuilder implements ChoiceTest {
     }
 
     public getCorrectAnswer() {
-        return this.correct_answer;
+        return this.answer;
     }
 
     public getLevel() {
@@ -86,8 +86,8 @@ export class ChoiceTestBuilder implements ChoiceTest {
 export class ActionTestBuilder implements ActionTest {
     id!: string | "None";
     theme!: string;
-    example!: string;
-    actions!: string[];
+    question!: string;
+    answers!: string[];
     answer!: string;
     level!: number;
 
@@ -99,12 +99,12 @@ export class ActionTestBuilder implements ActionTest {
         this.theme = theme;
     }
 
-    public setExample(example: string) {
-        this.example = example;
+    public setExample(question: string) {
+        this.question = question;
     }
 
-    public setActions(actions: string[]) {
-        this.actions = actions;
+    public setActions(answers: string[]) {
+        this.answers = answers;
     }
 
     public setAnswer(answer: string) {
@@ -124,11 +124,11 @@ export class ActionTestBuilder implements ActionTest {
     }
 
     public getExample() {
-        return this.example;
+        return this.question;
     }
 
     public getActions() {
-        return this.actions;
+        return this.answers;
     }
 
     public getAnswer() {

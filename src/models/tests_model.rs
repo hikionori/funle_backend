@@ -26,9 +26,9 @@ pub struct TestModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub theme: String,
-    pub text_of_question: String,
+    pub question: String,
     pub answers: Vec<String>,
-    pub correct_answer: String,
+    pub answer: String,
     pub level: i32, // mean difficulty 1-5
 }
 
@@ -51,8 +51,8 @@ pub struct TestModelWithActions {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub theme: String,
-    pub example: String,
-    pub actions: Vec<String>,
+    pub question: String,
+    pub answers: Vec<String>,
     pub answer: String,
     pub level: i32, // mean difficulty 1-5
 }
