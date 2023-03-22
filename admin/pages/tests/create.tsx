@@ -1,17 +1,12 @@
 import {
     AbsoluteCenter,
-    Button,
     Center,
     HStack,
     Input,
-    Menu,
-    MenuOptionGroup,
     NumberInput,
     NumberInputField,
     Radio,
     RadioGroup,
-    Switch,
-    Text,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
@@ -50,7 +45,8 @@ export default function CreateNewTest() {
         }
     }
 
-    const handleCreateTestButton = () => {
+    // wrap the function in useCallback to prevent infinite loop
+    const handleCreateTestButton = useCallback(() => {
         if (testType === "choice") {
             let apiObject = {
                 theme: themeOfTest,
@@ -69,9 +65,9 @@ export default function CreateNewTest() {
                 answer: actions[actions.length - 1].text,
                 level: levelOfTest,
             };
-            console.log(apiObject); // TODO: send to API
+            console.log(apiObject); // TODO: send to API with testType in url
         }
-    };
+    }, [testType, themeOfTest, question, apiAnswers, correctAnswers, levelOfTest, actions]);
 
     const onTestTypeChanged = (value: string) => {
         setTestType(value as "choice" | "action");
@@ -179,7 +175,6 @@ export default function CreateNewTest() {
                 <AddOptionButton
                     _type={testType}
                     onClick={() => {
-                        // TODO: add new option to actions list
                         if (testType === "choice") {
                             setActions([
                                 ...actions,
