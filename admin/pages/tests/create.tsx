@@ -85,10 +85,6 @@ export default function CreateNewTest() {
         }
     };
 
-    useEffect(() => {
-        console.log(actions);
-    }, [actions]);
-
     return (
         <>
             <Head>

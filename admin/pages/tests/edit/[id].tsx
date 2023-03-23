@@ -184,10 +184,6 @@ export default function EditTest() {
         }
     }, [testData]);
 
-    useEffect(() => {
-        console.log(levelOfTest);
-    }, [levelOfTest]);
-
     return (
         <>
             <Head>
@@ -199,7 +195,21 @@ export default function EditTest() {
             </Head>
             <AbsoluteCenter w={"400px"}>
                 {/* Text of question */}
+                <Input 
+                    value = {testData?._id}
+                    disabled
+                    border={"1px solid"}
+                    borderColor={"orange.800"}
+                    placeholder={"ID"}
+                    focusBorderColor={"orange.500"}
+                    _hover={{
+                        borderColor: "orange.400",
+                        bgColor: "orange.50",
+                        _placeholder: { color: "blackAlpha.900" },
+                    }}
+                />
                 <Input
+                    marginTop={"10px"}
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     border={"1px solid black"}

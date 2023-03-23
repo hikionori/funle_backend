@@ -7,7 +7,7 @@ import Navbar from "../components/sidebar";
 import SimpleSidebar from "../components/sidebar";
 import Cources from "./cources";
 import Tutorilas from "./tutorials";
-import { Box, Text } from "@chakra-ui/react";
+import { AbsoluteCenter, Box, Highlight, Text } from "@chakra-ui/react";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +27,11 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Box>
-                Hello
+                <AbsoluteCenter>
+                    <Highlight query={"Funle"} styles={{ px: '4', py: '2', rounded: 'full', bg: 'orange.200'}}>Це панель адміністратора даних або CMS мобільного застосунку FunLe</Highlight>
+                    <Box boxSize={"20px"}/>
+                    <Text>Для роботи з даними перейдіть до певного вікна за допомогою меню зліва</Text>
+                </AbsoluteCenter>
             </Box>
         </>
     );
