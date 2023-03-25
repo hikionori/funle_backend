@@ -4,7 +4,10 @@ import { AbsoluteCenter, Box, Button, Center, Spinner } from "@chakra-ui/react";
 import TestCard, { TestCardProps } from "../../components/card";
 import CardList from "../../components/cardList";
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
-import { color } from "framer-motion";
+import { useRouter } from "next/router";
+import BottomFloatingButton from "../../components/bottomFloatingButton";
+
+import { AllTests, deleteTest, getAllTests } from "../../utils/admin-sdk";
 
 interface ThemeCardListProps {
     theme: string;
@@ -12,149 +15,147 @@ interface ThemeCardListProps {
 }
 
 export default function Tests() {
-    // Algorithm to sort cards into themes
-    // 1. Get all tests from SDK
-    // 2. For each test, get the theme and collect to a unique list
-    // 3. For each theme, create a new CardList with the tests that match the theme and add edit and delete buttons
-    // 4. Render the CardLists
-    // List of themes structure:
-    /*  [
-        {
-            theme: "test",
-            cards: [
-                {    
-                    id: "1",
-                    text: "test",
-                    type: "choice",
-                    onClick: () => {},
-                    onDelete: () => {},
-                  },
-                 {
-                    id: "2",
-                    text: "test",
-                    type: "action",
-                    onClick: () => {},
-                    onDelete: () => {},
-                  },],
-        },
-        {
-            theme: "test2",
-            cards: [
-                {
-                    id: "3",
-                    text: "test",
-                    type: "choice",
-                    onClick: () => {},
-                    onDelete: () => {},
-                },
-                {
-                    id: "4",
-                    text: "test",
-                    type: "action",
-                    onClick: () => {},
-                    onDelete: () => {},
-                },
-            ],
-        },
-     ]
-    */
-    
+    const router = useRouter();
     const [ready, setReady] = React.useState(false);
-    
-    const [themeCardLists, setThemeCardLists] = React.useState<
-        ThemeCardListProps[]
-    >([]);
-    
+
+    const [cardLists, setCardLists] = React.useState<ThemeCardListProps[]>([]);
+
     const themeList: string[] = [];
 
+    /* 
+        API response for get all tests:
+        {
+            tests: [
+                {
+                    id: {"$oid": string},
+                    theme: string,
+                    question: string,
+                    answers: string[],
+                    answer: string,
+                    level: number,
+                },
+                ...
+            ]
+            tests_with_actions: [
+                {
+                    id: {"$oid": string},
+                    theme: string,
+                    question: string,
+                    answers: string[],
+                    answer: string,
+                    level: number,
+                },
+                ...
+            ]
+        }
+
+        Algorithm:
+        1. Get all tests from SDK
+        2. For each test, get the theme and collect to a unique list
+        3. For each theme, create a new CardList with the tests that match the theme 
+            and add edit and delete buttons, as type "choice" is tests and "action" is tests_with_acting in the API response
+        4. Render the CardLists
+
+        As id set "$oid" in _id
+    */
+    const prepareData = (data: AllTests) => {
+        for (let i = 0; i < data.tests.length; i++) {
+            const theme = data.tests[i].theme;
+            if (!themeList.includes(theme)) {
+                themeList.push(theme);
+            }
+        }
+        for (let i = 0; i < data.tests_with_actions.length; i++) {
+            const theme = data.tests_with_actions[i].theme;
+            if (!themeList.includes(theme)) {
+                themeList.push(theme);
+            }
+        }
+
+        const cardLists: ThemeCardListProps[] = [];
+        for (let i = 0; i < themeList.length; i++) {
+            const theme = themeList[i];
+            const cards: TestCardProps[] = [];
+            for (let j = 0; j < data.tests.length; j++) {
+                if (data.tests[j].theme === theme) {
+                    cards.push({
+                        id: data.tests[j]._id["$oid"],
+                        text: data.tests[j].question,
+                        type: "choice",
+                        onClick: (id: string) => {
+                            editButtonHandler(id);
+                        },
+                        onDelete: () => {
+                            let id = data.tests[j]._id["$oid"];
+                            deleteButtonHandler(id, "choice");
+                        },
+                    });
+                }
+            }
+            for (let j = 0; j < data.tests_with_actions.length; j++) {
+                if (data.tests_with_actions[j].theme === theme) {
+                    cards.push({
+                        // id: get data from data.tests_with_actions[j].id.$oid
+                        id: data.tests_with_actions[j]._id["$oid"],
+                        text: data.tests_with_actions[j].question,
+                        type: "action",
+                        onClick: (id: string) => {
+                            editButtonHandler(id);
+                        },
+                        onDelete: () => {
+                            deleteButtonHandler(data.tests_with_actions[j]._id["$oid"], "action");
+                        },
+                    });
+                }
+            }
+            setCardLists((prev) => [
+                ...prev,
+                {
+                    theme: theme,
+                    cards: cards,
+                },
+            ]);
+
+            // remove duplicates
+            setCardLists((prev) => {
+                const unique = prev.filter(
+                    (v, i, a) => a.findIndex((t) => t.theme === v.theme) === i
+                );
+                return unique;
+            });
+
+        }
+    };
 
     useEffect(() => {
-        // TODO: Get tests from SDK
-        setThemeCardLists([
-            {
-                theme: "test",
-                cards: [
-                    {
-                        id: "1",
-                        text: "test",
-                        type: "choice",
-                        onClick: () => {
-                            console.log("test");
-                        },
-                        onDelete: () => {
-                            console.log("test");
-                        },
-                    },
-                    {
-                        id: "2",
-                        text: "test",
-                        type: "action",
-                        onClick: () => {
-                            console.log("test");
-                        },
-                        onDelete: () => {
-                            console.log("test");
-                        },
-                    },
-                ],
-            },
-            {
-                theme: "test2",
-                cards: [
-                    {
-                        id: "3",
-                        text: "test",
-                        type: "choice",
-                        onClick: () => {
-                            console.log("test");
-                        },
-                        onDelete: () => {
-                            console.log("test");
-                        },
-                    },
-                    {
-                        id: "4",
-                        text: "test",
-                        type: "action",
-                        onClick: () => {
-                            console.log("test");
-                        },
-                        onDelete: () => {
-                            console.log("test");
-                        },
-                    },
-                ],
-            },
-        ]);
-        setTimeout(() => {
-            setReady(true);
-        }
-        , 1000);
+        setCardLists([]);
+        getAllTests().then((data) => {
+            prepareData(data);
+        });
+        setReady(true);
     }, [ready]);
 
     const editButtonHandler = (id: string) => {
-        console.log("edit button clicked at card with id: " + id);
+        router.push("/tests/edit/" + id);
     };
 
-    const deleteButtonHandler = (id: string) => {
-        console.log("delete button clicked at card with id: " + id);
+    const deleteButtonHandler = async (id: string, test_type: string) => {
+        // Request to delete test from SDK and update list
+        await deleteTest(id, test_type as "choice" | "action");
+        setReady(false);
     };
 
     return (
         <>
             <Head>
-                <title>tests</title>
-                <meta
-                    name="description"
-                    content="Generated by create next app"
-                />
+                <title>Tests</title>
             </Head>
             <Box>
                 {ready ? (
-                    themeCardLists.map((themeCardList) => (
+                    cardLists.map((cardList) => (
                         <CardList
-                            theme={themeCardList.theme}
-                            cards={themeCardList.cards}
+                            theme={cardList.theme}
+                            cards={cardList.cards}
                         />
                     ))
                 ) : (
@@ -169,28 +170,12 @@ export default function Tests() {
                     </AbsoluteCenter>
                 )}
             </Box>
-            {/* Create FloatingBottomButton */}
-            {/* TODO: onClick for create new test */}
-            <Button
-                position={"fixed"}
-                bgColor={"white"}
-                _hover={{
-                    bgColor: "black",
-                    color: "white",
-                    transition: "50ms linear",
-                }}
-                borderRadius="full"
-                bottom="40px"
-                right={"40px"}
-                height="70px"
-                width="70px"
-                zIndex={2}
+            <BottomFloatingButton
                 onClick={() => {
-                    console.log("create new test");
+                    router.push("/tests/create");
                 }}
-            >
-                <FaPlus size={"30px"} />
-            </Button>
+                icon={<FaPlus size={30} />}
+            />
         </>
     );
 }

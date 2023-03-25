@@ -488,8 +488,8 @@ mod cource_repo_tests {
         let test = TestModel {
             id: None,
             theme: "addition".to_string(),
-            text_of_question: "1 + 1".to_string(),
-            correct_answer: "2".to_string(),
+            question: "1 + 1".to_string(),
+            answer: "2".to_string(),
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
@@ -546,8 +546,8 @@ mod cource_repo_tests {
         let test = TestModel {
             id: None,
             theme: "addition".to_string(),
-            text_of_question: "1 + 1".to_string(),
-            correct_answer: "2".to_string(),
+            question: "1 + 1".to_string(),
+            answer: "2".to_string(),
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
@@ -610,8 +610,8 @@ mod cource_repo_tests {
         let test = TestModel {
             id: None,
             theme: "addition".to_string(),
-            text_of_question: "1 + 1".to_string(),
-            correct_answer: "2".to_string(),
+            question: "1 + 1".to_string(),
+            answer: "2".to_string(),
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };

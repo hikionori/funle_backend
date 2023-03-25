@@ -16,7 +16,7 @@ use api::{
     },
     tests_api::{
         create_test, delete_test, get_all_tests, get_random_test_by_level_user, get_test_by_id,
-        get_test_by_id_user, update_test,
+        get_test_by_id_user, update_test, options
     },
     user_api::{
         add_course_to_user, add_info_to_user, add_test_to_user, delete_user, get_user,
@@ -55,7 +55,7 @@ impl Fairing for CORS {
         response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
         response.set_header(Header::new(
             "Access-Control-Allow-Methods",
-            "POST, GET, PATCH, OPTIONS",
+            "GET, POST, PUT, DELETE, OPTIONS",
         ));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
@@ -68,6 +68,8 @@ async fn rocket() -> _ {
 
     rocket::build()
         .attach(CORS)
+        // Options
+        .mount("/", routes![options])
         // User API
         .mount(
             "/",
@@ -138,7 +140,6 @@ async fn rocket() -> _ {
         ) // admin
         // Auth API
         .mount("/", routes![auth])
-        // TODO: Add routes for info_api, course_api, auth_api
         .manage(UserRepo::init().await)
         .manage(TestsRepo::init().await)
         .manage(TActionRepo::init().await)

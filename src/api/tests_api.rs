@@ -14,6 +14,7 @@ use rocket::{
 };
 use serde::{Deserialize, Serialize};
 
+// use crate::models::tests_model::{TestModelWithActionsResponse, TestModelResponse};
 use crate::utils::auth::authorize_token;
 use crate::{
     models::tests_model::{TestModel, TestModelWithActions},
@@ -22,6 +23,11 @@ use crate::{
         user_repo::UserRepo,
     },
 };
+
+#[options("/<_..>")]
+pub fn options() -> Status {
+    Status::Ok
+}
 
 // * Admin API routes
 
@@ -60,7 +66,9 @@ impl AllTests {
 /// Creating an enum that has two variants: ChoiceTest and ActionTest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TestType {
+    #[serde(rename = "choice")]
     ChoiceTest,
+    #[serde(rename = "action")]
     ActionTest,
 }
 
@@ -191,10 +199,11 @@ pub async fn get_test_by_id(
 #[post("/admin/<test_type>/create/test", data = "<test>")]
 pub async fn create_test(
     db: &State<TestsRepo>,
+    test_type: &str,
     adb: &State<TActionRepo>,
     test: Json<TestRes<TestModel, TestModelWithActions>>,
-    test_type: TestType,
 ) -> Result<Json<InsertOneResult>, Status> {
+    let test_type = TestType::from_param(test_type).unwrap();
     match test_type {
         TestType::ChoiceTest => {
             let test = test.into_inner();
@@ -237,8 +246,9 @@ pub async fn update_test(
     adb: &State<TActionRepo>,
     id: &str,
     test: Json<TestRes<TestModel, TestModelWithActions>>,
-    test_type: TestType,
+    test_type: &str,
 ) -> Result<Status, Status> {
+    let test_type = TestType::from_param(test_type).unwrap();
     match test_type {
         TestType::ChoiceTest => {
             let test = test.into_inner();
@@ -274,20 +284,30 @@ pub async fn update_test(
 /// Returns:
 ///
 /// A status code
-#[delete("/admin/delete/test?<id>")]
+#[delete("/admin/<test_type>/delete/test?<id>")]
 pub async fn delete_test(
     db: &State<TestsRepo>,
     adb: &State<TActionRepo>,
     id: &str,
+    test_type: &str,
 ) -> Result<Status, Status> {
-    // Delete the test from the test table
-    let test_deleted = db.delete_test(&id.to_string()).await;
-    // Delete the test from the test action table
-    let test_action_deleted = adb.delete_test(id).await;
-    // Check the results
-    match (test_deleted, test_action_deleted) {
-        (Ok(_), Ok(_)) => Ok(Status::Ok),
-        _ => Err(Status::InternalServerError),
+    
+    let test_type = TestType::from_param(test_type).unwrap();
+    match test_type {
+        TestType::ChoiceTest => {
+            let result = db.delete_test(&id.to_string()).await;
+            match result {
+                Ok(_) => Ok(Status::Ok),
+                Err(_) => Err(Status::InternalServerError),
+            }
+        }
+        TestType::ActionTest => {
+            let result = adb.delete_test(id).await;
+            match result {
+                Ok(_) => Ok(Status::Ok),
+                Err(_) => Err(Status::InternalServerError),
+            }
+        }
     }
 }
 

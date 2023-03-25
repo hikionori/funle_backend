@@ -2,19 +2,19 @@ import axios from "axios";
 import { baseUrl } from "../config";
 
 export interface ChoiceTest {
-    id: string | "None";
+    _id: { $oid: string };
     theme: string;
-    text_of_question: string;
+    question: string;
     answers: string[];
-    correct_answer: string;
+    answer: string;
     level: number;
 }
 
 export interface ActionTest {
-    id: string | "None";
+    _id: { $oid: string };
     theme: string;
-    example: string;
-    actions: string[];
+    question: string;
+    answers: string[];
     answer: string;
     level: number;
 }
@@ -22,89 +22,101 @@ export interface ActionTest {
 export type Test = ChoiceTest | ActionTest;
 export type TestType = "choice" | "action";
 export interface AllTests {
-    choice: ChoiceTest[];
-    action: ActionTest[];
+    tests: ChoiceTest[];
+    tests_with_actions: ActionTest[];
 }
 
 export class ChoiceTestBuilder implements ChoiceTest {
-    id!: string | "None";
+    _id!: { $oid: string };
     theme!: string;
-    text_of_question!: string;
+    question!: string;
     answers!: string[];
-    correct_answer!: string;
+    answer!: string;
     level!: number;
 
     public setId(id: string | "None") {
-        this.id = id;
+        // set "$oid" field
+        this._id = { $oid: id };
     }
 
     public setTheme(theme: string) {
         this.theme = theme;
     }
 
-    public setTextOfQuestion(text_of_question: string) {
-        this.text_of_question = text_of_question;
+    public setQuestion(question: string) {
+        this.question = question;
     }
 
     public setAnswers(answers: string[]) {
         this.answers = answers;
     }
 
-    public setCorrectAnswer(correct_answer: string) {
-        this.correct_answer = correct_answer;
+    public setAnswer(answer: string) {
+        this.answer = answer;
     }
 
     public setLevel(level: number) {
         this.level = level;
     }
 
-    public getId() {
-        return this.id;
-    }
+    // public getId() {
+    //     return this._id.$oid;
+    // }
 
     public getTheme() {
         return this.theme;
     }
 
-    public getTextOfQuestion() {
-        return this.text_of_question;
+    public getQuestion() {
+        return this.question;
     }
 
     public getAnswers() {
         return this.answers;
     }
 
-    public getCorrectAnswer() {
-        return this.correct_answer;
+    public getAnswer() {
+        return this.answer;
     }
 
     public getLevel() {
         return this.level;
     }
+
+    public toJSON() {
+        return {
+            _id: this._id,
+            theme: this.theme,
+            question: this.question,
+            answers: this.answers,
+            answer: this.answer,
+            level: this.level,
+        };
+    }
 }
 
 export class ActionTestBuilder implements ActionTest {
-    id!: string | "None";
+    _id!: { $oid: string };
     theme!: string;
-    example!: string;
-    actions!: string[];
+    question!: string;
+    answers!: string[];
     answer!: string;
     level!: number;
 
     public setId(id: string | "None") {
-        this.id = id;
+        this._id = { $oid: id };
     }
 
     public setTheme(theme: string) {
         this.theme = theme;
     }
 
-    public setExample(example: string) {
-        this.example = example;
+    public setQuestion(question: string) {
+        this.question = question;
     }
 
-    public setActions(actions: string[]) {
-        this.actions = actions;
+    public setAnswers(answers: string[]) {
+        this.answers = answers;
     }
 
     public setAnswer(answer: string) {
@@ -116,19 +128,19 @@ export class ActionTestBuilder implements ActionTest {
     }
 
     public getId() {
-        return this.id;
+        return this._id;
     }
 
     public getTheme() {
         return this.theme;
     }
 
-    public getExample() {
-        return this.example;
+    public getQuestion() {
+        return this.question;
     }
 
-    public getActions() {
-        return this.actions;
+    public getAnswers() {
+        return this.answers;
     }
 
     public getAnswer() {
@@ -138,29 +150,56 @@ export class ActionTestBuilder implements ActionTest {
     public getLevel() {
         return this.level;
     }
+
+    public toJSON() {
+        return {
+            _id: this._id,
+            theme: this.theme,
+            question: this.question,
+            answers: this.answers,
+            answer: this.answer,
+            level: this.level,
+        };
+    }
 }
 
-export const getAllTests = async(): Promise<AllTests> => {
+export const getAllTests = async (): Promise<AllTests> => {
     const response = await axios.get(`${baseUrl}/admin/get/tests/all`);
     return response.data;
-}
+};
 
-export const getTestById = async(id: string): Promise<Test> => {
+export const getTestById = async (id: string): Promise<Test> => {
     const response = await axios.get(`${baseUrl}/admin/get/test?id=${id}`);
     return response.data;
-}
+};
 
-export const createTest = async(test_type: TestType, test: Test) => {
-    return axios.post(`${baseUrl}/admin/${test_type}/create/test`, test);
-}
+export const createTest = (test_type: string, test: any) => {
+    // Send POST request to create new test
+    // url: /admin/create/test?test_type=<test_type>
+    // body: json
+    fetch(`${baseUrl}/admin/${test_type}/create/test`, {
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify(test),
+    });
+};
 
-export const updateTest = async(test_type: TestType, test: Test, id: string) => {
-    return axios.put(
-        `${baseUrl}/admin/${test_type}/update/test?id=${id}`,
-        test
-    )
-}
-
-export const deleteTest = async(id: string) => {
-    return axios.delete(`${baseUrl}/admin/delete/test?id=${id}`);
-}
+//? // FIXME: updateTest() doesn't work
+export const updateTest = async (
+    test_type: TestType,
+    test: any,
+    id: string
+) => {
+    fetch(`${baseUrl}/admin/${test_type}/update/test?id=${id}`, {
+        method: "PUT",
+        mode: "cors",
+        body: JSON.stringify(test),
+    });
+};
+//? // FIXME: deleteTest() doesn't work
+export const deleteTest = async (id: string, test_type: TestType) => {
+    fetch(`${baseUrl}/admin/${test_type}/delete/test?id=${id}`, {
+        method: "DELETE",
+        mode: "cors",
+    });
+};
