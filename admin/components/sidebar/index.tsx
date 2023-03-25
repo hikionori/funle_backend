@@ -23,6 +23,7 @@ import {
 } from "react-icons/fi";
 import { IconType } from "react-icons";
 import  ReactText  from "react";
+import Image from "next/image";
 
 interface LinkItemProps {
     name: string;

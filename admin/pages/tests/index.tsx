@@ -4,9 +4,10 @@ import { AbsoluteCenter, Box, Button, Center, Spinner } from "@chakra-ui/react";
 import TestCard, { TestCardProps } from "../../components/card";
 import CardList from "../../components/cardList";
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
-import { color } from "framer-motion";
 import { useRouter } from "next/router";
 import BottomFloatingButton from "../../components/bottomFloatingButton";
+
+import { AllTests, deleteTest, getAllTests } from "../../utils/admin-sdk";
 
 interface ThemeCardListProps {
     theme: string;
@@ -26,7 +27,7 @@ export default function Tests() {
         {
             tests: [
                 {
-                    id: string,
+                    id: {"$oid": string},
                     theme: string,
                     question: string,
                     answers: string[],
@@ -35,9 +36,9 @@ export default function Tests() {
                 },
                 ...
             ]
-            tests_with_acting: [
+            tests_with_actions: [
                 {
-                    id: string,
+                    id: {"$oid": string},
                     theme: string,
                     question: string,
                     answers: string[],
@@ -54,17 +55,18 @@ export default function Tests() {
         3. For each theme, create a new CardList with the tests that match the theme 
             and add edit and delete buttons, as type "choice" is tests and "action" is tests_with_acting in the API response
         4. Render the CardLists
+
+        As id set "$oid" in _id
     */
-    //! Function in progress
-    const prepareData = (data: any) => {
+    const prepareData = (data: AllTests) => {
         for (let i = 0; i < data.tests.length; i++) {
             const theme = data.tests[i].theme;
             if (!themeList.includes(theme)) {
                 themeList.push(theme);
             }
         }
-        for (let i = 0; i < data.tests_with_acting.length; i++) {
-            const theme = data.tests_with_acting[i].theme;
+        for (let i = 0; i < data.tests_with_actions.length; i++) {
+            const theme = data.tests_with_actions[i].theme;
             if (!themeList.includes(theme)) {
                 themeList.push(theme);
             }
@@ -77,121 +79,76 @@ export default function Tests() {
             for (let j = 0; j < data.tests.length; j++) {
                 if (data.tests[j].theme === theme) {
                     cards.push({
-                        id: data.tests[j].id,
+                        id: data.tests[j]._id["$oid"],
                         text: data.tests[j].question,
                         type: "choice",
                         onClick: (id: string) => {
                             editButtonHandler(id);
                         },
                         onDelete: () => {
-                            deleteButtonHandler(data.tests[j].id);
+                            let id = data.tests[j]._id["$oid"];
+                            deleteButtonHandler(id, "choice");
                         },
                     });
                 }
             }
-            for (let j = 0; j < data.tests_with_acting.length; j++) {
-                if (data.tests_with_acting[j].theme === theme) {
+            for (let j = 0; j < data.tests_with_actions.length; j++) {
+                if (data.tests_with_actions[j].theme === theme) {
                     cards.push({
-                        id: data.tests_with_acting[j].id,
-                        text: data.tests_with_acting[j].question,
+                        // id: get data from data.tests_with_actions[j].id.$oid
+                        id: data.tests_with_actions[j]._id["$oid"],
+                        text: data.tests_with_actions[j].question,
                         type: "action",
                         onClick: (id: string) => {
                             editButtonHandler(id);
                         },
                         onDelete: () => {
-                            deleteButtonHandler(data.tests_with_acting[j].id);
+                            deleteButtonHandler(data.tests_with_actions[j]._id["$oid"], "action");
                         },
                     });
                 }
             }
-            cardLists.push({
-                theme: theme,
-                cards: cards,
+            setCardLists((prev) => [
+                ...prev,
+                {
+                    theme: theme,
+                    cards: cards,
+                },
+            ]);
+
+            // remove duplicates
+            setCardLists((prev) => {
+                const unique = prev.filter(
+                    (v, i, a) => a.findIndex((t) => t.theme === v.theme) === i
+                );
+                return unique;
             });
+
         }
     };
 
     useEffect(() => {
-        // TODO: Get tests from SDK
-        setCardLists([
-            {
-                theme: "test",
-                cards: [
-                    {
-                        id: "1",
-                        text: "test",
-                        type: "choice",
-                        onClick: (id: string) => {
-                            editButtonHandler(id);
-                        },
-                        onDelete: () => {
-                            // TODO: Delete test from SDK and update list
-                            console.log("test");
-                        },
-                    },
-                    {
-                        id: "2",
-                        text: "test",
-                        type: "action",
-                        onClick: (id: string) => {
-                            editButtonHandler(id);
-                        },
-                        onDelete: () => {
-                            console.log("test");
-                        },
-                    },
-                ],
-            },
-            {
-                theme: "test2",
-                cards: [
-                    {
-                        id: "3",
-                        text: "test",
-                        type: "choice",
-                        onClick: (id: string) => {
-                            editButtonHandler(id);
-                        },
-                        onDelete: () => {
-                            console.log("test");
-                        },
-                    },
-                    {
-                        id: "4",
-                        text: "test",
-                        type: "action",
-                        onClick: (id: string) => {
-                            editButtonHandler(id);
-                        },
-                        onDelete: () => {
-                            console.log("test");
-                        },
-                    },
-                ],
-            },
-        ]);
-        setTimeout(() => {
-            setReady(true);
-        }, 200);
+        setCardLists([]);
+        getAllTests().then((data) => {
+            prepareData(data);
+        });
+        setReady(true);
     }, [ready]);
 
     const editButtonHandler = (id: string) => {
         router.push("/tests/edit/" + id);
     };
 
-    const deleteButtonHandler = (id: string) => {
+    const deleteButtonHandler = async (id: string, test_type: string) => {
         // Request to delete test from SDK and update list
-        console.log("delete button clicked at card with id: " + id);
+        await deleteTest(id, test_type as "choice" | "action");
+        setReady(false);
     };
 
     return (
         <>
             <Head>
-                <title>tests</title>
-                <meta
-                    name="description"
-                    content="Generated by create next app"
-                />
+                <title>Tests</title>
             </Head>
             <Box>
                 {ready ? (

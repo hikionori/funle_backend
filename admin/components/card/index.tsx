@@ -38,11 +38,11 @@ export default function TestCard(props: TestCardProps) {
                 textAlign={"center"}
             >
                 <HStack spacing={"20"}>
-                    <Center paddingLeft={"40"}>
+                    <Center paddingLeft={"30px"}>
                         <Text>id: {id}</Text>
                     </Center>
                     <Spacer />
-                    <Center paddingLeft={"10"} paddingRight={"20"}>
+                    <Center paddingRight={"20"}>
                         <Text>task: {text}</Text>
                     </Center>
                     <Center>

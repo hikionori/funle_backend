@@ -15,6 +15,7 @@ import { FaPlus, FaUpload } from "react-icons/fa";
 import AddOptionButton from "../../../components/addOptionButton";
 import BottomFloatingButton from "../../../components/bottomFloatingButton";
 import OptionCard from "../../../components/option";
+import { getTestById, updateTest } from "../../../utils/admin-sdk";
 
 interface ActionsOptionsChoice {
     text: string;
@@ -110,26 +111,37 @@ export default function EditTest() {
         }
     }
 
-    const handleUpdateButton = useCallback(() => {
+    const handleUpdateButton = useCallback(async () => {
         if (testType === "choice") {
-            let apiObject = {
-                theme: themeOfTest,
-                question: question,
-                answers: apiAnswers as string[],
-                answer: correctAnswers,
-                level: levelOfTest as number,
-            };
-            console.log(apiObject); // TODO: send to API with testType in url
+            await updateTest(
+                "choice",
+                {
+                    ChoiceTest: {
+                        // _id: testData?._id,
+                        theme: themeOfTest,
+                        question: question,
+                        answers: apiAnswers as string[],
+                        answer: correctAnswers,
+                        level: levelOfTest as number,
+                    },
+                },
+                id as string
+            );
         } else {
-            let apiObject = {
-                theme: themeOfTest,
-                question: question,
-                answers: apiAnswers as string[],
-                // get last action from actions list
-                answer: actions[actions.length - 1].text,
-                level: levelOfTest,
-            };
-            console.log(apiObject); // TODO: send to API with testType in url
+            await updateTest(
+                "action",
+                {
+                    ActionTest: {
+                        // _id: testData?._id,
+                        theme: themeOfTest,
+                        question: question,
+                        answers: apiAnswers as string[],
+                        answer: answer,
+                        level: levelOfTest as number,
+                    },
+                },
+                id as string
+            );
         }
     }, [
         testType,
@@ -141,17 +153,53 @@ export default function EditTest() {
         actions,
     ]);
 
+    const prepareData = (data: any) => {
+        /* 
+            Response:
+            testType: String (ChoiceTest, ActionTest)
+            {
+                <testType>: {
+                    _id: {
+                        $oid: String
+                    }
+                    theme: String (about the test)
+                    question: String
+                    answers: Array of Strings
+                    answer: String
+                    level: number (difficulty level from 1 to 5)
+                }
+            }
+        */
+
+        for (let key in data) {
+            if (key === "ChoiceTest") {
+                setTestData({
+                    _id: data[key]._id.$oid,
+                    type: "choice",
+                    theme: data[key].theme,
+                    question: data[key].question,
+                    answers: data[key].answers,
+                    answer: data[key].answer,
+                    level: data[key].level,
+                } as TestDataChoice);
+            } else if (key === "ActionTest") {
+                setTestData({
+                    _id: data[key]._id.$oid,
+                    type: "action",
+                    theme: data[key].theme,
+                    question: data[key].question,
+                    answers: data[key].answers,
+                    answer: data[key].answer,
+                    level: data[key].level,
+                } as TestDataAction);
+            }
+        }
+    };
+
     useEffect(() => {
-        // TODO: get test data from API
-        setTestData({
-            _id: "123",
-            type: "choice",
-            theme: "test theme",
-            question: "test question",
-            answers: ["answer 1", "answer 2", "answer 3"],
-            answer: "answer 2",
-            level: 3,
-        } as TestDataChoice);
+        getTestById(id as string).then((data) => {
+            prepareData(data);
+        });
     }, []);
 
     useEffect(() => {
@@ -195,8 +243,8 @@ export default function EditTest() {
             </Head>
             <AbsoluteCenter w={"400px"}>
                 {/* Text of question */}
-                <Input 
-                    value = {testData?._id}
+                <Input
+                    value={testData?._id}
                     disabled
                     border={"1px solid"}
                     borderColor={"orange.800"}
