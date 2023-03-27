@@ -143,6 +143,7 @@ export default function EditTest() {
                 id as string
             );
         }
+        router.back();
     }, [
         testType,
         themeOfTest,

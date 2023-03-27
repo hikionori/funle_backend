@@ -7,7 +7,7 @@ import {
     Stack,
     Text,
 } from "@chakra-ui/react";
-import TestCard, { TestCardProps } from "../card";
+import TestCard, { TestCardProps } from "../card/testCard";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import React from "react";
 

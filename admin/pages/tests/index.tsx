@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import Head from "next/head";
 import { AbsoluteCenter, Box, Button, Center, Spinner } from "@chakra-ui/react";
-import TestCard, { TestCardProps } from "../../components/card";
-import CardList from "../../components/cardList";
+import { TestCardProps } from "../../components/card/tutorialCard";
+import CardList from "../../components/cardList/testCardList";
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
 import { useRouter } from "next/router";
 import BottomFloatingButton from "../../components/bottomFloatingButton";
@@ -21,43 +21,7 @@ export default function Tests() {
     const [cardLists, setCardLists] = React.useState<ThemeCardListProps[]>([]);
 
     const themeList: string[] = [];
-
-    /* 
-        API response for get all tests:
-        {
-            tests: [
-                {
-                    id: {"$oid": string},
-                    theme: string,
-                    question: string,
-                    answers: string[],
-                    answer: string,
-                    level: number,
-                },
-                ...
-            ]
-            tests_with_actions: [
-                {
-                    id: {"$oid": string},
-                    theme: string,
-                    question: string,
-                    answers: string[],
-                    answer: string,
-                    level: number,
-                },
-                ...
-            ]
-        }
-
-        Algorithm:
-        1. Get all tests from SDK
-        2. For each test, get the theme and collect to a unique list
-        3. For each theme, create a new CardList with the tests that match the theme 
-            and add edit and delete buttons, as type "choice" is tests and "action" is tests_with_acting in the API response
-        4. Render the CardLists
-
-        As id set "$oid" in _id
-    */
+    
     const prepareData = (data: AllTests) => {
         for (let i = 0; i < data.tests.length; i++) {
             const theme = data.tests[i].theme;
@@ -126,13 +90,13 @@ export default function Tests() {
 
         }
     };
-
     useEffect(() => {
-        setCardLists([]);
-        getAllTests().then((data) => {
-            prepareData(data);
-        });
-        setReady(true);
+        if (!ready) {
+            getAllTests().then((data) => {
+                prepareData(data);
+                setReady(true);
+            });
+        }
     }, [ready]);
 
     const editButtonHandler = (id: string) => {
@@ -142,6 +106,7 @@ export default function Tests() {
     const deleteButtonHandler = async (id: string, test_type: string) => {
         // Request to delete test from SDK and update list
         await deleteTest(id, test_type as "choice" | "action");
+        // Update list
         setReady(false);
     };
 
