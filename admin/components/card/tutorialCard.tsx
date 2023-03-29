@@ -13,18 +13,16 @@ import { TestType } from "../../utils/admin-sdk/tests/index";
 import { FiTrash, FiEdit } from "react-icons/fi";
 import React from "react";
 
-export interface TestCardProps {
+export interface TutorialCardProps {
     id: string;
-    text: string;
-    type: TestType;
+    title: string;
     onClick: Function;
     onDelete?: Function;
 }
 
-// TODO: add tutorial card, and course card
-export default function TestCard(props: TestCardProps) {
-    const { id, text, type, onClick } = props;
-    const onDelete = props.onDelete;
+export default function TutorialCard(props: TutorialCardProps) {
+    const { id, title, onClick } = props;
+    const onDelete = props?.onDelete;
 
     return (
         <Box height={"80px"} paddingTop="3">
@@ -44,10 +42,7 @@ export default function TestCard(props: TestCardProps) {
                     </Center>
                     <Spacer />
                     <Center paddingRight={"20"}>
-                        <Text>task: {text}</Text>
-                    </Center>
-                    <Center>
-                        <Text>type: {type}</Text>
+                        <Text>Title: {title}</Text>
                     </Center>
                 </HStack>
                 <Spacer />

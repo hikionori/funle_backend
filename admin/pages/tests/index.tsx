@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import Head from "next/head";
 import { AbsoluteCenter, Box, Button, Center, Spinner } from "@chakra-ui/react";
-import { TestCardProps } from "../../components/card/tutorialCard";
-import CardList from "../../components/cardList/testCardList";
+import { TestCardProps } from "../../components/card/testCard";
+import TestCardList from "../../components/cardList/testCardList";
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
 import { useRouter } from "next/router";
 import BottomFloatingButton from "../../components/bottomFloatingButton";
@@ -118,7 +118,7 @@ export default function Tests() {
             <Box>
                 {ready ? (
                     cardLists.map((cardList) => (
-                        <CardList
+                        <TestCardList
                             theme={cardList.theme}
                             cards={cardList.cards}
                         />

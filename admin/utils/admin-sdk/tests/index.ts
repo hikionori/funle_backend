@@ -26,6 +26,7 @@ export interface AllTests {
     tests_with_actions: ActionTest[];
 }
 
+// DEPRECATED: should be removed
 export class ChoiceTestBuilder implements ChoiceTest {
     _id!: { $oid: string };
     theme!: string;
@@ -95,6 +96,7 @@ export class ChoiceTestBuilder implements ChoiceTest {
     }
 }
 
+// DEPRECATED: should be removed
 export class ActionTestBuilder implements ActionTest {
     _id!: { $oid: string };
     theme!: string;
@@ -164,8 +166,13 @@ export class ActionTestBuilder implements ActionTest {
 }
 
 export const getAllTests = async (): Promise<AllTests> => {
-    const response = await axios.get(`${baseUrl}/admin/get/tests/all`);
-    return response.data;
+    try {
+        const response = await axios.get(`${baseUrl}/admin/get/tests/all`);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+        throw new Error("Error fetching tests");
+    }
 };
 
 export const getTestById = async (id: string): Promise<Test> => {
@@ -173,18 +180,22 @@ export const getTestById = async (id: string): Promise<Test> => {
     return response.data;
 };
 
-export const createTest = (test_type: string, test: any) => {
-    // Send POST request to create new test
-    // url: /admin/create/test?test_type=<test_type>
-    // body: json
-    fetch(`${baseUrl}/admin/${test_type}/create/test`, {
-        method: "POST",
-        mode: "cors",
-        body: JSON.stringify(test),
-    });
-};
+export const createTest = async (test_type: string, test: any) => {
+    try {
+        // Send POST request to create new test
+        // url: /admin/create/test?test_type=<test_type>
+        // body: json
+        await fetch(`${baseUrl}/admin/${test_type}/create/test`, {
+            method: "POST",
+            mode: "cors",
+            body: JSON.stringify(test),
+        });
+    } catch (error) {
+        // Handle errors
+        console.log(error);
+    }
+}
 
-//? // FIXME: updateTest() doesn't work
 export const updateTest = async (
     test_type: TestType,
     test: any,
@@ -196,10 +207,14 @@ export const updateTest = async (
         body: JSON.stringify(test),
     });
 };
-//? // FIXME: deleteTest() doesn't work
+
 export const deleteTest = async (id: string, test_type: TestType) => {
-    fetch(`${baseUrl}/admin/${test_type}/delete/test?id=${id}`, {
+    const response = await fetch(`${baseUrl}/admin/${test_type}/delete/test?id=${id}`, {
         method: "DELETE",
         mode: "cors",
     });
+    if (response.ok) {
+        return;
+    }
+    throw new Error(await response.text());
 };

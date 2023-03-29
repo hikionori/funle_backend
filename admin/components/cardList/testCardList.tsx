@@ -11,12 +11,12 @@ import TestCard, { TestCardProps } from "../card/testCard";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import React from "react";
 
-interface CardListProps {
+interface TestCardListProps {
     cards: TestCardProps[];
     theme: string;
 }
 
-export default function CardList(props: CardListProps) {
+export default function TestCardList(props: TestCardListProps) {
     const { cards, theme } = props;
 
     const [isFolded, setIsFolded] = React.useState(false);
