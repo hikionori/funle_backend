@@ -1,7 +1,9 @@
 import axios from "axios";
 import { baseUrl } from "../config";
 export interface Info {
-  id: string | "None";
+  _id: {
+    $oid: string;
+  };
   title: string;
   theme: string;
   content_levels: { [key: number]: Content[] };
@@ -34,13 +36,17 @@ export class ContentBuilder implements Content {
 }
 
 export class InfoBuilder implements Info {
-  id!: string;
+  _id!: {
+    $oid: string;
+  };
   title!: string;
   theme!: string;
   content_levels!: { [key: number]: Content[] };
 
   public setId(id: string | "None") {
-    this.id = id;
+    this._id = {
+      $oid: id,
+    };
   }
 
   public setTitle(title: string) {
@@ -56,7 +62,7 @@ export class InfoBuilder implements Info {
   }
 
   public getId() {
-    return this.id;
+    return this._id;
   }
 
   public getTitle() {
@@ -77,7 +83,7 @@ export function getInfoById(id: string) {
 }
 
 export function getAllInfos() {
-    return axios.get(`${baseUrl}/admin/get/info/all`)
+    return axios.get(`${baseUrl}/admin/get/info/all`).then(res => res.data)
 }
 
 export function createInfo(info: Info) {
