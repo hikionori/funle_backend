@@ -13,7 +13,7 @@ interface ThemeCardListProps {
     cards: TutorialCardProps[];
 }
 
-export default function Tutorilas() {
+export default function Tutorials() {
     const router = useRouter();
     const [ready, setReady] = React.useState(false);
 

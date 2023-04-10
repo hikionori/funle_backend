@@ -11,18 +11,18 @@ export interface Info {
 
 export interface Content {
   content_type: string;
-  data: Uint8Array;
+  data: string;
 }
 
 export class ContentBuilder implements Content {
     content_type!: string;
-    data!: Uint8Array;
+    data!: string;
     
     public setContentType(content_type: string) {
         this.content_type = content_type;
     }
     
-    public setData(data: Uint8Array) {
+    public setData(data: string) {
         this.data = data;
     }
     
