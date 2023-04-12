@@ -2,9 +2,12 @@ import { AbsoluteCenter, Button, Input, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import React, { useEffect } from "react";
 import { Content, Info, createInfo } from "../../utils/admin-sdk/info/index";
-import LevelNode from "../../components/levelNode";
-import LevelNodeTree from "../../components/levelNodeTree";
+import LevelNodeList, {
+    LevelNodeListProps,
+} from "../../components/levelNodeList";
 import AddOptionButton from "../../components/addOptionButton";
+import LevelNode, { LevelNodeProps } from "../../components/levelNode";
+import Node, { NodeProps } from "../../components/node";
 
 export default function CreateNewTutorial() {
     /* 
@@ -17,49 +20,47 @@ export default function CreateNewTutorial() {
                 data: string // text, image base64
             ][]
         }
-    */
 
-    /*
-        Display content levels:
-                    input title
-                    input theme
-                Block for first level of content
-                if (contentLevels.length == 2) {
-                    split contentLevels into two row
-                }
-                if (contentLevels.length == 3) {
-                    split contentLevels into three row
-                }
-                if (contentLevels.length == 4) {
-                    split contentLevels into four row
-                }
+        Algorithm for sending request:
+        1. Remove all empty nodes
+        2. Remove all empty levels
+        3. Remove index from each node
+        4. remove onEdit and onDelete from each node
     */
 
     const [title, setTitle] = React.useState("");
     const [theme, setTheme] = React.useState("");
-    const [contentLevels, setContentLevels] = React.useState<Content[][]>([]);
+    const [contentLevels, setContentLevels] = React.useState();
 
     useEffect(() => {
         setTitle("Test");
         setTheme("Test");
         setContentLevels([
             [
-                {
-                    content_type: "text",
-                    data: "Test", // to bytes
-                },
+                0,
+                [
+                    {
+                        index: 0,
+                        content_type: "text",
+                        data: "Test",
+                        onEdit: () => {},
+                        onDelete: () => {},
+                    },
+                ],
             ],
             [
-                {
-                    content_type: "text",
-                    data: "Test",
-                },
-                {
-                    content_type: "text",
-                    data: "Test",
-                },
+                1,
+                [
+                    {
+                        index: 0,
+                        content_type: "text",
+                        data: "Test",
+                        onEdit: () => {},
+                        onDelete: () => {},
+                    },
+                ],
             ],
-        ]);
+        ] as any);
     }, []);
 
     return (
@@ -95,13 +96,67 @@ export default function CreateNewTutorial() {
                             _placeholder: { color: "blackAlpha.900" },
                         }}
                     />
-                    
-                   <AddOptionButton
+
+                    {/* List of levels */}
+                    <LevelNode
+                        index={0}
+                        nodes={[
+                            {
+                                index: 0,
+                                content_type: "text",
+                                data: "Test",
+                                onDelete(index) {
+                                    console.log(
+                                        "Delete node at index: " + index
+                                    );
+                                },
+                                onEdit(index) {
+                                    console.log("Edit node at index: " + index);
+                                },
+                            },
+                            {
+                                index: 1,
+                                content_type: "text",
+                                data: "Test",
+                                onDelete(index) {
+                                    console.log(
+                                        "Delete node at index: " + index
+                                    );
+                                },
+                                onEdit(index) {
+                                    console.log("Edit node at index: " + index);
+                                },
+                            },
+                            {
+                                index: 2,
+                                content_type: "text",
+                                data: "Test",
+                                onDelete(index) {
+                                    console.log(
+                                        "Delete node at index: " + index
+                                    );
+                                },
+                                onEdit(index) {
+                                    console.log("Edit node at index: " + index);
+                                },
+                            },
+                        ]}
+                    />
+
+                    <AddOptionButton
                         onClick={() => {
-                            setContentLevels((prev) => {
-                                const temp = [...prev];
-                                temp.push([]);
-                                return temp;
+                            // add one new empty level
+                            let node = {
+                                content_type: "text",
+                                data: "",
+                            } as NodeProps;
+                            let level = [node] as unknown as LevelNodeProps;
+                            setContentLevels((prev: any) => {
+                                if (prev) {
+                                    return [...prev, level];
+                                } else {
+                                    return [level];
+                                }
                             });
                         }}
                     />

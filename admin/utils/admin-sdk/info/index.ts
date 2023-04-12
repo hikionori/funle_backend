@@ -6,7 +6,7 @@ export interface Info {
   };
   title: string;
   theme: string;
-  content_levels: { [key: number]: Content[] };
+  content_levels: [{ [key: number]: Content[] }];
 }
 
 export interface Content {
@@ -41,7 +41,7 @@ export class InfoBuilder implements Info {
   };
   title!: string;
   theme!: string;
-  content_levels!: { [key: number]: Content[] };
+  content_levels!: [{ [key: number]: Content[] }];
 
   public setId(id: string | "None") {
     this._id = {
@@ -57,7 +57,7 @@ export class InfoBuilder implements Info {
     this.theme = theme;
   }
 
-  public setContentLevels(content_levels: { [key: number]: Content[] }) {
+  public setContentLevels(content_levels: [{ [key: number]: Content[] }]) {
     this.content_levels = content_levels;
   }
 
@@ -86,7 +86,7 @@ export function getAllInfos() {
     return axios.get(`${baseUrl}/admin/get/info/all`).then(res => res.data)
 }
 
-export function createInfo(info: Info) {
+export function createInfo(info: any) {
     return axios.post(`${baseUrl}/admin/create/info`, info)
 }
 

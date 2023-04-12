@@ -1,30 +1,43 @@
-import { Box, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { Content } from "../../utils/admin-sdk";
 import Image from "next/image";
 
+import Node, { NodeProps } from "../node/index";
 
 export interface LevelNodeProps {
-    content: Content;
+    nodes: NodeProps[];
 }
 
+// add Symbol.iterator to LevelNodeProps
+
+// Level of node component
 export default function LevelNode(props: LevelNodeProps) {
-    const { content } = props;
-    /**
-     * Display content levels:
-     * if content type is text
-     *     display text
-     * if content type is image
-     *    display image
-     */
+    const { nodes } = props;
+
+    const nodeOnEdit = (index: number) => {
+        console.log("Edit node at index: " + index);
+    };
+
+    const nodeOnDelete = (index: number) => {
+        console.log("Delete node at index: " + index);
+    };
+
     return (
-        <Box> {/* container */}
-            <Box> {/* display data box */}
-
-            </Box>
-            <Box> {/* on hover action box */}
-
-            </Box>
+        <Box w={"100%"}>
+            <Flex direction={"row"}>
+                {nodes.map((node, index) => {
+                    return (
+                        <Node
+                            key={index}
+                            index={index}
+                            content_type={node.content_type}
+                            data={node.data}
+                            onEdit={nodeOnEdit}
+                            onDelete={nodeOnDelete}
+                        />
+                    );
+                })}
+            </Flex>
         </Box>
     );
-
 }
