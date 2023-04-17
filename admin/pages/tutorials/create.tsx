@@ -30,38 +30,59 @@ export default function CreateNewTutorial() {
 
     const [title, setTitle] = React.useState("");
     const [theme, setTheme] = React.useState("");
-    const [contentLevels, setContentLevels] = React.useState();
+    const [contentLevels, setContentLevels] = React.useState<LevelNodeProps[]>(
+        []
+    );
 
     useEffect(() => {
         setTitle("Test");
         setTheme("Test");
         setContentLevels([
             [
-                0,
+                1, // index of level
                 [
                     {
                         index: 0,
                         content_type: "text",
                         data: "Test",
-                        onEdit: () => {},
+                        onDelete: () => {},
+                    },
+                    {
+                        index: 1,
+                        content_type: "image", // url to image
+                        data: "https://bafybeif6lmz2jshbomqyjkvm2qrba7qsd4ywpawwbub6lyj2r665peqco4.ipfs.w3s.link/%D0%B7%D0%BD%D0%B0%D1%87%D0%BE%D0%BA.png",
+                        onDelete() {},
+                    },
+                ],
+            ],
+            [
+                0, // index of level
+                [
+                    {
+                        index: 0,
+                        content_type: "text",
+                        data: "Test",
                         onDelete: () => {},
                     },
                 ],
             ],
             [
-                1,
+                2, // index of level
                 [
                     {
                         index: 0,
                         content_type: "text",
                         data: "Test",
-                        onEdit: () => {},
                         onDelete: () => {},
-                    },
-                ],
-            ],
-        ] as any);
+                    }
+                ]
+            ]
+        ] as unknown as LevelNodeProps[]);
     }, []);
+
+    // useEffect(() => {
+    //     console.log(contentLevels);
+    // }, [contentLevels]);
 
     return (
         <>
@@ -97,67 +118,28 @@ export default function CreateNewTutorial() {
                         }}
                     />
 
-                    {/* List of levels */}
-                    <LevelNode
-                        index={0}
-                        nodes={[
-                            {
-                                index: 0,
-                                content_type: "text",
-                                data: "Test",
-                                onDelete(index) {
-                                    console.log(
-                                        "Delete node at index: " + index
-                                    );
-                                },
-                                onEdit(index) {
-                                    console.log("Edit node at index: " + index);
-                                },
-                            },
-                            {
-                                index: 1,
-                                content_type: "text",
-                                data: "Test",
-                                onDelete(index) {
-                                    console.log(
-                                        "Delete node at index: " + index
-                                    );
-                                },
-                                onEdit(index) {
-                                    console.log("Edit node at index: " + index);
-                                },
-                            },
-                            {
-                                index: 2,
-                                content_type: "text",
-                                data: "Test",
-                                onDelete(index) {
-                                    console.log(
-                                        "Delete node at index: " + index
-                                    );
-                                },
-                                onEdit(index) {
-                                    console.log("Edit node at index: " + index);
-                                },
-                            },
-                        ]}
-                    />
+                    <LevelNodeList nodeLevels={contentLevels} />
 
                     <AddOptionButton
                         onClick={() => {
+                            // get last level index
+                            let lastLevelIndex: number =
+                                contentLevels.length - 1;
+                            // get last level
+                            let lastLevel: any = contentLevels[lastLevelIndex];
+                            lastLevelIndex = lastLevel[0];
+
                             // add one new empty level
                             let node = {
                                 content_type: "text",
                                 data: "",
                             } as NodeProps;
-                            let level = [node] as unknown as LevelNodeProps;
-                            setContentLevels((prev: any) => {
-                                if (prev) {
-                                    return [...prev, level];
-                                } else {
-                                    return [level];
-                                }
-                            });
+                            let level = [
+                                lastLevelIndex + 1,
+                                node,
+                            ] as unknown as LevelNodeProps;
+                            // push level to contentLevels array
+                            setContentLevels([...contentLevels, level]);
                         }}
                     />
                 </AbsoluteCenter>

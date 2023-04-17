@@ -3,8 +3,10 @@ import { Content } from "../../utils/admin-sdk";
 import Image from "next/image";
 
 import Node, { NodeProps } from "../node/index";
+import { useEffect, useState } from "react";
 
 export interface LevelNodeProps {
+    index: number;
     nodes: NodeProps[];
 }
 
@@ -12,7 +14,11 @@ export interface LevelNodeProps {
 
 // Level of node component
 export default function LevelNode(props: LevelNodeProps) {
-    const { nodes } = props;
+    const [nodes, setNodes] = useState<NodeProps[]>([]);
+
+    useEffect(() => {
+        setNodes(props.nodes);
+    }, []);
 
     const nodeOnEdit = (index: number) => {
         console.log("Edit node at index: " + index);
@@ -25,14 +31,13 @@ export default function LevelNode(props: LevelNodeProps) {
     return (
         <Box w={"100%"}>
             <Flex direction={"row"}>
-                {nodes.map((node, index) => {
+                {props.nodes && props.nodes.map((node, index) => {
                     return (
                         <Node
                             key={index}
                             index={index}
                             content_type={node.content_type}
                             data={node.data}
-                            onEdit={nodeOnEdit}
                             onDelete={nodeOnDelete}
                         />
                     );
