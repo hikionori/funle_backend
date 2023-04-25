@@ -107,6 +107,23 @@ const useTutorialStore = create((set, get: any) => ({
 
         // update contentLevels
         set({contentLevels: filteredContentLevels});
+
+        // reindex levels
+        // after delete level, we need to reindex levels
+        // for example, if we have 3 levels, and we delete level with index 1
+        // we will have 2 levels with indexes 0 and 2 before reindexing
+        // after reindexing we will have 2 levels with indexes 0 and 1
+
+        // get current contentLevels
+        const currentContentLevelsAfterDelete = get().contentLevels;
+
+        // reindex levels
+        const reindexedContentLevels = currentContentLevelsAfterDelete.map((level: any, index: number) => {
+            return [index, level[1]];
+        });
+
+        // update contentLevels
+        set({contentLevels: reindexedContentLevels});
     },
 
     // add node
