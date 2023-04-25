@@ -97,7 +97,6 @@ const useTutorialStore = create((set, get: any) => ({
     },
 
     // delete level
-    // TODO: Test this function
     deleteLevel: (index: number) => {
         // get current contentLevels
         const currentContentLevels = get().contentLevels;
@@ -127,7 +126,6 @@ const useTutorialStore = create((set, get: any) => ({
     },
 
     // add node
-    // TODO: Test this function
     addNode: (levelIndex: number) => {
         // get current contentLevels
         const currentContentLevels = get().contentLevels;
@@ -149,7 +147,6 @@ const useTutorialStore = create((set, get: any) => ({
     },
 
     // edit node
-    // TODO: Test this function
     editNode: (levelIndex: number, nodeIndex: number, type: string, data: string) => {
         // get current contentLevels
         const currentContentLevels = get().contentLevels;
@@ -161,7 +158,6 @@ const useTutorialStore = create((set, get: any) => ({
     },
 
     // delete node
-    // TODO: Test this function
     deleteNode: (levelIndex: number, nodeIndex: number) => {
         // get current contentLevels
         const currentContentLevels = get().contentLevels;

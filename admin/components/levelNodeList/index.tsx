@@ -2,14 +2,12 @@ import { Box, Button, Center, Flex, Text } from "@chakra-ui/react";
 import { Content } from "../../utils/admin-sdk";
 import LevelNode, { LevelNodeProps } from "../levelNode";
 import { useEffect, useState } from "react";
-import { NodeProps } from "../node";
 import { FaPlus, FaTrash } from "react-icons/fa";
 
 import useTutorialStore from "../../utils/states/tutorial";
 
 
 export interface LevelNodeListProps {
-    nodeLevels: LevelNodeProps[];
     // add Symbol.iterator to LevelNodeListProps
     [Symbol.iterator]?: () => Iterator<LevelNodeProps>;
 }

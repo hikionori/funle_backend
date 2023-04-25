@@ -102,9 +102,7 @@ export default function CreateNewTutorial() {
                         }}
                     />
 
-                    <LevelNodeList
-                        nodeLevels={contentLevels}
-                    />
+                    <LevelNodeList />
 
                     <AddOptionButton
                         onClick={() => {
