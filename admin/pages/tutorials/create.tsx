@@ -9,30 +9,14 @@ import AddOptionButton from "../../components/addOptionButton";
 import LevelNode, { LevelNodeProps } from "../../components/levelNode";
 import Node, { NodeProps } from "../../components/node";
 
+import useTutorialStore, { TutorialState } from "../../utils/states/tutorial";
+
 export default function CreateNewTutorial() {
-    /* 
-        API Request body:
-        {
-            title: string,
-            theme: string,
-            content_levels: [
-                content_type: string, // text, image
-                data: string // text, image base64
-            ][]
-        }
+    const {title, setTitle} = useTutorialStore((state: any) => ({title: state.title, setTitle: state.setTitle}));
+    const {theme, setTheme} = useTutorialStore((state: any) => ({theme: state.theme, setTheme: state.setTheme}));
+    const {contentLevels, setContentLevels} = useTutorialStore((state: any) => ({contentLevels: state.contentLevels, setContentLevels: state.setContentLevels}));
 
-        Algorithm for sending request:
-        1. Remove all empty nodes
-        2. Remove all empty levels
-        3. Remove index from each node
-        4. remove onEdit and onDelete from each node
-    */
-
-    const [title, setTitle] = React.useState("");
-    const [theme, setTheme] = React.useState("");
-    const [contentLevels, setContentLevels] = React.useState<LevelNodeProps[]>(
-        []
-    );
+    const {addLevel} = useTutorialStore((state: any) => ({addLevel: state.addLevel}));
 
     useEffect(() => {
         setTitle("Test");
@@ -74,10 +58,10 @@ export default function CreateNewTutorial() {
                         content_type: "text",
                         data: "Test",
                         onDelete: () => {},
-                    }
-                ]
-            ]
-        ] as unknown as LevelNodeProps[]);
+                    },
+                ],
+            ],
+        ]);
     }, []);
 
     // useEffect(() => {
@@ -118,28 +102,13 @@ export default function CreateNewTutorial() {
                         }}
                     />
 
-                    <LevelNodeList nodeLevels={contentLevels} />
+                    <LevelNodeList
+                        nodeLevels={contentLevels}
+                    />
 
                     <AddOptionButton
                         onClick={() => {
-                            // get last level index
-                            let lastLevelIndex: number =
-                                contentLevels.length - 1;
-                            // get last level
-                            let lastLevel: any = contentLevels[lastLevelIndex];
-                            lastLevelIndex = lastLevel[0];
-
-                            // add one new empty level
-                            let node = {
-                                content_type: "text",
-                                data: "",
-                            } as NodeProps;
-                            let level = [
-                                lastLevelIndex + 1,
-                                node,
-                            ] as unknown as LevelNodeProps;
-                            // push level to contentLevels array
-                            setContentLevels([...contentLevels, level]);
+                            addLevel();
                         }}
                     />
                 </AbsoluteCenter>

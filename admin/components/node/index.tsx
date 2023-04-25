@@ -13,30 +13,29 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
+import useTutorialStore from "../../utils/states/tutorial";
+
 export interface NodeProps {
     index: number;
     content_type: string;
     data: string;
-
-    onDelete: (index: number) => void;
 }
 
-export default function Node(props: NodeProps) {
+export interface NodeFC {
+    levelIndex: number;
+    editHandler: any; // Function;
+    deleteHandler: any; // Function;
+}
+
+export default function Node(props: NodeProps & NodeFC) {
     const { content_type, data, index } = props;
 
     const [hovered, setHovered] = useState(false);
-    const [Xcontent, setXcontent] = useState("");
     const [content, setContent] = useState(data);
     const [contentType, setContentType] = useState(content_type);
     const [edit, setEdit] = useState(false);
 
-    const deleteHandler = () => {
-        //
-    };
-
-    const editHandler = () => {
-        setEdit(true);
-    };
+    const {editNode} = useTutorialStore((state: any) => ({editNode: state.editNode}));
 
     const onMouseHover = () => {
         setHovered(true);
@@ -45,14 +44,6 @@ export default function Node(props: NodeProps) {
     const onMouseLeave = () => {
         setHovered(false);
     };
-
-    useEffect(() => {
-        if (content.length > 100 && content_type === "image") {
-            let lcontent = content.substring(0, 25) + "...";
-            setXcontent(content);
-            setContent(lcontent);
-        }
-    }, [content, contentType]);
 
     if (!edit) {
         if (content_type === "text") {
@@ -77,10 +68,18 @@ export default function Node(props: NodeProps) {
                         <Box w={"100%"} h={"100px"}>
                             <Center>
                                 <Flex direction={"row"}>
-                                    <Button onClick={editHandler} size={"sm"}>
+                                    <Button
+                                        onClick={() => {
+                                            setEdit(true);
+                                        }}
+                                        size={"sm"}
+                                    >
                                         Edit
                                     </Button>
-                                    <Button onClick={deleteHandler} size={"sm"}>
+                                    <Button
+                                        onClick={props.deleteHandler}
+                                        size={"sm"}
+                                    >
                                         Delete
                                     </Button>
                                 </Flex>
@@ -106,10 +105,18 @@ export default function Node(props: NodeProps) {
                         <Box w={"100%"} h={"100px"}>
                             <Center>
                                 <Flex direction={"row"}>
-                                    <Button onClick={editHandler} size={"sm"}>
+                                    <Button
+                                        onClick={() => {
+                                            setEdit(true);
+                                        }}
+                                        size={"sm"}
+                                    >
                                         Edit
                                     </Button>
-                                    <Button onClick={deleteHandler} size={"sm"}>
+                                    <Button
+                                        onClick={props.deleteHandler}
+                                        size={"sm"}
+                                    >
                                         Delete
                                     </Button>
                                 </Flex>
@@ -119,7 +126,7 @@ export default function Node(props: NodeProps) {
                         <Box w={"100%"} h={"100px"}>
                             <Text>{contentType}</Text>
                             <Image
-                                src={Xcontent}
+                                src={content}
                                 alt={"image"}
                                 width={"60px"}
                                 height={"60px"}
@@ -163,7 +170,7 @@ export default function Node(props: NodeProps) {
                         placeholder="Select type of data"
                         mb={"10px"}
                         onChange={(e) => {
-                            setContentType(e.target.value);
+                            setContentType(e.target.value.toLowerCase());
                         }}
                         value={contentType}
                     >
@@ -184,7 +191,9 @@ export default function Node(props: NodeProps) {
                         }}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
+                                editNode(props.levelIndex, index, contentType, content)
                                 setEdit(false);
+                                console.log(content);
                             }
                             // on shift + enter add new line
                             if (e.shiftKey && e.key === "Enter" && edit) {

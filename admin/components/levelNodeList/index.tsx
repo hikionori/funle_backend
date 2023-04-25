@@ -1,84 +1,76 @@
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Center, Flex, Text } from "@chakra-ui/react";
 import { Content } from "../../utils/admin-sdk";
 import LevelNode, { LevelNodeProps } from "../levelNode";
 import { useEffect, useState } from "react";
+import { NodeProps } from "../node";
+import { FaPlus, FaTrash } from "react-icons/fa";
 
-/*
-    json format:
-    {
-        ...,
-        content_levels: [
-            [
-                0, // index of level
-                [ // nodes
-                    { // node
-                        index: 0, // removed before sending request
-                        content_type: "text",
-                        data: "Test",
-                        onEdit: () => {}, // removed before sending request
-                        onDelete: () => {}, // removed before sending request
-                    },
-                    { // node
-                        index: 1, // removed before sending request
-                            content_type: "image",
-                        data: "base64",
-                        onEdit: () => {}, // removed before sending request
-                        onDelete: () => {}, // removed before sending request
-                    }
-                ]
-            ],
-            [
-                1, // index of level
-                [ // nodes
-                    { // node
-                        index: 0, // removed before sending request
-                        content_type: "text",
-                        data: "Test",
-                        onEdit: () => {}, // removed before sending request
-                        onDelete: () => {}, // removed before sending request
-                    },
-                ]
-            ]
-        ]
-    }
+import useTutorialStore from "../../utils/states/tutorial";
 
-    Algorithm for displaying levels:
-    1. Sort content_levels by index of level
-    2. Display each level
-        
-*/
+
 export interface LevelNodeListProps {
     nodeLevels: LevelNodeProps[];
-
-    nodeOnEdit?: () => void;
-    nodeOnDelete?: () => void;
     // add Symbol.iterator to LevelNodeListProps
     [Symbol.iterator]?: () => Iterator<LevelNodeProps>;
 }
 
 // List of levelNode component
-export default function LevelNodeList(props: LevelNodeListProps) {
-    const [nodeLevels, setNodeLevels] = useState<LevelNodeProps[]>([]);
+export default function LevelNodeList(
+    props: LevelNodeListProps
+) {
+    const {contentLevels} = useTutorialStore((state: any) => ({contentLevels: state.contentLevels}));
+    const {deleteLevel} = useTutorialStore((state: any) => ({deleteLevel: state.deleteLevel}));
+    const {addNode, editNode, deleteNode} = useTutorialStore((state: any) => ({addNode: state.addNode, editNode: state.editNode, deleteNode: state.deleteNode}));
+
 
     useEffect(() => {
-        setNodeLevels(props.nodeLevels);
-    }, []);
+        console.log(contentLevels);
+        // reload page
+    })
 
-    console.log(nodeLevels);
-
+    
     return (
         <Flex flexDirection={"column"}>
             {/* sort by first element in level and then display */}
-            {nodeLevels &&
-                nodeLevels
+            {contentLevels &&
+                contentLevels
                     .sort((a: any, b: any) => a[0] - b[0])
                     .map((level: any, index: any) => {
                         return (
-                            <LevelNode
-                                key={index}
-                                index={level[0]}
-                                nodes={level[1]}
-                            />
+                            <Flex>
+                                <LevelNode
+                                    key={index}
+                                    index={level[0]}
+                                    nodes={level[1]}
+                                    editHandler={editNode}
+                                    deleteHandler={deleteNode}
+                                />
+                                <Center flexDirection={"column"}>
+                                    <Button
+                                        onClick={
+                                            () => {
+                                                deleteLevel(level[0])
+                                            }
+                                        }
+                                        _hover={{
+                                            color: "orange.500",
+                                        }}
+                                    >
+                                        <FaTrash />
+                                    </Button>
+                                    <Button
+                                        onClick={
+                                            () => {
+                                                addNode(level[0])
+                                            }}
+                                        _hover={{
+                                            color: "orange.500",
+                                        }}
+                                    >
+                                        <FaPlus />
+                                    </Button>
+                                </Center>
+                            </Flex>
                         );
                     })}
         </Flex>
