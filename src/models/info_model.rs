@@ -41,7 +41,7 @@ pub struct InfoModel {
 /// Properties:
 ///
 /// * `content_type`: The content type of the data.
-/// * `data`: The actual data of the content level in base64.
+/// * `data`: The actual data of the level. For text is text for image is url to IPFS.
 #[serde_as]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct ContentLevel {
