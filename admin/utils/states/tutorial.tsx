@@ -1,4 +1,5 @@
 import {create} from 'zustand';
+import {createInfo, getInfoById, updateInfo} from '../admin-sdk/info'
 
 export type TutorialState = {
     _id: string;
@@ -177,6 +178,87 @@ const useTutorialStore = create((set, get: any) => ({
 
     // TODO: Functions for work with api
 
+    //* createTutor
+    // TODO: Test this function
+    // Collect data from store and send it to api
+    /*
+        json looks like this:
+        {
+            title: title,
+            theme: theme,
+            contentLevels: [
+                [
+                    level index,
+                    [
+                        {content_type: "text", data: "text"},
+                        {content_type: "image", data: "image"},
+                    ]
+                ]
+            ]
+        }
+    */
+   /*
+    createTutor: () => {
+        // get current contentLevels
+        const currentContentLevels = get().contentLevels;
+
+        // delete from nodes onDelete function and index
+        const contentLevels = currentContentLevels.map((level: any) => {
+            return [level[0], level[1].map((node: any) => {
+                return {content_type: node.content_type, data: node.data};
+            })];
+        });
+
+        // create json
+        const json = {
+            title: get().title,
+            theme: get().theme,
+            contentLevels: contentLevels
+        }
+
+        // reset store
+        get().reset();
+   */
+
+    //* getTutor
+    // TODO: Test this function
+    // Get data from api and update store
+    /*
+        after send get request to api, we will get json like this:
+        {
+            _id: id,
+            title: title,
+            theme: theme,
+            content_levels: [
+                [
+                    level index,
+                    [
+                        {content_type: "text", data: "text"},
+                        {content_type: "image", data: "image"},
+                    ]
+                ]
+            ]
+        }
+    */
+    // After get json, we need to update store
+    // and we need to add onDelete function and index to nodes
+    /*
+        getTutor: async (id: string) => {
+            // send get request to api
+            const json = await getInfoById(id);
+
+            // update store
+            set({
+                _id: json._id,
+                title: json.title,
+                theme: json.theme,
+                contentLevels: json.content_levels.map((level: any) => {
+                    return [level[0], level[1].map((node: any, index: number) => {
+                        return {index: index, content_type: node.content_type, data: node.data, onDelete: () => {}};
+                    })];
+                })
+            });
+    */
 }));
 
 export default useTutorialStore;
