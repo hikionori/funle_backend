@@ -91,10 +91,17 @@ export function createInfo(info: any) {
     return axios.post(`${baseUrl}/admin/create/info`, info);
 }
 
-export function updateInfo(id: string, info: Info) {
-    return axios.post(`${baseUrl}/admin/update/info?id=${id}`, info);
+export function updateInfo(id: string, info: any) {
+    return axios.put(`${baseUrl}/admin/update/info?id=${id}`, info);
 }
 
-export function deleteInfo(id: string) {
-    return axios.post(`${baseUrl}/admin/del/info?id=${id}`);
+export async function deleteInfo(id: string) {
+    const response = await fetch(`${baseUrl}/admin/del/info?id=${id}`, {
+        method: "DELETE",
+        mode: "cors",
+    });
+    if (response.ok) {
+        return;
+    }
+    throw new Error(await response.text());
 }

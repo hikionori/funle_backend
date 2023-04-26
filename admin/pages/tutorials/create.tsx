@@ -1,72 +1,25 @@
 import { AbsoluteCenter, Button, Input, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import React, { useEffect } from "react";
-import { Content, Info, createInfo } from "../../utils/admin-sdk/info/index";
 import LevelNodeList, {
     LevelNodeListProps,
 } from "../../components/levelNodeList";
 import AddOptionButton from "../../components/addOptionButton";
-import LevelNode, { LevelNodeProps } from "../../components/levelNode";
-import Node, { NodeProps } from "../../components/node";
-
-import useTutorialStore, { TutorialState } from "../../utils/states/tutorial";
+import useTutorialStore from "../../utils/states/tutorial";
+import BottomFloatingButton from "../../components/bottomFloatingButton";
+import { FaPlus } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 export default function CreateNewTutorial() {
+
+    const router = useRouter();
+
     const {title, setTitle} = useTutorialStore((state: any) => ({title: state.title, setTitle: state.setTitle}));
     const {theme, setTheme} = useTutorialStore((state: any) => ({theme: state.theme, setTheme: state.setTheme}));
     const {contentLevels, setContentLevels} = useTutorialStore((state: any) => ({contentLevels: state.contentLevels, setContentLevels: state.setContentLevels}));
 
     const {addLevel} = useTutorialStore((state: any) => ({addLevel: state.addLevel}));
-
-    useEffect(() => {
-        setTitle("Test");
-        setTheme("Test");
-        setContentLevels([
-            [
-                1, // index of level
-                [
-                    {
-                        index: 0,
-                        content_type: "text",
-                        data: "Test",
-                        onDelete: () => {},
-                    },
-                    {
-                        index: 1,
-                        content_type: "image", // url to image
-                        data: "https://bafybeif6lmz2jshbomqyjkvm2qrba7qsd4ywpawwbub6lyj2r665peqco4.ipfs.w3s.link/%D0%B7%D0%BD%D0%B0%D1%87%D0%BE%D0%BA.png",
-                        onDelete() {},
-                    },
-                ],
-            ],
-            [
-                0, // index of level
-                [
-                    {
-                        index: 0,
-                        content_type: "text",
-                        data: "Test",
-                        onDelete: () => {},
-                    },
-                ],
-            ],
-            [
-                2, // index of level
-                [
-                    {
-                        index: 0,
-                        content_type: "text",
-                        data: "Test",
-                        onDelete: () => {},
-                    },
-                ],
-            ],
-        ]);
-    }, []);
-
-    // useEffect(() => {
-    //     console.log(contentLevels);
-    // }, [contentLevels]);
+    const {createTutor} = useTutorialStore((state: any) => ({createTutor: state.createTutor}));
 
     return (
         <>
@@ -110,6 +63,14 @@ export default function CreateNewTutorial() {
                         }}
                     />
                 </AbsoluteCenter>
+                <BottomFloatingButton 
+                    text="Create"
+                    icon={<FaPlus />}
+                    onClick={async () => {
+                        createTutor();
+                        router.push("/tutorials");
+                    }}
+                />
             </main>
         </>
     );

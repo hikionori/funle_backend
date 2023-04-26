@@ -51,8 +51,8 @@ pub struct CourseModel {
  *  title: "<cource_title>",
  *  description: "<cource_description>",
  *  levels: {
- *      1: [{info: {id: "<info_id>", title: "<info_title>", mini_img: <array of bytes>}}, ...],
- *      2: [{test: {id: "<test_id>", title: "<test_title>", mini_img: <array of bytes>}}, ...],
+ *      1: [{info: {id: "<info_id>", title: "<info_title>", mini_img: <url to img>}}, ...],
+ *      2: [{test: {id: "<test_id>", title: "<test_title>", mini_img: <url to img>}}, ...],
  *      ...
  * }
 */
@@ -70,7 +70,7 @@ pub struct CourseModel {
 pub struct Level {
     pub id: String,          // cell id. If None, then generate new id, else use id
     pub title: String,       // title of info or test
-    pub mini_image: Vec<u8>, // mini image of info or test
+    pub mini_image: String, // mini image of info or test, url
     pub type_: String,       // type of level (info or test)
     pub n_of_tests: Option<i32>, // number of tests in the level
 
@@ -78,7 +78,7 @@ pub struct Level {
 
 #[allow(dead_code)]
 impl Level {
-    pub fn new(id: Option<String>, title: String, mini_image: Vec<u8>, n_of_tests: Option<i32>, type_: String) -> Self {
+    pub fn new(id: Option<String>, title: String, mini_image: String, n_of_tests: Option<i32>, type_: String) -> Self {
         let id = match id {
             Some(id) => id,
             None => Uuid::new_v4().to_string(),

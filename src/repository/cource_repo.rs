@@ -495,8 +495,8 @@ mod cource_repo_tests {
         };
         create_test_in_db(test).await;
 
-        let test_cell = Level::new(None, "Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
-        let info_cell = Level::new(info_id.into(), "Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), None, "info".to_owned());
+        let test_cell = Level::new(None, "Cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
+        let info_cell = Level::new(info_id.into(), "Cell title".to_owned(), String::from("some img"), None, "info".to_owned());
 
         cource_repo
             .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
@@ -553,8 +553,8 @@ mod cource_repo_tests {
         };
         create_test_in_db(test).await;
 
-        let test_cell = Level::new(None, "Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
-        let info_cell = Level::new(info_id.into(), "Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), None, "info".to_owned());
+        let test_cell = Level::new(None, "Cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
+        let info_cell = Level::new(info_id.into(), "Cell title".to_owned(), String::from("some img"), None, "info".to_owned());
 
         cource_repo
             .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
@@ -617,8 +617,8 @@ mod cource_repo_tests {
         };
         create_test_in_db(test).await;
 
-        let test_cell = Level::new(None, "Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
-        let info_cell = Level::new(info_id.to_string().into(), "Cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), None, "info".to_owned());
+        let test_cell = Level::new(None, "Cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
+        let info_cell = Level::new(info_id.to_string().into(), "Cell title".to_owned(), String::from("some img"), None, "info".to_owned());
 
         cource_repo
             .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
@@ -633,7 +633,7 @@ mod cource_repo_tests {
             .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
             .await;
 
-        let new_test_cell = Level::new(test_cell.id.clone().into(), "New cell title".to_owned(), "Bytes".to_owned().as_bytes().to_vec(), Some(1), "test".to_owned());
+        let new_test_cell = Level::new(test_cell.id.clone().into(), "New cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
         cource_repo
             .update_level(
                 cource_id.clone().unwrap().as_str(),

@@ -21,7 +21,7 @@ export default function Tutorials() {
     const themeList: string[] = [];
 
     const editButtonHandler = (id: string) => {
-        router.push("/tests/edit/" + id);
+        router.push("/tutorials/edit/" + id);
     };
 
     const deleteButtonHandler = async (id: string) => {
@@ -30,60 +30,7 @@ export default function Tutorials() {
     };
 
     const prepareData = (data: Info[]) => {
-        /* 
-            API Response:
-            [
-                {
-                    "_id": {
-                        "$oid": "60a1b1f1b9d4b8b5b0d1b1f1"
-                    },
-                    "title": "Test",
-                    "theme": "Test",
-                    "content_levels": [
-                        [
-                            0,
-                            [{
-                                "content_type": "text", // text, image
-                                "data": "Test" // text, image base64
-                            }]
-                        ],
-                        [
-                            1,
-                            [{
-                                "content_type": "text", // text, image
-                                "data": "Test" // text, image base64
-                            },
-                            {
-                                "content_type": "text", // text, image
-                                "data": "Test" // text, image base64
-                            }]
-                        ]
-                    ]
-                },
-                {
-                    "_id": {
-                        "$oid": "60a1b1f1b9d4b8b5b0d1b1f1"
-                    },
-                    "title": "Test",
-                    "theme": "Test",
-                    "content_levels": [
-                        [
-                            0,
-                            [{
-                                "content_type": "text", // text, image
-                                "data": "Test" // text, image base64
-                            }]
-                        ]
-                    ]
-                }
-
-            ]
-
-            Task:
-            1. Create a list of themes
-            2. Create a list of cards for each theme
-            3. Create a list of cardLists
-        */
+       
         for (let i = 0; i < data.length; i++) {
             const theme = data[i].theme;
             if (!themeList.includes(theme)) {
