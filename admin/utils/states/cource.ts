@@ -37,5 +37,8 @@ export const useCourseStore = create((set, get: any) => ({
     setTitle: (title: string) => set({ title }),
     setDescription: (description: string) => set({ description }),
     setLevels: (levels: any[]) => set({ levels }),
+
+    // TODO: getters
+    // TODO: API interaction
     
 }));
