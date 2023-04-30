@@ -93,9 +93,9 @@ export class LevelBuilder implements Level {
 }
 
 // Get all cources
-export const getAllCources = async () => {
-    const res: Array<Course> = await axios.get(`${baseUrl}/admin/get/cources/all`);
-    return res;
+export const getAllCources = async() => {
+    const data = await axios.get(`${baseUrl}/admin/get/cources/all`);
+    return data.data;
 }
 
 // Get cource by id
