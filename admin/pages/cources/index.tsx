@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import CourceCard, { CourceCardProps } from "../../components/card/courceCard";
-import { getAllCources } from "../../utils/admin-sdk";
+import { deleteCource, getAllCources } from "../../utils/admin-sdk";
 import { AbsoluteCenter, Box, Spinner } from "@chakra-ui/react";
 import CourceCardList from "../../components/cardList/courceCardList";
 import BottomFloatingButton from "../../components/bottomFloatingButton";
@@ -74,11 +74,13 @@ export default function Cources() {
     };
 
     const editButtonHandler = (id: string) => {
-        router.push(`/cources/${id}`);
+        router.push(`/cources/edit/${id}`);
     };
 
     const deleteButtonHandler = (id: string) => {
-        // TODO: delete cource
+        deleteCource(id).then((data) => {
+            setReady(false);
+        });
     };
 
     useEffect(() => {
@@ -86,7 +88,7 @@ export default function Cources() {
             prepareData(data);
         });
         setReady(true);
-    }, []);
+    }, [ready]);
 
     return (
         <>
