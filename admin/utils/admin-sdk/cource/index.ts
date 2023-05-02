@@ -2,6 +2,7 @@ import axios from "axios";
 import { baseUrl } from "../config";
 export interface Course {
     id: string;
+    ids: string[];
     title: string;
     description: string;
     // Dictionary of levels
@@ -10,8 +11,10 @@ export interface Course {
     };
 }
 
+// DEPRECATED
 export class CourceBuilder implements Course{
     id!: string;
+    ids: string[] = [];
     title!: string;
     description!: string;
     levels!: { [key: string]: Level[]; };
@@ -64,8 +67,10 @@ export enum Type {
     Test = "test"
 }
 
+// DEPRECATED
 export class LevelBuilder implements Level {
     id!: string;
+    ids: string[] = [];
     title!: string;
     mini_image!: Uint8Array[];
     type_!: Type;

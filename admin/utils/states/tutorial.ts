@@ -216,8 +216,6 @@ const useTutorialStore = create((set, get: any) => ({
         set({ contentLevels: currentContentLevels });
     },
 
-    // TODO: Functions for work with api
-
     //* createTutor
     // Collect data from store and send it to api
     /*
@@ -266,7 +264,6 @@ const useTutorialStore = create((set, get: any) => ({
     },
 
     //* getTutor
-    // TODO: Test this function
     // Get data from api and update store
     /*
         after send get request to api, we will get json like this:
