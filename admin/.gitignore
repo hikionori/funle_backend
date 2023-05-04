@@ -37,3 +37,6 @@ next-env.d.ts
 
 #utils node_modules
 utils/**/node_modules
+
+#Kanban
+.kanban
