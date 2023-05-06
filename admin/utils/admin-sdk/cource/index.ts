@@ -2,6 +2,7 @@ import axios from "axios";
 import { baseUrl } from "../config";
 export interface Course {
     id: string;
+    ids: string[];
     title: string;
     description: string;
     // Dictionary of levels
@@ -10,8 +11,10 @@ export interface Course {
     };
 }
 
+// DEPRECATED
 export class CourceBuilder implements Course{
     id!: string;
+    ids: string[] = [];
     title!: string;
     description!: string;
     levels!: { [key: string]: Level[]; };
@@ -64,8 +67,10 @@ export enum Type {
     Test = "test"
 }
 
+// DEPRECATED
 export class LevelBuilder implements Level {
     id!: string;
+    ids: string[] = [];
     title!: string;
     mini_image!: Uint8Array[];
     type_!: Type;
@@ -93,25 +98,25 @@ export class LevelBuilder implements Level {
 }
 
 // Get all cources
-export const getAllCources = async () => {
-    const res: Array<Course> = await axios.get(`${baseUrl}/admin/get/cources/all`);
-    return res;
+export const getAllCources = async() => {
+    const data = await axios.get(`${baseUrl}/admin/get/cources/all`);
+    return data.data;
 }
 
 // Get cource by id
 export const getCourceById = async (id: string) => {
-    const res: Course = await axios.get(`${baseUrl}/admin/get/cource?id=${id}`);
-    return res;
+    const res = await axios.get(`${baseUrl}/admin/get/cource?id=${id}`);
+    return res.data;
 }
 
 // Create cource
-export const createCource = async (cource: Course) => {
+export const createCource = async (cource: any) => {
     const res: Course = await axios.post(`${baseUrl}/admin/add/cource`, cource);
     return res;
 }
 
 // Update cource
-export const updateCource = async (id: string,cource: Course) => {
+export const updateCource = async (id: string,cource: any) => {
     const res = await axios.put(`${baseUrl}/admin/update/cource?id=${id}`, cource);
     return res;
 }

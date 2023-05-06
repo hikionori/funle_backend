@@ -5,6 +5,7 @@ use serde::{Serialize};
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// A custom error type for JWT.
+#[allow(unused)]
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("jwt token not valid")]

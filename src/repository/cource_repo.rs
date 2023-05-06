@@ -6,6 +6,7 @@ use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 use rocket::futures::TryStreamExt;
+use uuid::Uuid;
 
 use crate::models::cource_model::*;
 use mongodb::{
@@ -182,10 +183,16 @@ impl CourceRepo {
             Some(mut cource) => {
                 let mut levels = cource.levels;
                 let layer = levels.get_mut(&level_number).unwrap();
-                let level = layer.iter().position(|level| level.id == level_id);
+                let level = layer
+                    .iter()
+                    .find(|level| level.id.contains(&level_id.to_string()));
                 match level {
                     Some(level) => {
-                        layer.remove(level);
+                        let index = layer
+                            .iter()
+                            .position(|x| x.id.contains(&level_id.to_string()))
+                            .unwrap();
+                        layer.remove(index);
                     }
                     None => {}
                 }
@@ -220,7 +227,9 @@ impl CourceRepo {
             Some(mut cource) => {
                 let mut levels = cource.levels;
                 let layer = levels.get_mut(&level_number).unwrap();
-                let level = layer.iter().position(|level| level.id == level_id);
+                let level = layer
+                    .iter()
+                    .position(|level| level.id.contains(&level_id.to_string()));
                 match level {
                     Some(level) => {
                         layer.remove(level);
@@ -257,11 +266,10 @@ impl CourceRepo {
             Some(cource) => {
                 let levels = cource.levels;
                 let layer = levels.get(&level_number).unwrap();
-                let level = layer.iter().find(|level| level.id == level_id);
-                match level {
-                    Some(level) => Some(level.clone()),
-                    None => None,
-                }
+                let level = layer
+                    .iter()
+                    .find(|level| level.id.contains(&level_id.to_string()));
+                level.cloned()
             }
             None => None,
         }
@@ -316,7 +324,12 @@ mod cource_repo_tests {
     async fn create_test_in_db(test: TestModel) -> String {
         let tests_repo = TestsRepo::init().await;
         let test = tests_repo.create_test(test).await.unwrap();
-        test.inserted_id.to_string()
+        // test.inserted_id.to_string() == "ObjectId(\"644f96befedcbf48aacfc86c\")"
+        // need to remove ObjectId(\" and \")
+        let test_id = test.inserted_id.to_string();
+        let test_id = test_id.replace("ObjectId(\"", "");
+        
+        test_id.replace("\")", "")
     }
 
     async fn str2oid(id: &str) -> ObjectId {
@@ -493,22 +506,34 @@ mod cource_repo_tests {
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
-        create_test_in_db(test).await;
+        let test_id = create_test_in_db(test).await;
 
-        let test_cell = Level::new(None, "Cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
-        let info_cell = Level::new(info_id.into(), "Cell title".to_owned(), String::from("some img"), None, "info".to_owned());
+        let test_cell = Level::new(
+            vec![test_id],
+            "Cell title".to_owned(),
+            String::from("some img"),
+            Some(1),
+            "test".to_owned(),
+        );
+        let info_cell = Level::new(
+            vec![info_id],
+            "Cell title".to_owned(),
+            String::from("some img"),
+            None,
+            "info".to_owned(),
+        );
 
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.0.copy(), 1)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 1)
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.0.copy(), 1)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 2)
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.0.copy(), 2)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.0.copy(), 3)
             .await;
 
         let cource = cource_repo.get(cource_id.unwrap().as_str()).await;
@@ -551,29 +576,41 @@ mod cource_repo_tests {
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
-        create_test_in_db(test).await;
+        let test_id = create_test_in_db(test).await;
 
-        let test_cell = Level::new(None, "Cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
-        let info_cell = Level::new(info_id.into(), "Cell title".to_owned(), String::from("some img"), None, "info".to_owned());
+        let test_cell = Level::new(
+            vec![test_id],
+            "Cell title".to_owned(),
+            String::from("some img"),
+            Some(1),
+            "test".to_owned(),
+        );
+        let info_cell = Level::new(
+            vec![info_id],
+            "Cell title".to_owned(),
+            String::from("some img"),
+            None,
+            "info".to_owned(),
+        );
 
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.0.copy(), 1)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 1)
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.0.copy(), 1)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 2)
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.0.copy(), 2)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.0.copy(), 3)
             .await;
 
         cource_repo
             .delete_level(
                 cource_id.clone().unwrap().as_str(),
                 1,
-                test_cell.id.as_str(),
+                test_cell.0.id.as_str(),
             )
             .await;
         assert_eq!(
@@ -615,31 +652,49 @@ mod cource_repo_tests {
             answers: vec!["3".to_string(), "4".to_string()],
             level: 1,
         };
-        create_test_in_db(test).await;
+        let test_id = create_test_in_db(test).await;
 
-        let test_cell = Level::new(None, "Cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
-        let info_cell = Level::new(info_id.to_string().into(), "Cell title".to_owned(), String::from("some img"), None, "info".to_owned());
+        let test_cell = Level::new(
+            vec![test_id],
+            "Cell title".to_owned(),
+            String::from("some img"),
+            Some(1),
+            "test".to_owned(),
+        );
+        let info_cell = Level::new(
+            vec![info_id],
+            "Cell title".to_owned(),
+            String::from("some img"),
+            None,
+            "info".to_owned(),
+        );
 
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 1)
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.0.copy(), 1)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 1)
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.0.copy(), 1)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), test_cell.copy(), 2)
+            .add_level(cource_id.clone().unwrap().as_str(), test_cell.0.copy(), 2)
             .await;
         cource_repo
-            .add_level(cource_id.clone().unwrap().as_str(), info_cell.copy(), 3)
+            .add_level(cource_id.clone().unwrap().as_str(), info_cell.0.copy(), 3)
             .await;
 
-        let new_test_cell = Level::new(test_cell.id.clone().into(), "New cell title".to_owned(), String::from("some img"), Some(1), "test".to_owned());
+        let new_test_cell = Level::new(
+            test_cell.0.ids.clone(),
+            "New cell title".to_owned(),
+            String::from("some img"),
+            Some(1),
+            "test".to_owned(),
+        );
         cource_repo
             .update_level(
                 cource_id.clone().unwrap().as_str(),
                 1,
-                test_cell.id.as_str(),
-                new_test_cell.copy(),
+                test_cell.0.id.as_str(),
+                new_test_cell.0.copy(),
             )
             .await;
 
