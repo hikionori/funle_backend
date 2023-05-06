@@ -2,6 +2,7 @@
 import {v4 as uuid} from "uuid";
 
 import create from "zustand";
+import { createCource, getCourceById, updateCource } from "../admin-sdk";
 
 /*
     JSON:
@@ -132,5 +133,40 @@ export const useCourseStore = create((set, get: any) => ({
     },
 
     // TODO: API interaction
-    
+    createCourse: async () => {
+        const title = get().title;
+        const description = get().description;
+        const levels = get().levels;
+
+        const data = {
+            title,
+            description,
+            levels,
+        }
+
+        await createCource(data);
+
+        get().reset();
+    },
+
+    getCourse: async (id: string) => {
+        const json = await getCourceById(id);
+
+        set({
+            _id: json._id.$oid,
+            title: json.title,
+            description: json.description,
+            levels: json.levels,
+        })
+    },
+
+    editCourse: async () => {
+        const json = {
+            title: get().title,
+            description: get().description,
+            levels: get().levels,
+        }
+
+        await updateCource(get()._id, json);
+    },
 }));

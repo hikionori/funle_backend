@@ -7,7 +7,7 @@ import LevelNodeList, {
 import AddOptionButton from "../../../components/addOptionButton";
 import useTutorialStore from "../../../utils/states/tutorial";
 import BottomFloatingButton from "../../../components/bottomFloatingButton";
-import { FaPlus, FaUpload } from "react-icons/fa";
+import { FaPen, FaPlus, FaUpload } from "react-icons/fa";
 import { useRouter } from "next/router";
 
 export default function EditTutorial() {
@@ -80,7 +80,7 @@ export default function EditTutorial() {
                 </AbsoluteCenter>
                 <BottomFloatingButton 
                     text="Update"
-                    icon={<FaUpload />}
+                    icon={<FaPen />}
                     onClick={async () => {
                         await editTutorial();
                         router.push("/tutorials");

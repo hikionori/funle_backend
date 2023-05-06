@@ -105,18 +105,18 @@ export const getAllCources = async() => {
 
 // Get cource by id
 export const getCourceById = async (id: string) => {
-    const res: Course = await axios.get(`${baseUrl}/admin/get/cource?id=${id}`);
-    return res;
+    const res = await axios.get(`${baseUrl}/admin/get/cource?id=${id}`);
+    return res.data;
 }
 
 // Create cource
-export const createCource = async (cource: Course) => {
+export const createCource = async (cource: any) => {
     const res: Course = await axios.post(`${baseUrl}/admin/add/cource`, cource);
     return res;
 }
 
 // Update cource
-export const updateCource = async (id: string,cource: Course) => {
+export const updateCource = async (id: string,cource: any) => {
     const res = await axios.put(`${baseUrl}/admin/update/cource?id=${id}`, cource);
     return res;
 }

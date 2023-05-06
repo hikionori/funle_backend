@@ -1,6 +1,4 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { Content } from "../../utils/admin-sdk";
-import Image from "next/image";
 
 import Node, { NodeProps } from "../node/index";
 import { useEffect, useState } from "react";

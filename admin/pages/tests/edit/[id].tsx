@@ -11,7 +11,7 @@ import {
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
-import { FaPlus, FaUpload } from "react-icons/fa";
+import { FaPen, FaPlus, FaUpload } from "react-icons/fa";
 import AddOptionButton from "../../../components/addOptionButton";
 import BottomFloatingButton from "../../../components/bottomFloatingButton";
 import OptionCard from "../../../components/option";
@@ -361,7 +361,7 @@ export default function EditTest() {
             </AbsoluteCenter>
             <BottomFloatingButton
                 text="Update"
-                icon={<FaUpload />}
+                icon={<FaPen />}
                 onClick={() => {
                     handleUpdateButton();
                 }}
