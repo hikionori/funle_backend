@@ -1,45 +1,26 @@
-FROM node:18-alpine as base
+# Use the official Node.js image as the base image
+FROM node:latest
 
-FROM base as deps
+# Install Yarn globally
+RUN npm install -g yarn --force
 
-RUN apk add --no-cache libc6-compat
-
+# Set the working directory inside the container
 WORKDIR /app
 
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+# Copy package.json and yarn.lock to the working directory
+COPY package*.json yarn.lock ./
 
-FROM base as builder
-WORKDIR /app
+# Install dependencies using Yarn
+RUN yarn install --frozen-lockfile
 
-COPY --from=deps /app/node_modules ./node_modules
-
+# Copy the entire app directory (including .next) to the working directory
 COPY . .
 
+# Build the Next.js app
 RUN yarn build
 
-FROM base as runner
-WORKDIR /app
-
-ENV NODE_ENV production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
+# Expose the port that the Next.js app will run on
 EXPOSE 3000
 
-ENV PORT 3000
-
-CMD ["node", "server.js"]
+# Set the command to start the Next.js app
+CMD ["yarn", "start"]
