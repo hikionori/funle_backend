@@ -21,6 +21,7 @@ RUN yarn build
 
 # Expose the port that the Next.js app will run on
 EXPOSE 3000
+# EXPOSE 8080
 
 # Set the command to start the Next.js app
 CMD ["yarn", "start"]

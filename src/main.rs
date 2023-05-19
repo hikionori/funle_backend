@@ -64,6 +64,8 @@ impl Fairing for CORS {
 
 #[launch]
 async fn rocket() -> _ {
+    
+    #[cfg(debug_assertions)]
     env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
 
     rocket::build()
