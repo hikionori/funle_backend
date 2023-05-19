@@ -1,25 +1,25 @@
-# Stage 1. Build rust app
-FROM rust:latest as r-build
+# Stage 1: Build the Rust app
+FROM rust:latest as rust-builder
 WORKDIR /app/api
 
-# set nightly toolchain
+# Set nightly toolchain
 RUN rustup default nightly
 
-# copy all files instead of admin folder
+# Copy all files except the admin folder
 COPY . .
 RUN rm -rf admin
 
-# build rust app
+# Build the Rust app
 RUN cargo build --release
 
-# Stage 2. Build admin app
-FROM node:slim as n-build
+# Stage 2: Build the Next.js app
+FROM node:slim as nextjs-builder
 WORKDIR /app/admin
 
 # Install Yarn globally
 RUN npm install -g yarn --force
 
-# Copy all inside admin folder
+# Copy the admin folder
 COPY admin .
 
 # Install dependencies using Yarn
@@ -28,23 +28,23 @@ RUN yarn install --frozen-lockfile
 # Build the Next.js app
 RUN yarn build
 
-# Stage 3. Run app on alpine
+# Stage 3: Final image
 FROM alpine:latest
 WORKDIR /app
 
-# Copy the entire app directory (including .next) to the working directory
-COPY --from=r-build /app/api/target/release/math_backend ./math_backend
-COPY --from=n-build /app/admin/.next ./.next
-COPY --from=n-build /app/admin/public ./public
+# Copy the Rust app binary
+COPY --from=rust-builder /app/api/target/release/math_backend ./api/
+
+# Copy the Next.js app build files
+COPY --from=nextjs-builder /app/admin/.next ./.next
+COPY --from=nextjs-builder /app/admin/public ./public
 
 # Expose the port that the Next.js app will run on
 EXPOSE 3000
 
-# Expose the port that the Rust app will run on
-EXPOSE 8080
+EXPOSE 8000
 
-# Env
 ENV MONGO_URL=mongodb://root:root@127.0.0.1:27017
 
-# Set the command to start the project
-CMD [ "./math_backend", "&&" , "yarn", "start" ]
+# Set the command to run the apps
+CMD sh -c "cd api && cargo run --release & cd .. & yarn start"
