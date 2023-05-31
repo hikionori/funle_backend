@@ -213,6 +213,9 @@ impl UserRepo {
     /// * `test_id`: The id of the test to add to the user
     pub async fn add_test_to_user(&self, user_id: String, test_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
+        if user.progress.tests.contains(&test_id) {
+            return;
+        }
         user.progress.tests.push(test_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
