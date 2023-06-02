@@ -228,6 +228,9 @@ impl UserRepo {
     /// * `info_id`: The id of the info to add to the user's progress
     pub async fn add_info_to_user(&self, user_id: String, info_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
+        if user.progress.infos.contains(&info_id) {
+            return;
+        }
         user.progress.infos.push(info_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
