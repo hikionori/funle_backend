@@ -1,0 +1,23 @@
+version: "3"
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - MONGO_URL=mongodb://root:root@localhost:27017/
+  admin:
+    build: ./admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+  db:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root

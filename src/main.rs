@@ -16,7 +16,7 @@ use api::{
     },
     tests_api::{
         create_test, delete_test, get_all_tests, get_random_test_by_level_user, get_test_by_id,
-        get_test_by_id_user, update_test, options
+        get_test_by_id_user, options, update_test,
     },
     user_api::{
         add_course_to_user, add_info_to_user, add_test_to_user, delete_user, get_user,
@@ -64,11 +64,16 @@ impl Fairing for CORS {
 
 #[launch]
 async fn rocket() -> _ {
-    
     #[cfg(debug_assertions)]
     env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
 
-    rocket::build()
+    let config = rocket::Config {
+        address: std::net::IpAddr::V4(std::net::Ipv4Addr::new(0, 0, 0, 0)),
+        port: 8080,
+        ..Default::default()
+    };
+
+    rocket::custom(config)
         .attach(CORS)
         // Options
         .mount("/", routes![options])

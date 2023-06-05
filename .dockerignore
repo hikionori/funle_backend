@@ -1,0 +1,11 @@
+.git
+target/
+
+./admin/.kanbn
+./admin/.next
+./admin/node_modules/
+./admin/out/
+./admin/.yarn
+./admin/.yarnrc
+./admin/yarn.lock
+./admin/.git
