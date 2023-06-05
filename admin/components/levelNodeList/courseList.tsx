@@ -23,6 +23,7 @@ export default function CourceLevelList() {
                                 index={level[0]}
                                 nodes={level[1]}
                                 deleteHandler={deleteNode}
+                                editHandler={editNode}
                             />
                             <Center flexDirection={"column"}>
                                 <Button

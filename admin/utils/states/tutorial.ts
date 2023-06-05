@@ -258,7 +258,6 @@ const useTutorialStore = create((set, get: any) => ({
 
         // send post request to api
         createInfo(json);
-
         // reset store
         get().reset();
     },

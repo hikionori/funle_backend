@@ -9,6 +9,7 @@ export interface CourceLevelProps {
 
 interface CourseLevelFunctions {
     deleteHandler: Function;
+    editHandler: Function;
 }
 
 export default function CourceLevel(
@@ -17,6 +18,7 @@ export default function CourceLevel(
     const [nodes, setNodes] = useState([]);
 
     const deleteHandler = props.deleteHandler;
+    const editHandler = props.editHandler;
 
     const levelIndex = props.index;
 
@@ -31,6 +33,7 @@ export default function CourceLevel(
                     props.nodes.map((node: any, index: number) => {
                         return (
                             <CourseNode
+                                levelIndex={levelIndex}
                                 index={index}
                                 id={node.id}
                                 title={node.title}
@@ -42,6 +45,7 @@ export default function CourceLevel(
                                 onDelete={() => {
                                     deleteHandler(levelIndex, node.index);
                                 }}
+                                onEdit={editHandler}
                             />
                         );
                     })}
