@@ -93,7 +93,7 @@ export default function CourseNode(
     const infos = await getAllInfos();
     const temp_ids_with_questions: string[][] = [];
     for (let i = 0; i < infos.length; i++) {
-      temp_ids_with_questions.push([infos[i]._id["$oid"], infos[i].theme]);
+      temp_ids_with_questions.push([infos[i]._id["$oid"], infos[i].title]);
     }
     setIds_with_text(temp_ids_with_questions);
   };
