@@ -12,7 +12,7 @@ export default function CourceLevelList() {
     const {addNode, editNode, deleteNode} = useCourseStore((state: any) => ({addNode: state.addNode, editNode: state.editNode, deleteNode: state.deleteNode}));
 
     return (
-        <Flex flexDirection={"column"}>
+        <Flex flexDirection={"column"} h={"600px"} overflowY={"scroll"}>
             {levels &&
                 levels.sort((a: any, b: any) => a[0] - b[0])
                 .map((level: any, index: any) => {

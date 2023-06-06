@@ -7,13 +7,17 @@ services:
     depends_on:
       - db
     environment:
-      - MONGO_URL=mongodb://root:root@localhost:27017/
+      - MONGO_URL=mongodb://root:root@db:27017/
+    networks:
+      - my-network
   admin:
     build: ./admin
     ports:
       - "3000:3000"
     depends_on:
       - api
+    networks:
+      - my-network
   db:
     image: mongo
     ports:
@@ -21,3 +25,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
+    networks:
+      - my-network
+networks:
+  my-network:
+    driver: bridge

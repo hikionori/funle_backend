@@ -29,7 +29,7 @@ export interface CourseNodeData {
 }
 
 interface CourseNodeFunctions {
-    levelIndex: number;
+  levelIndex: number;
   onDelete?: any; // Function
   onEdit?: any; // Function
 }
@@ -51,7 +51,7 @@ export default function CourseNode(
   const [type_, setType_] = useState(props.type_);
   const [n_of_tests, setN_of_tests] = useState(props.n_of_tests);
 
-  const [ids_for_select, setIds_for_select] = useState<string[]>([]);
+  const [ids_with_text, setIds_with_text] = useState<string[][]>([]);
 
   // on hover interaction
   const [hover, setHover] = useState(false);
@@ -73,11 +73,9 @@ export default function CourseNode(
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => {
     setIsOpen(false);
-    onEdit(levelIndex, props.index, ids, title, mini_image, type_, n_of_tests)
+    onEdit(levelIndex, props.index, ids, title, mini_image, type_, n_of_tests);
   };
   const onOpen = () => setIsOpen(true);
-
-  
 
   // if type_ is test get all tests and set ids_for_select to their ids
   useEffect(() => {
@@ -93,37 +91,43 @@ export default function CourseNode(
   const prepareInfoData = async () => {
     // set ids_for_select to all infos ids
     const infos = await getAllInfos();
-    const ids_for_select: string[] = [];
+    const temp_ids_with_questions: string[][] = [];
     for (let i = 0; i < infos.length; i++) {
-      ids_for_select.push(infos[i]._id["$oid"]);
+      temp_ids_with_questions.push([infos[i]._id["$oid"], infos[i].theme]);
     }
-    setIds_for_select(ids_for_select);
+    setIds_with_text(temp_ids_with_questions);
   };
 
   const prepareTestData = async () => {
     const allTests = await getAllTests();
-    const ids_for_select: string[] = [];
     const tests_ids = allTests.tests.map((test) => test._id["$oid"]);
+    const tests_questions = allTests.tests.map((test) => test.question);
+
     const test_a_ids = allTests.tests_with_actions.map(
       (test) => test._id["$oid"]
     );
+    const test_a_questions = allTests.tests_with_actions.map(
+      (test) => test.question
+    );
 
-    // set ids_for_select to all tests ids
+    const temp_ids_with_questions: string[][] = [];
+
     for (let i = 0; i < tests_ids.length; i++) {
-      ids_for_select.push(tests_ids[i]);
+      temp_ids_with_questions.push([tests_ids[i], tests_questions[i]]);
     }
-    // set ids_for_select to all tests with actions ids
     for (let i = 0; i < test_a_ids.length; i++) {
-      ids_for_select.push(test_a_ids[i]);
+      temp_ids_with_questions.push([test_a_ids[i], test_a_questions[i]]);
     }
-    // shuffle ids_for_select
-    for (let i = ids_for_select.length - 1; i > 0; i--) {
+
+    // shuffle temp_ids_with_questions
+    for (let i = temp_ids_with_questions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * i);
-      const temp = ids_for_select[i];
-      ids_for_select[i] = ids_for_select[j];
-      ids_for_select[j] = temp;
+      const temp = temp_ids_with_questions[i];
+      temp_ids_with_questions[i] = temp_ids_with_questions[j];
+      temp_ids_with_questions[j] = temp;
     }
-    setIds_for_select(ids_for_select);
+
+    setIds_with_text(temp_ids_with_questions);
   };
 
   if (!hover) {
@@ -285,9 +289,17 @@ export default function CourseNode(
                             ]);
                           }}
                         >
-                          {ids_for_select.map((id) => (
+                          {/* {ids_with_text.map((id) => (
                             <option value={id}>{id}</option>
-                          ))}
+                          ))} */}
+                          {
+                            // map ids_with_text as value is id and text is text
+                            ids_with_text.map((id_with_text) => (
+                              <option value={id_with_text[0]}>
+                                {id_with_text[1]}
+                              </option>
+                            ))
+                          }
                         </Select>
                       ))}
                     </Box>
@@ -306,15 +318,14 @@ export default function CourseNode(
                         setIds([e.target.value]);
                       }}
                     >
-                      {ids_for_select.map((id) => (
-                        <option value={id}>{id}</option>
+                      {ids_with_text.map((id_with_text) => (
+                        <option value={id_with_text[0]}>
+                          {id_with_text[1]}
+                        </option>
                       ))}
                     </Select>
                   </Box>
                 )}
-                {/*
-                                  TODO: display n_of_tests * Input count 
-                                 */}
               </Stack>
             </ModalBody>
             <ModalFooter>
