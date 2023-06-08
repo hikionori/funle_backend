@@ -22,7 +22,7 @@ use api::{
         add_course_to_user, add_info_to_user, add_test_to_user, delete_user, get_user,
         get_user_info, get_users, join_course, leave_course, login_user, pass_info, pass_test,
         register_user, remove_course_from_user, remove_info_from_user, remove_test_from_user,
-        update_user, update_user_progress,
+        update_user, update_user_progress, pass_node
     },
 };
 use rocket::{
@@ -87,7 +87,8 @@ async fn rocket() -> _ {
                 join_course,
                 leave_course,
                 pass_info,
-                pass_test
+                pass_test,
+                pass_node
             ],
         ) // user
         .mount(
