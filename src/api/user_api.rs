@@ -313,6 +313,53 @@ pub async fn pass_info(
     }
 }
 
+/// The above code defines a struct called NodePassingData with two string fields, node_id and user_id,
+/// that can be deserialized from JSON.
+/// 
+/// Properties:
+/// 
+/// * `node_id`: A string property that represents the unique identifier of a node.
+/// * `user_id`: The `user_id` property is a string that represents the unique identifier of a user. It
+/// is likely used to associate the user with a specific node or action within a system.
+#[derive(Deserialize)]
+pub struct NodePassingData {
+    pub node_id: String,
+    pub user_id: String,
+}
+
+/// This function adds a node to a user's account if the token is authorized.
+/// 
+/// Arguments:
+/// 
+/// * `db`: `db` is a reference to the `UserRepo` state, which is likely a database or repository that
+/// stores information about users and their nodes. This parameter is used to add a node to a user's
+/// list of nodes in the database.
+/// * `token`: The token parameter is a string that represents the authentication token of the user
+/// making the request. It is used to verify the identity of the user and ensure that they have the
+/// necessary permissions to perform the requested action.
+/// * `node_passing_data`: A JSON object containing data about a node being passed to a user. It likely
+/// includes the user ID and node ID.
+/// 
+/// Returns:
+/// 
+/// This function returns a `Result` with either a `Status::Ok` if the token is authorized and the node
+/// is added to the user, or a `Status::Unauthorized` if the token is not authorized.
+#[put("/user/<token>/pass/node", data = "<node_passing_data>")]
+pub async fn pass_node(
+    db: &State<UserRepo>,
+    token: String,
+    node_passing_data: Json<NodePassingData>,
+) -> Result<Status, Status> {
+    if authorize_token(token, db).await.0 {
+        let node_passing_data = node_passing_data.into_inner();
+        db.add_node_to_user(node_passing_data.user_id, node_passing_data.node_id)
+            .await;
+        Ok(Status::Ok)
+    } else {
+        Err(Status::Unauthorized)
+    }
+}
+
 // * Admin api routes
 
 /// It deletes a user from the database.

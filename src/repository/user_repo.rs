@@ -234,6 +234,23 @@ impl UserRepo {
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
+    /// This Rust function adds a node to a user's progress if it is not already present.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: The user ID is a unique identifier for a user in the system. It is used to retrieve
+    /// and update information about the user, such as their progress in the system.
+    /// * `node_id`: `node_id` is a `String` parameter representing the unique identifier of a node that
+    /// needs to be added to a user's progress.
+    pub async fn add_node_to_user(&self, user_id: String, node_id: String) {
+        let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
+        if user.progress.nodes.contains(&node_id) {
+            return;
+        }
+        user.progress.nodes.push(node_id);
+        self.put_user_by_id(&user_id, user).await.unwrap();
+    }
+
     /// It removes a course from a user's progress.
     /// 
     /// Arguments:
@@ -267,6 +284,19 @@ impl UserRepo {
     pub async fn remove_info_from_user(&self, user_id: String, info_id: String) {
         let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
         user.progress.infos.retain(|x| x != &info_id);
+        self.put_user_by_id(&user_id, user).await.unwrap();
+    }
+
+    /// This Rust function removes a node ID from a user's progress.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `user_id`: A string representing the unique identifier of a user.
+    /// * `node_id`: The `node_id` parameter is a `String` representing the unique identifier of a node
+    /// that needs to be removed from a user's progress.
+    pub async fn remove_node_from_user(&self, user_id: String, node_id: String) {
+        let mut user = self.get_user_by_id(&user_id).await.unwrap().unwrap();
+        user.progress.nodes.retain(|x| x != &node_id);
         self.put_user_by_id(&user_id, user).await.unwrap();
     }
 
