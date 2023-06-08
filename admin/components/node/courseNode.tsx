@@ -23,6 +23,7 @@ export interface CourseNodeData {
   ids: string[];
   title: string;
   mini_image: string;
+  mini_image_success: string;
   type_: string;
   // if type_ is test
   n_of_tests?: number;
@@ -48,6 +49,9 @@ export default function CourseNode(
   const [ids, setIds] = useState(props.ids);
   const [title, setTitle] = useState(props.title);
   const [mini_image, setMini_image] = useState(props.mini_image);
+  const [mini_image_success, setMini_image_success] = useState(
+    props.mini_image_success
+  );
   const [type_, setType_] = useState(props.type_);
   const [n_of_tests, setN_of_tests] = useState(props.n_of_tests);
 
@@ -188,6 +192,18 @@ export default function CourseNode(
             }}
             placeholder="Mini image url"
           />
+          <Input
+            value={mini_image_success}
+            onChange={(e) => {
+              setMini_image_success(e.target.value);
+            }}
+            disabled
+            _disabled={{
+              backgroundColor: "gray.100",
+              textColor: "black",
+            }}
+            placeholder="Mini image success url"
+          />
           {type_ === "test" ? (
             <Input
               value={n_of_tests}
@@ -261,6 +277,13 @@ export default function CourseNode(
                   }}
                   placeholder="Image"
                 />
+                <Input
+                  value={mini_image_success}
+                  onChange={(e) => {
+                    setMini_image_success(e.target.value);
+                  }}
+                  placeholder="Image success"
+                />
                 {type_ === "test" ? (
                   <>
                     <Input
@@ -289,17 +312,11 @@ export default function CourseNode(
                             ]);
                           }}
                         >
-                          {/* {ids_with_text.map((id) => (
-                            <option value={id}>{id}</option>
-                          ))} */}
-                          {
-                            // map ids_with_text as value is id and text is text
-                            ids_with_text.map((id_with_text) => (
-                              <option value={id_with_text[0]}>
-                                {id_with_text[1]}
-                              </option>
-                            ))
-                          }
+                          {ids_with_text.map((id_with_text) => (
+                            <option value={id_with_text[0]}>
+                              {id_with_text[1]}
+                            </option>
+                          ))}
                         </Select>
                       ))}
                     </Box>

@@ -39,6 +39,7 @@ export default function CourceLevel(
                                 title={node.title}
                                 ids={node.ids}
                                 mini_image={node.mini_image}
+                                mini_image_success={node.mini_image_success}
                                 type_={node.type_}
                                 key={index}
                                 n_of_tests={node.n_of_tests}
