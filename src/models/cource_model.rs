@@ -73,6 +73,7 @@ pub struct Level {
     pub ids: Vec<String>,        // content ids
     pub title: String,           // title of info or test
     pub mini_image: String,      // mini image of info or test, url
+    pub mini_image_success: String, // mini image of info or test, url
     pub type_: String,           // type of level (info or test)
     pub n_of_tests: Option<i32>, // number of tests in the level
 }
@@ -83,6 +84,7 @@ impl Level {
         ids: Vec<String>,
         title: String,
         mini_image: String,
+        mini_image_success: String,
         n_of_tests: Option<i32>,
         type_: String,
     ) -> (Self, String) {
@@ -93,6 +95,7 @@ impl Level {
                 ids,
                 title,
                 mini_image,
+                mini_image_success,
                 type_,
                 n_of_tests,
             },
@@ -106,6 +109,7 @@ impl Level {
             ids: self.ids.clone(),
             title: self.title.clone(),
             mini_image: self.mini_image.clone(),
+            mini_image_success: self.mini_image_success.clone(),
             type_: self.type_.clone(),
             n_of_tests: self.n_of_tests,
         }

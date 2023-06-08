@@ -512,12 +512,14 @@ mod cource_repo_tests {
             vec![test_id],
             "Cell title".to_owned(),
             String::from("some img"),
+            String::from("some img"),
             Some(1),
             "test".to_owned(),
         );
         let info_cell = Level::new(
             vec![info_id],
             "Cell title".to_owned(),
+            String::from("some img"),
             String::from("some img"),
             None,
             "info".to_owned(),
@@ -582,12 +584,14 @@ mod cource_repo_tests {
             vec![test_id],
             "Cell title".to_owned(),
             String::from("some img"),
+            String::from("some img"),
             Some(1),
             "test".to_owned(),
         );
         let info_cell = Level::new(
             vec![info_id],
             "Cell title".to_owned(),
+            String::from("some img"),
             String::from("some img"),
             None,
             "info".to_owned(),
@@ -658,12 +662,14 @@ mod cource_repo_tests {
             vec![test_id],
             "Cell title".to_owned(),
             String::from("some img"),
+            String::from("some img"),
             Some(1),
             "test".to_owned(),
         );
         let info_cell = Level::new(
             vec![info_id],
             "Cell title".to_owned(),
+            String::from("some img"),
             String::from("some img"),
             None,
             "info".to_owned(),
@@ -685,6 +691,7 @@ mod cource_repo_tests {
         let new_test_cell = Level::new(
             test_cell.0.ids.clone(),
             "New cell title".to_owned(),
+            String::from("some img"),
             String::from("some img"),
             Some(1),
             "test".to_owned(),
