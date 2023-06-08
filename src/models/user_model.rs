@@ -63,4 +63,5 @@ pub struct UserProgress {
     pub courses: Vec<String>, // id of courses
     pub tests: Vec<String>, // id of tests
     pub infos: Vec<String>, // id of infos
+    pub nodes: Vec<String>, // id of nodes
 }

@@ -158,7 +158,6 @@ impl UserRepo {
     /// 
     /// None
     pub async fn delete_user_by_id(&self, id: &String) -> Option<UserModel> {
-        let oid = ObjectId::parse_str(id.as_str()).unwrap();
         let email = self.get_user_by_id(id).await.unwrap().unwrap().email;
         self.collection
             .delete_many(doc! {"email": email}, None)
@@ -363,6 +362,7 @@ mod user_repo_tests {
                     courses: vec![],
                     tests: vec![],
                     infos: vec![],
+                    nodes: vec![]
                 },
             })
         }
@@ -388,6 +388,8 @@ mod user_repo_tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
+                nodes: vec![]
+
             },
         };
         let result = client.create_user(user).await;
@@ -409,6 +411,8 @@ mod user_repo_tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
+                nodes: vec![]
+
             },
         };
 
@@ -436,6 +440,8 @@ mod user_repo_tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
+                nodes: vec![]
+
             },
         };
         client.create_user(user).await.unwrap();
@@ -462,6 +468,8 @@ mod user_repo_tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
+                nodes: vec![]
+
             },
         };
         client.create_user(user).await.unwrap();
@@ -494,6 +502,8 @@ mod user_repo_tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
+                nodes: vec![]
+
             },
         };
         client.create_user(user).await.unwrap();
@@ -519,6 +529,8 @@ mod user_repo_tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
+                nodes: vec![]
+
             },
         };
         client.create_user(user).await.unwrap();
@@ -534,6 +546,8 @@ mod user_repo_tests {
                 courses: vec![],
                 tests: vec![],
                 infos: vec![],
+                nodes: vec![]
+
             },
         };
         client

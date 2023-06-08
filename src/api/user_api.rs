@@ -63,6 +63,7 @@ pub async fn register_user(
             courses: vec![],
             tests: vec![],
             infos: vec![],
+            nodes: vec![],
         },
     };
     let result = db.create_user(user).await;
