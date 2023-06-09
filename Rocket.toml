@@ -1,3 +1,13 @@
 [default]
 addreess = "0.0.0.0"
 port = 8080
+
+[default.tls]
+key = "private-key.pem"
+certs = "certificate-chain.pem"
+
+[release]
+address = "0.0.0.0"
+port = 8080
+ip_header = false
+ident = "FunLe"

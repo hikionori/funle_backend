@@ -40,6 +40,8 @@ use repository::{
     user_repo::UserRepo,
 };
 
+use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
+
 pub struct CORS;
 
 #[rocket::async_trait]
@@ -67,13 +69,7 @@ async fn rocket() -> _ {
     #[cfg(debug_assertions)]
     env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
 
-    let config = rocket::Config {
-        address: std::net::IpAddr::V4(std::net::Ipv4Addr::new(0, 0, 0, 0)),
-        port: 8080,
-        ..Default::default()
-    };
-
-    rocket::custom(config)
+    rocket::build()
         .attach(CORS)
         // Options
         .mount("/", routes![options])

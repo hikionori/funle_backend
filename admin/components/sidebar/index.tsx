@@ -175,7 +175,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 fontFamily="monospace"
                 fontWeight="bold"
             >
-                Logo
+                FunLe
             </Text>
         </Flex>
     );
