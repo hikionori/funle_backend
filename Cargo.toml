@@ -12,7 +12,7 @@ dotenv = "0.15.0"
 mongodb = "2.3.0"
 
 # will be actix-web
-rocket = {version="0.5.0-rc.3", features=["json", "tls"]}
+rocket = {version="0.5.0-rc.3", features=["json"]}
 
 serde = {version = "1.0", features=["derive"]}
 jsonwebtoken = "8.1.1"
@@ -27,7 +27,6 @@ tokio = "1.22.0"
 serde_with = "2.1.0"
 base64 = "0.21.0"
 rocket_cors = "0.5.2"
-openssl = "0.10.36"
 
 [dependencies.uuid]
 version = "1.2.2"
