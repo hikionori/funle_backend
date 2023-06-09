@@ -74,6 +74,7 @@ export const useCourseStore = create((set, get: any) => ({
           ids: [],
           title: "",
           mini_image: "",
+          mini_image_success: "",
           type_: "test",
           n_of_tests: 1,
         },
@@ -106,6 +107,7 @@ export const useCourseStore = create((set, get: any) => ({
       ids: [],
       title: "",
       mini_image: "",
+      mini_image_success: "",
       type_: "test",
       n_of_tests: 1,
     };
@@ -120,6 +122,7 @@ export const useCourseStore = create((set, get: any) => ({
     ids: string[],
     title: string,
     mini_image: string,
+    mini_image_success: string,
     type_: string,
     n_of_tests: number | null
   ) => {
@@ -129,6 +132,7 @@ export const useCourseStore = create((set, get: any) => ({
     node.ids = ids;
     node.title = title;
     node.mini_image = mini_image;
+    node.mini_image_success = mini_image_success;
     node.type_ = type_;
     node.n_of_tests = n_of_tests;
 

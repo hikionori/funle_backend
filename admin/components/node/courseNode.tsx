@@ -77,7 +77,7 @@ export default function CourseNode(
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => {
     setIsOpen(false);
-    onEdit(levelIndex, props.index, ids, title, mini_image, type_, n_of_tests);
+    onEdit(levelIndex, props.index, ids, title, mini_image, mini_image_success, type_, n_of_tests);
   };
   const onOpen = () => setIsOpen(true);
 
