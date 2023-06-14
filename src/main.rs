@@ -70,10 +70,10 @@ async fn rocket() -> _ {
     rocket::build()
         .attach(CORS)
         // Options
-        .mount("/api", routes![options])
+        .mount("/", routes![options])
         // User API
         .mount(
-            "/api",
+            "/",
             routes![
                 register_user,
                 login_user,
@@ -91,7 +91,7 @@ async fn rocket() -> _ {
             ],
         ) // user
         .mount(
-            "/api",
+            "/",
             routes![
                 get_users,
                 get_user,
@@ -122,7 +122,7 @@ async fn rocket() -> _ {
             ],
         ) // admin
         // Auth API
-        .mount("/api", routes![auth])
+        .mount("/", routes![auth])
         .manage(UserRepo::init().await)
         .manage(TestsRepo::init().await)
         .manage(TActionRepo::init().await)
