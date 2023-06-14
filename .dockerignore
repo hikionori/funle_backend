@@ -9,3 +9,5 @@ target/
 ./admin/.yarnrc
 ./admin/yarn.lock
 ./admin/.git
+
+data/

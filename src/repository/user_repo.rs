@@ -357,7 +357,7 @@ mod user_repo_tests {
             tests_model::TestModel,
         },
     };
-
+    
     async fn drop_collection() {
         env::set_var("MONGO_URL", "mongodb://root:root@localhost:27017/");
         let client = UserRepo::init().await;

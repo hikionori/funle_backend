@@ -1181,7 +1181,7 @@ dependencies = [
  "rand",
  "rustc_version_runtime",
  "rustls",
- "rustls-pemfile",
+ "rustls-pemfile 0.3.0",
  "serde",
  "serde_bytes",
  "serde_with 1.14.0",
@@ -1745,12 +1745,15 @@ dependencies = [
  "percent-encoding 2.2.0",
  "pin-project-lite",
  "ref-cast",
+ "rustls",
+ "rustls-pemfile 1.0.2",
  "serde",
  "smallvec",
  "stable-pattern",
  "state 0.5.3",
  "time 0.3.17",
  "tokio",
+ "tokio-rustls",
  "uncased",
 ]
 
@@ -1806,6 +1809,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ee86d63972a7c661d1536fefe8c3c8407321c3df668891286de28abcd087360"
 dependencies = [
  "base64 0.13.0",
+]
+
+[[package]]
+name = "rustls-pemfile"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d194b56d58803a43635bdc398cd17e383d6f71f9182b9a192c127ca42494a59b"
+dependencies = [
+ "base64 0.21.0",
 ]
 
 [[package]]

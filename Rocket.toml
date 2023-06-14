@@ -3,8 +3,8 @@ addreess = "0.0.0.0"
 port = 8080
 
 [default.tls]
-key = "private-key.pem"
-certs = "certificate-chain.pem"
+key = "./certs/private-key.pem"
+certs = "./certs/certificate-chain.pem"
 
 [release]
 address = "0.0.0.0"

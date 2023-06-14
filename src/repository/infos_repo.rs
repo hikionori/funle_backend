@@ -182,6 +182,7 @@ impl InfosRepo {
     /// 
     /// * `you_are_sure`: This is a boolean value that is used to make sure that the user is sure that
     /// they want to drop the collection.
+    #[cfg(test)]
     pub async fn drop_collection(&self, you_are_sure: bool) {
         if !(you_are_sure) {
             return;
